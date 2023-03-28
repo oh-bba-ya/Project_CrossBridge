@@ -41,7 +41,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
-	// гою╖ е╛╥║╫╨©║╪╜ дЁ╦╞ем╦╤╢ы ╫╢фша║га, юо╧ща║га, а╕ф╝фя ╫ц╫╨ешю╩ ╠╦гЖгр ©╧а╓юл╧г╥н virtual е╟©Ж╣Е╦╕ ╩Г©Кгъ╢ы.
+	// М∙≤Л°└ М│╢К·≤Л┼╓Л≈░Л└° Л╨░К╕╜М└╟К╖┬К▀╓ Л┼┬М█╪Л═░М■└, Л²╪К╟≤Л═░М■└, Л═°М┼╦М▄╘ Л▀°Л┼╓М┘°Л²└ Й╣╛М≤└М∙═ Л≤┬Л═∙Л²╢К╞─К║° virtual М┌╓Л⌡▄К⌠°К╔╪ Л┌╛Л ╘М√┬К▀╓.
 	virtual void Jump() override;    
 
 public:	
