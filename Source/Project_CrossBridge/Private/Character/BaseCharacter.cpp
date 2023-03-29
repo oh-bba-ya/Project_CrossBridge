@@ -55,13 +55,7 @@ void ABaseCharacter::Move(const FInputActionValue& Value)
 	AddMovementInput(ForwardDirection, MovementVector.Y);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	AddMovementInput(RightDirection, MovementVector.X);
-
-	/*
-	const FVector Forward = GetActorForwardVector();
-	AddMovementInput(Forward, MovementVector.Y);
-	const FVector Right = GetActorRightVector();
-	AddMovementInput(Right, MovementVector.X);
-	*/
+	
 }
 
 void ABaseCharacter::Look(const FInputActionValue& Value)
@@ -76,6 +70,11 @@ void ABaseCharacter::Jump()
 {
 	// Super::Jump 는 Character 클래스의 Jump 함수를 참조하기 위해
 	Super::Jump();
+}
+
+void ABaseCharacter::Attack()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Base Attack"));
 }
 
 // Called every frame
@@ -94,6 +93,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputMovementAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
 		EnhancedInputComponent->BindAction(InputJumpAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Jump);
+		EnhancedInputComponent->BindAction(InputAttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
 	}
 
 }

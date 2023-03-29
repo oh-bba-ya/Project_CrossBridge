@@ -24,6 +24,8 @@ protected:
 	virtual void Jump() override;
 
 	void Release_Jump();
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -43,13 +45,13 @@ private:
 	/** JetPack */
 	FTimerHandle fuelTimer;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	bool bJetPackActive = false;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere,Category=JetPackSettings)
 	float Fuel = 10;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere,Category=JetPackSettings)
 	float MaxFuel = Fuel;
 
 	UPROPERTY(EditAnywhere, Category=JetPackSettings)
@@ -61,7 +63,11 @@ private:
 	UPROPERTY(EditAnywhere, Category=JetPackSettings)
 	float FuelRechargeDelay = 1.f;
 
+
 	void FillUpFuel();
+
+	UFUNCTION(Server, reliable)
+	void ServerFillUpFuel();
 
 	UFUNCTION()
 	void ActivateJetPack();
@@ -69,13 +75,24 @@ private:
 	UFUNCTION()
 	void DeActivateJetPack();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, reliable)
 	void ServerActivateJetPack();
 
 	
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, reliable)
 	void ServerDeActivateJetPack();
+
+/** TEST Code */
+public:
+	UPROPERTY(EditDefaultsOnly, Category= MySettings)
+	TSubclassOf<class ATestBullet> bulletFactory;
+
+	void Attack() override;
 	
-	
+	UFUNCTION(Server, Unreliable)
+	void ServerAttack();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastAttack();
 	
 };

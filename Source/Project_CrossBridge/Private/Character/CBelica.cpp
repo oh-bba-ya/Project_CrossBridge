@@ -7,6 +7,8 @@
 #include "Character/Belica/CBelicaWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Net/UnrealNetwork.h"
+#include "Test/TestBullet.h"
 
 
 ACBelica::ACBelica()
@@ -34,20 +36,21 @@ void ACBelica::BeginPlay()
 
 void ACBelica::Jump()
 {
+	UE_LOG(LogTemp,Warning,TEXT("Jump"));
 	if(Fuel > 0)
 	{
-		ActivateJetPack();
+		ServerActivateJetPack();
 	}
 	else
 	{
-		DeActivateJetPack();
+		ServerDeActivateJetPack();
 	}
 
 }
 
 void ACBelica::Release_Jump()
 {
-	DeActivateJetPack();
+	ServerDeActivateJetPack();
 }
 
 void ACBelica::Tick(float DeltaTime)
@@ -82,6 +85,18 @@ void ACBelica::FillUpFuel()
 	BelicaUI->SetFuelBar(Fuel,MaxFuel);
 }
 
+void ACBelica::ServerFillUpFuel_Implementation()
+{
+	if(Fuel >= MaxFuel)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
+		Fuel = MaxFuel;
+	}
+	Fuel += FuelConsumption;
+
+	BelicaUI->SetFuelBar(Fuel,MaxFuel);
+}
+
 void ACBelica::ActivateJetPack()
 {
 	//ServerActivateJetPack();
@@ -108,6 +123,24 @@ void ACBelica::DeActivateJetPack()
 	
 }
 
+void ACBelica::Attack()
+{
+	ServerAttack();
+}
+
+void ACBelica::MulticastAttack_Implementation()
+{
+	
+}
+
+void ACBelica::ServerAttack_Implementation()
+{
+
+	GetWorld()->SpawnActor<ATestBullet>
+	(bulletFactory, GetActorLocation() + GetActorForwardVector()*150,GetActorRotation());
+
+}
+
 void ACBelica::ServerActivateJetPack_Implementation()
 {
 	bJetPackActive = true;
@@ -116,7 +149,6 @@ void ACBelica::ServerActivateJetPack_Implementation()
 
 	Fuel -= FuelConsumption;
 	BelicaUI->SetFuelBar(Fuel,MaxFuel);
-	UE_LOG(LogTemp,Warning,TEXT("Fuel : %.2f"),Fuel);
 	GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
 }
 
@@ -128,4 +160,18 @@ void ACBelica::ServerDeActivateJetPack_Implementation()
 	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ACBelica::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
 }
 
-
+// 서버에 복제 등록하기 위한 함수
+void ACBelica::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ACBelica,bJetPackActive);
+	/*
+	DOREPLIFETIME(ACBelica,Fuel);
+	DOREPLIFETIME(ACBelica,MaxFuel);
+	DOREPLIFETIME(ACBelica,FuelConsumption);
+	DOREPLIFETIME(ACBelica,FuelRechargeSpeed);
+	DOREPLIFETIME(ACBelica,FuelRechargeDelay);
+	*/
+	
+}

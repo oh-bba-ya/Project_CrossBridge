@@ -19,4 +19,5 @@ public:
 	class UProgressBar* fuelBar;
 	
 	void SetFuelBar(float curFuel, float Max);
+	
 };
