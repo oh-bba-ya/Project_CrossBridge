@@ -1,6 +1,10 @@
 # Visual Studio 2015 user specific files
 .vs/
 
+# Jet brain user speicfic files
+.Plugins/
+Developer/
+
 # Compiled Object files
 *.slo
 *.lo
