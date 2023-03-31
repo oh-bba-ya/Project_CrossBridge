@@ -41,6 +41,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
 		class UInputAction* InputAttackAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputContextualAction;
+	
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
@@ -48,6 +52,10 @@ protected:
 	virtual void Jump() override;
 
 	virtual void Attack();
+
+	virtual void ContextualActionPressed();
+
+	virtual void ContextualActionReleased();
 
 public:	
 	// Called every frame

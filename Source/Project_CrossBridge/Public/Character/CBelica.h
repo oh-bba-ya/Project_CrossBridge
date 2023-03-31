@@ -27,6 +27,7 @@ protected:
 
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -34,12 +35,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual  void PostInitializeComponents() override;
 
 private:
 	UPROPERTY(EditAnywhere, Category=BelicaSettings)
 	TSubclassOf<class UCBelicaWidget> BelicaWidget;
 
 	class UCBelicaWidget* BelicaUI;
+
+	UPROPERTY(VisibleAnywhere)
+	class UGunCombatComponent* Combat;
 
 	/** JetPack */
 private:
@@ -82,11 +87,22 @@ private:
 	UFUNCTION(Server, reliable)
 	void ServerDeActivateJetPack();
 
-/** Fire   */
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Fire)
 	UAnimMontage* FireMontage;
+
+	/**  Aiming */
+protected:
 	
+	void ContextualActionPressed() override;
+	void ContextualActionReleased() override;
+
+	void AimStart();
+	void AimEnd();
+
+public:
+	bool IsAiming();
 	
 /** TEST Code */
 public:

@@ -7,23 +7,28 @@
 #include "Character/Belica/CBelicaWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/GunCombatComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Test/TestBullet.h"
 
 
 ACBelica::ACBelica()
 {
-	
+	Combat = CreateDefaultSubobject<UGunCombatComponent>(TEXT("GunCombatComponent"));
+	Combat->SetIsReplicated(true);
 }
 
 void ACBelica::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(GetOwner())
+	if(GetLocalRole() == ENetRole::ROLE_Authority)
 	{
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Server!"), true, FVector2d(1.2f));
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Authority!"), true, FVector2d(1.2f));
 
+	}
+	else if(GetLocalRole() == ENetRole::ROLE_AutonomousProxy){
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Client!"), true, FVector2d(1.2f));
 	}
 
 	BelicaUI = CreateWidget<UCBelicaWidget>(GetWorld(),BelicaWidget);
@@ -55,7 +60,7 @@ void ACBelica::Release_Jump()
 void ACBelica::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	auto land = OtherComp->GetCollisionObjectType();
+	//auto land = OtherComp->GetCollisionObjectType();
 	
 }
 
@@ -76,6 +81,16 @@ void ACBelica::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 		EnhancedInputComponent->BindAction(InputJumpAction, ETriggerEvent::Completed, this, &ACBelica::Release_Jump);
 	}
+}
+
+void ACBelica::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if(Combat)
+	{
+		Combat->Character = this;
+	}
+	
 }
 
 void ACBelica::FillUpFuel()
@@ -127,6 +142,40 @@ void ACBelica::DeActivateJetPack()
 	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ACBelica::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
 	
 }
+
+void ACBelica::ContextualActionPressed()
+{
+	AimStart();
+}
+
+void ACBelica::ContextualActionReleased()
+{
+	AimEnd();
+}
+
+void ACBelica::AimStart()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Pressed"));
+	if(Combat)
+	{
+		Combat->SetAiming(true);
+	}
+}
+
+void ACBelica::AimEnd()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Released"));
+	if(Combat)
+	{
+		Combat->SetAiming(false);
+	}
+}
+
+bool ACBelica::IsAiming()
+{
+	return (Combat && Combat->bAiming);
+}
+
 
 void ACBelica::Attack()
 {

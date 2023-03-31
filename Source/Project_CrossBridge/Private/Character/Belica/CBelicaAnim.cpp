@@ -28,5 +28,7 @@ void UCBelicaAnim::NativeUpdateAnimation(float DeltaSeconds)
 	isinAir = belica->GetCharacterMovement()->IsFalling();
 
 	bIsFlying = belica->IsFlying();
+
+	bAiming = belica->IsAiming();
 	
 }

@@ -30,6 +30,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=AnimSettings)
 	bool bIsFlying = false;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=AnimSettings)
+	bool bAiming = false;
+	
+
 private:
 	class ACBelica* belica;
 	

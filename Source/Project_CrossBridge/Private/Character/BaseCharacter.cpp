@@ -77,6 +77,17 @@ void ABaseCharacter::Attack()
 	UE_LOG(LogTemp,Warning,TEXT("Base Attack"));
 }
 
+void ABaseCharacter::ContextualActionPressed()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Base ContextualAction Pressed"));
+}
+
+void ABaseCharacter::ContextualActionReleased()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Base ContextualAction Released"));
+}
+
+
 // Called every frame
 void ABaseCharacter::Tick(float DeltaTime)
 {
@@ -94,6 +105,8 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
 		EnhancedInputComponent->BindAction(InputJumpAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Jump);
 		EnhancedInputComponent->BindAction(InputAttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
+		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Started, this, &ABaseCharacter::ContextualActionPressed);
+		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
 	}
 
 }
