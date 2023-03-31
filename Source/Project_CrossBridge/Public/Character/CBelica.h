@@ -25,7 +25,8 @@ protected:
 
 	void Release_Jump();
 
-
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -40,9 +41,8 @@ private:
 
 	class UCBelicaWidget* BelicaUI;
 
-	
-private:
 	/** JetPack */
+private:
 	FTimerHandle fuelTimer;
 	
 	UPROPERTY(Replicated)
@@ -82,6 +82,12 @@ private:
 	UFUNCTION(Server, reliable)
 	void ServerDeActivateJetPack();
 
+/** Fire   */
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Fire)
+	UAnimMontage* FireMontage;
+	
+	
 /** TEST Code */
 public:
 	UPROPERTY(EditDefaultsOnly, Category= MySettings)
@@ -94,5 +100,7 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastAttack();
+
+	FORCEINLINE bool IsFlying() {return bJetPackActive;}
 	
 };

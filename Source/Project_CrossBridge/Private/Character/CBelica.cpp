@@ -36,7 +36,6 @@ void ACBelica::BeginPlay()
 
 void ACBelica::Jump()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Jump"));
 	if(Fuel > 0)
 	{
 		ServerActivateJetPack();
@@ -51,6 +50,13 @@ void ACBelica::Jump()
 void ACBelica::Release_Jump()
 {
 	ServerDeActivateJetPack();
+}
+
+void ACBelica::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	auto land = OtherComp->GetCollisionObjectType();
+	
 }
 
 void ACBelica::Tick(float DeltaTime)
@@ -80,7 +86,6 @@ void ACBelica::FillUpFuel()
 		Fuel = MaxFuel;
 	}
 	Fuel += FuelConsumption;
-	UE_LOG(LogTemp,Warning,TEXT("Fuel : %.2f"),Fuel);
 
 	BelicaUI->SetFuelBar(Fuel,MaxFuel);
 }
@@ -130,7 +135,10 @@ void ACBelica::Attack()
 
 void ACBelica::MulticastAttack_Implementation()
 {
-	
+	if(FireMontage != nullptr)
+	{
+		PlayAnimMontage(FireMontage);
+	}
 }
 
 void ACBelica::ServerAttack_Implementation()
@@ -138,6 +146,9 @@ void ACBelica::ServerAttack_Implementation()
 
 	GetWorld()->SpawnActor<ATestBullet>
 	(bulletFactory, GetActorLocation() + GetActorForwardVector()*150,GetActorRotation());
+
+
+	MulticastAttack();
 
 }
 

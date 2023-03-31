@@ -26,5 +26,7 @@ void UCBelicaAnim::NativeUpdateAnimation(float DeltaSeconds)
 	rotAngle = UKismetAnimationLibrary::CalculateDirection(belica->GetVelocity(),belica->GetActorRotation());
 	
 	isinAir = belica->GetCharacterMovement()->IsFalling();
+
+	bIsFlying = belica->IsFlying();
 	
 }
