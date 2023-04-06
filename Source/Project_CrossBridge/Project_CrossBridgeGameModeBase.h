@@ -13,5 +13,8 @@ UCLASS()
 class PROJECT_CROSSBRIDGE_API AProject_CrossBridgeGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	
 };

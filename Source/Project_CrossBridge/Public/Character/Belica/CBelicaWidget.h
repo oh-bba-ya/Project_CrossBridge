@@ -17,7 +17,21 @@ class PROJECT_CROSSBRIDGE_API UCBelicaWidget : public UUserWidget
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Belica|Fuel", meta = (BindWidget))
 	class UProgressBar* fuelBar;
-	
+
+
 	void SetFuelBar(float curFuel, float Max);
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Belica|HealthBar", meta = (BindWidget))
+	class UProgressBar* HealthBar;
+
+	void SetHealthBar(float curHP, float MaxHP);
+
+protected:
+	virtual void NativeConstruct() override;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+
+private:
+	class ACBelica* belica;
 };

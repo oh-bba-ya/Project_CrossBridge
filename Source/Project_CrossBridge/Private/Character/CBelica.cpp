@@ -4,10 +4,10 @@
 #include "Character/CBelica.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Character/Belica/CBelicaWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/GunCombatComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "Test/TestBullet.h"
 
@@ -16,11 +16,18 @@ ACBelica::ACBelica()
 {
 	Combat = CreateDefaultSubobject<UGunCombatComponent>(TEXT("GunCombatComponent"));
 	Combat->SetIsReplicated(true);
+
 }
 
 void ACBelica::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// 벨리카 HP 초기화
+	if(HasAuthority())
+	{
+		SetCurrentHealth(MaxHP);
+	}
 
 	if(GetLocalRole() == ENetRole::ROLE_Authority)
 	{
@@ -30,37 +37,30 @@ void ACBelica::BeginPlay()
 	else if(GetLocalRole() == ENetRole::ROLE_AutonomousProxy){
 		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Client!"), true, FVector2d(1.2f));
 	}
-
-	BelicaUI = CreateWidget<UCBelicaWidget>(GetWorld(),BelicaWidget);
-
-	if(BelicaUI != nullptr)
-	{
-		BelicaUI->AddToViewport();
-	}
+	
 }
 
 void ACBelica::Jump()
 {
 	if(Fuel > 0)
 	{
-		ServerActivateJetPack();
+		ActivateJetPack();
 	}
 	else
 	{
-		ServerDeActivateJetPack();
+		DeActivateJetPack();
 	}
 
 }
 
 void ACBelica::Release_Jump()
 {
-	ServerDeActivateJetPack();
+	DeActivateJetPack();
 }
 
 void ACBelica::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//auto land = OtherComp->GetCollisionObjectType();
 	
 }
 
@@ -93,6 +93,36 @@ void ACBelica::PostInitializeComponents()
 	
 }
 
+/** Health Get, Set, TakeDamage */
+#pragma region Health Get, Set, TakeDamage
+void ACBelica::SetCurrentHealth(float healthValue)
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		CurrentHP = FMath::Clamp(healthValue,0.f,MaxHP);
+		
+	}
+}
+
+void ACBelica::PlusHealth(int32 value)
+{
+	CurrentHP = FMath::Clamp(CurrentHP + value, 0.f,MaxHP);
+}
+
+void ACBelica::SubTractHealth(int32 value)
+{
+	CurrentHP = FMath::Clamp(CurrentHP - value, 0.f,MaxHP);
+}
+
+void ACBelica::Server_TakeDamage_Implementation(float value)
+{
+	SubTractHealth(value);
+}
+
+#pragma endregion 
+
+
+#pragma region JetPack()
 void ACBelica::FillUpFuel()
 {
 	if(Fuel >= MaxFuel)
@@ -100,49 +130,47 @@ void ACBelica::FillUpFuel()
 		GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
 		Fuel = MaxFuel;
 	}
-	Fuel += FuelConsumption;
-
-	BelicaUI->SetFuelBar(Fuel,MaxFuel);
+	Fuel += FuelConsumptionSpeed;
+	
 }
 
-void ACBelica::ServerFillUpFuel_Implementation()
+void ACBelica::FuelConsumption(float value)
 {
-	if(Fuel >= MaxFuel)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
-		Fuel = MaxFuel;
-	}
-	Fuel += FuelConsumption;
-
-	BelicaUI->SetFuelBar(Fuel,MaxFuel);
+	Fuel = FMath::Clamp(Fuel - value,0,MaxFuel);
 }
+
 
 void ACBelica::ActivateJetPack()
 {
-	//ServerActivateJetPack();
-	
+	Server_ActivateJetPack();
+}
+
+void ACBelica::Server_ActivateJetPack_Implementation()
+{
 	bJetPackActive = true;
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	GetCharacterMovement()->AirControl = 1.f;
 
-	Fuel -= FuelConsumption;
-	BelicaUI->SetFuelBar(Fuel,MaxFuel);
-	UE_LOG(LogTemp,Warning,TEXT("Fuel : %.2f"),Fuel);
+	FuelConsumption(FuelConsumptionSpeed);
 	GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
 	
 }
 
 void ACBelica::DeActivateJetPack()
 {
-	
-	//ServerDeActivateJetPack();
+	Server_DeActivateJetPack();
+}
+
+void ACBelica::Server_DeActivateJetPack_Implementation()
+{
 	bJetPackActive = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	GetCharacterMovement()->AirControl= 0.2f;
 	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ACBelica::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
-	
 }
+#pragma endregion 
 
+#pragma region Funcions Aim
 void ACBelica::ContextualActionPressed()
 {
 	AimStart();
@@ -153,9 +181,9 @@ void ACBelica::ContextualActionReleased()
 	AimEnd();
 }
 
+
 void ACBelica::AimStart()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Pressed"));
 	if(Combat)
 	{
 		Combat->SetAiming(true);
@@ -164,7 +192,6 @@ void ACBelica::AimStart()
 
 void ACBelica::AimEnd()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Released"));
 	if(Combat)
 	{
 		Combat->SetAiming(false);
@@ -175,14 +202,19 @@ bool ACBelica::IsAiming()
 {
 	return (Combat && Combat->bAiming);
 }
+#pragma endregion 
 
 
 void ACBelica::Attack()
 {
-	ServerAttack();
+	Server_Attack();
+	if(Combat != nullptr)
+	{
+		Combat->FireButtonPressed(true);
+	}
 }
 
-void ACBelica::MulticastAttack_Implementation()
+void ACBelica::Multicast_Attack_Implementation()
 {
 	if(FireMontage != nullptr)
 	{
@@ -190,35 +222,13 @@ void ACBelica::MulticastAttack_Implementation()
 	}
 }
 
-void ACBelica::ServerAttack_Implementation()
+void ACBelica::Server_Attack_Implementation()
 {
 
-	GetWorld()->SpawnActor<ATestBullet>
-	(bulletFactory, GetActorLocation() + GetActorForwardVector()*150,GetActorRotation());
-
-
-	MulticastAttack();
+	Multicast_Attack();
 
 }
 
-void ACBelica::ServerActivateJetPack_Implementation()
-{
-	bJetPackActive = true;
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-	GetCharacterMovement()->AirControl = 1.f;
-
-	Fuel -= FuelConsumption;
-	BelicaUI->SetFuelBar(Fuel,MaxFuel);
-	GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
-}
-
-void ACBelica::ServerDeActivateJetPack_Implementation()
-{
-	bJetPackActive = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-	GetCharacterMovement()->AirControl= 0.2f;
-	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ACBelica::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
-}
 
 // 서버에 복제 등록하기 위한 함수
 void ACBelica::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -226,12 +236,7 @@ void ACBelica::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(ACBelica,bJetPackActive);
-	/*
-	DOREPLIFETIME(ACBelica,Fuel);
-	DOREPLIFETIME(ACBelica,MaxFuel);
-	DOREPLIFETIME(ACBelica,FuelConsumption);
-	DOREPLIFETIME(ACBelica,FuelRechargeSpeed);
-	DOREPLIFETIME(ACBelica,FuelRechargeDelay);
-	*/
+	DOREPLIFETIME(ACBelica, Fuel);
+	DOREPLIFETIME(ACBelica, CurrentHP);
 	
 }

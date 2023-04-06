@@ -4,7 +4,8 @@
 #include "Test/TestBullet.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "Character/CBelica.h"
 
 // Sets default values
 ATestBullet::ATestBullet()
@@ -44,7 +45,21 @@ void ATestBullet::Tick(float DeltaTime)
 void ATestBullet::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp,Warning,TEXT("Destroy"));
-	Destroy();
+
+
+	if(HasAuthority())
+	{
+		ACBelica* player = Cast<ACBelica>(OtherActor);
+		if(player != nullptr)
+		{
+			player->Server_TakeDamage(30);
+			Destroy();
+		}
+	}
+
 }
+
+
+
+
 

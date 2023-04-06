@@ -28,15 +28,62 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	void SetAiming(bool bisAiming);
-
-	UFUNCTION(Server, Reliable)
-	void ServerSetAiming(bool bIsAiming);
-
 private:
 	class ACBelica* Character;
 	
+/** Aiming */
+#pragma region Aiming
+	void SetAiming(bool bisAiming);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulitCastSetAiming(bool bIsAiming);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
+	
+	
 	UPROPERTY(Replicated)
 	bool bAiming;
+#pragma endregion
+
+
+	/* HitTarget */
+#pragma region HitTarget
+public:
+	FORCEINLINE float GetTraceLength() const {return TraceLength;}
+
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	
+private:
+	FVector HitTarget;
+
+	UPROPERTY(EditAnywhere)
+    float TraceLength = 80000.f;
+
+	
+#pragma endregion
+
+	/** Fire */
+#pragma region Fire
+public:
+	void FireButtonPressed(bool bPressed);
+
+	// 기본공격
+	void BasicAttack();
+
+	void Fire();
+
+	void Server_Fire();
+
+	void Multicast_Fire();
+
+
+private:
+	bool bFireButtonPressed;
+	
+	// projectile
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> ProjectileFactory;
+	
 	
 };
