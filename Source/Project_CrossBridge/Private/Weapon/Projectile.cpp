@@ -4,6 +4,7 @@
 #include "Weapon/Projectile.h"
 
 #include "Components/BoxComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -19,12 +20,17 @@ AProjectile::AProjectile()
 	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 
+	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComponent"));
+
+	// 이동방향으로 회전..
+	MovementComponent->bRotationFollowsVelocity =true;
 }
 
 // Called when the game starts or when spawned
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+
 	
 }
 

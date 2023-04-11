@@ -25,16 +25,13 @@ protected:
 
 	void Release_Jump();
 
-	UFUNCTION()
-	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 	virtual  void PostInitializeComponents() override;
 
 private:
@@ -139,6 +136,21 @@ public:
 #pragma endregion
 
 
+
+/** Weapon Properties*/
+#pragma region Weapon properties , pickup
+private:
+	UPROPERTY(ReplicatedUsing= OnRep_OverlappingWeapon)
+	class AWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+
+public:
+	void SetOverlappingWeapon(AWeapon* Weapon);
+
+#pragma endregion 
+	
 
 	
 /** TEST Code */

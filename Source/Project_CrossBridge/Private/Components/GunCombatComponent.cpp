@@ -111,7 +111,6 @@ void UGunCombatComponent::BasicAttack()
 {
 	if(Character != nullptr)
 	{
-		UE_LOG("Lo")
 		const USkeletalMeshSocket* barrelSocket = Character->GetMesh()->GetSocketByName(FName("BarrelSocket"));
 		if(barrelSocket)
 		{
@@ -126,10 +125,10 @@ void UGunCombatComponent::BasicAttack()
 				SpawnParams.Owner = GetOwner();
 				SpawnParams.Instigator = InstigatorPawn;
 				GetWorld()->SpawnActor<AProjectile>(ProjectileFactory,SocketTransform.GetLocation(),TargetRotation,SpawnParams);
+				UE_LOG(LogTemp,Warning,TEXT("Projectile Spawn"));
 			}
 		}
 	}
-
 }
 
 void UGunCombatComponent::Fire()

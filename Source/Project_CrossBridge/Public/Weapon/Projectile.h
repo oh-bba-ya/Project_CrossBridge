@@ -26,5 +26,10 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* BoxComponent;
+
+	UPROPERTY(VisibleAnywhere, Category=Movement)
+	class UProjectileMovementComponent* MovementComponent;
+
+
 	
 };

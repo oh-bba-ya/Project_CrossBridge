@@ -10,6 +10,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "Test/TestBullet.h"
+#include "Weapon/Weapon.h"
 
 
 ACBelica::ACBelica()
@@ -40,6 +41,18 @@ void ACBelica::BeginPlay()
 	
 }
 
+
+void ACBelica::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if(bJetPackActive)
+	{
+		AddMovementInput(FVector(0,0,1));
+	}
+	
+}
+
 void ACBelica::Jump()
 {
 	if(Fuel > 0)
@@ -58,22 +71,7 @@ void ACBelica::Release_Jump()
 	DeActivateJetPack();
 }
 
-void ACBelica::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	
-}
 
-void ACBelica::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if(bJetPackActive)
-	{
-		AddMovementInput(FVector(0,0,1));
-	}
-	
-}
 
 void ACBelica::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -229,6 +227,40 @@ void ACBelica::Server_Attack_Implementation()
 
 }
 
+/** 무기 줍기 */
+#pragma region Weapon Overlapping 
+void ACBelica::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	if(OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+
+	if(LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
+}
+
+void ACBelica::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	OverlappingWeapon = Weapon;
+
+	
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+#pragma endregion 
+
 
 // 서버에 복제 등록하기 위한 함수
 void ACBelica::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -238,5 +270,8 @@ void ACBelica::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ACBelica,bJetPackActive);
 	DOREPLIFETIME(ACBelica, Fuel);
 	DOREPLIFETIME(ACBelica, CurrentHP);
+
+	// 클라이언트에서만 위젯이 활성화 될 수 있도록 변경
+	DOREPLIFETIME_CONDITION(ACBelica, OverlappingWeapon, COND_OwnerOnly);
 	
 }

@@ -84,6 +84,8 @@ private:
 	// projectile
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> ProjectileFactory;
-	
+
+
+#pragma endregion 
 	
 };
