@@ -57,6 +57,11 @@ protected:
 
 	virtual void ContextualActionReleased();
 
+
+	/** overheadwidget */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* OverheadWidget;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
