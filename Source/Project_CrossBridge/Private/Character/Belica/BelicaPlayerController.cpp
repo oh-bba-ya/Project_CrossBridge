@@ -15,7 +15,7 @@ void ABelicaPlayerController::BeginPlay()
 
 		if(belicaUI)
 		{
-			belicaUI->AddToViewport();
+			//belicaUI->AddToViewport();
 		}
 	}
 }

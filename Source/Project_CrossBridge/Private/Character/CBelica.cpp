@@ -25,10 +25,12 @@ void ACBelica::BeginPlay()
 	Super::BeginPlay();
 	
 	// 벨리카 HP 초기화
+	/*
 	if(HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
 	}
+	*/
 
 	if(GetLocalRole() == ENetRole::ROLE_Authority)
 	{
@@ -46,15 +48,19 @@ void ACBelica::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	/* JetPack
 	if(bJetPackActive)
 	{
 		AddMovementInput(FVector(0,0,1));
 	}
+	*/
 	
 }
 
+
 void ACBelica::Jump()
 {
+	/* JetPack
 	if(Fuel > 0)
 	{
 		ActivateJetPack();
@@ -63,12 +69,14 @@ void ACBelica::Jump()
 	{
 		DeActivateJetPack();
 	}
-
+	*/
 }
 
 void ACBelica::Release_Jump()
 {
+	/* JetPack
 	DeActivateJetPack();
+	*/
 }
 
 
@@ -92,6 +100,7 @@ void ACBelica::PostInitializeComponents()
 }
 
 /** Health Get, Set, TakeDamage */
+/*
 #pragma region Health Get, Set, TakeDamage
 void ACBelica::SetCurrentHealth(float healthValue)
 {
@@ -116,18 +125,20 @@ void ACBelica::Server_TakeDamage_Implementation(float value)
 {
 	SubTractHealth(value);
 }
+*/
 
 #pragma endregion 
 
 
 #pragma region JetPack()
+/* JetPack
 void ACBelica::FillUpFuel()
 {
 	if(Fuel >= MaxFuel)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
 		Fuel = MaxFuel;
-	}
+	}s
 	Fuel += FuelConsumptionSpeed;
 	
 }
@@ -166,6 +177,7 @@ void ACBelica::Server_DeActivateJetPack_Implementation()
 	GetCharacterMovement()->AirControl= 0.2f;
 	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ACBelica::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
 }
+*/
 #pragma endregion 
 
 #pragma region Funcions Aim
@@ -267,9 +279,9 @@ void ACBelica::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
-	DOREPLIFETIME(ACBelica,bJetPackActive);
-	DOREPLIFETIME(ACBelica, Fuel);
-	DOREPLIFETIME(ACBelica, CurrentHP);
+	//DOREPLIFETIME(ACBelica,bJetPackActive);
+	//DOREPLIFETIME(ACBelica, Fuel);
+	//DOREPLIFETIME(ACBelica, CurrentHP);
 
 	// 클라이언트에서만 위젯이 활성화 될 수 있도록 변경
 	DOREPLIFETIME_CONDITION(ACBelica, OverlappingWeapon, COND_OwnerOnly);

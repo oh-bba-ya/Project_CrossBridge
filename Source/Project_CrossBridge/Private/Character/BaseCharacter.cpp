@@ -8,6 +8,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/WidgetComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values
@@ -36,6 +38,12 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Health 초기화.
+	if(HasAuthority())
+	{
+		SetCurrentHealth(MaxHP);
+	}
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController())) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->AddMappingContext(BaseContext, 0);
@@ -43,6 +51,36 @@ void ABaseCharacter::BeginPlay()
 	}
 
 	
+}
+
+
+// Called every frame
+void ABaseCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if(bJetPackActive)
+	{
+		AddMovementInput(FVector(0,0,1));
+	}
+
+}
+
+// Called to bind functionality to input
+void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
+		EnhancedInputComponent->BindAction(InputMovementAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
+		EnhancedInputComponent->BindAction(InputJumpAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Jump);
+		EnhancedInputComponent->BindAction(InputJumpAction, ETriggerEvent::Completed, this, &ABaseCharacter::Release_Jump);
+		EnhancedInputComponent->BindAction(InputAttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
+		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Started, this, &ABaseCharacter::ContextualActionPressed);
+		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
+	}
+
 }
 
 void ABaseCharacter::Move(const FInputActionValue& Value)
@@ -70,8 +108,14 @@ void ABaseCharacter::Look(const FInputActionValue& Value)
 
 void ABaseCharacter::Jump()
 {
-	// Super::Jump 는 Character 클래스의 Jump 함수를 참조하기 위해
-	Super::Jump();
+	if(Fuel > 0)
+	{
+		ActivateJetPack();
+	}
+	else
+	{
+		DeActivateJetPack();
+	}
 }
 
 void ABaseCharacter::Attack()
@@ -90,26 +134,92 @@ void ABaseCharacter::ContextualActionReleased()
 }
 
 
-// Called every frame
-void ABaseCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
+/** JetPack */
+#pragma region JetPack()
+
+void ABaseCharacter::Release_Jump()
+{
+	DeActivateJetPack();
 }
 
-// Called to bind functionality to input
-void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ABaseCharacter::FillUpFuel()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
-		EnhancedInputComponent->BindAction(InputMovementAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
-		EnhancedInputComponent->BindAction(InputJumpAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Jump);
-		EnhancedInputComponent->BindAction(InputAttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
-		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Started, this, &ABaseCharacter::ContextualActionPressed);
-		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
+	if(Fuel >= MaxFuel)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
+		Fuel = MaxFuel;
 	}
-
+	Fuel += FuelConsumptionSpeed;
+	
 }
+
+void ABaseCharacter::FuelConsumption(float value)
+{
+	Fuel = FMath::Clamp(Fuel - value,0,MaxFuel);
+}
+
+void ABaseCharacter::ActivateJetPack()
+{
+	Server_ActivateJetPack();
+}
+
+void ABaseCharacter::Server_ActivateJetPack_Implementation()
+{
+	bJetPackActive = true;
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	GetCharacterMovement()->AirControl = 1.f;
+
+	FuelConsumption(FuelConsumptionSpeed);
+	GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
+}
+
+
+void ABaseCharacter::DeActivateJetPack()
+{
+	Server_DeActivateJetPack();
+}
+
+void ABaseCharacter::SetCurrentHealth(float healthValue)
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		CurrentHP = FMath::Clamp(healthValue,0.f,MaxHP);
+		
+	}
+}
+
+void ABaseCharacter::PlusHealth(int32 value)
+{
+	CurrentHP = FMath::Clamp(CurrentHP + value, 0.f,MaxHP);
+}
+
+void ABaseCharacter::SubTractHealth(int32 value)
+{
+	CurrentHP = FMath::Clamp(CurrentHP - value, 0.f,MaxHP);
+}
+
+
+void ABaseCharacter::Server_DeActivateJetPack_Implementation()
+{
+	bJetPackActive = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	GetCharacterMovement()->AirControl= 0.2f;
+	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ABaseCharacter::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
+}
+
+#pragma endregion
+
+
+// 서버에 복제 등록하기 위한 함수
+void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ABaseCharacter,bJetPackActive);
+	DOREPLIFETIME(ABaseCharacter, Fuel);
+	DOREPLIFETIME(ABaseCharacter, CurrentHP);
+	
+}
+
 

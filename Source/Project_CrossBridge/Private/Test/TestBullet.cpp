@@ -52,7 +52,7 @@ void ATestBullet::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 		ACBelica* player = Cast<ACBelica>(OtherActor);
 		if(player != nullptr)
 		{
-			player->Server_TakeDamage(30);
+			//player->Server_TakeDamage(30);
 			Destroy();
 		}
 	}
