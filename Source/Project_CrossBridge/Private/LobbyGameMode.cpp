@@ -11,7 +11,7 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	// Player의 숫자를 저장한다.
 	int32 NumberofPlayers = GameState.Get()->PlayerArray.Num();
 
-	if(NumberofPlayers == 2)
+	if(NumberofPlayers == 3)
 	{
 		UWorld* World = GetWorld();
 		if(World)

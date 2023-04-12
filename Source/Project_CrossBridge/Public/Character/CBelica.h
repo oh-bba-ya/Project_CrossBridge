@@ -41,6 +41,7 @@ private:
 	
 	/** Belica Status (HP..)*/
 #pragma region Status
+	/*
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Status Health")
 	float MaxHP;
@@ -53,7 +54,6 @@ public:
 	FORCEINLINE float GetMaxHP() const {return MaxHP;}
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 	
-	/** 현재 체력 세터. 값을 0과 MaxHealth 사이로 범위제한하고 OnHealthUpdate를 호출합니다. 서버에서만 호출되어야 합니다.*/
 	UFUNCTION(BlueprintCallable, Category="Health")
 	void SetCurrentHealth(float healthValue);
 
@@ -65,13 +65,13 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	void Server_TakeDamage(float value);
-
-
+	*/
 #pragma endregion 
 
 	
 	/** JetPack */
 #pragma region JetPack
+	/*
 private:
 	FTimerHandle fuelTimer;
 	
@@ -114,7 +114,7 @@ public:
 	FORCEINLINE bool IsFlying() const {return bJetPackActive;}
 	FORCEINLINE float GetFuel() const {return Fuel;}
 	FORCEINLINE float GetMaxFuel() const {return MaxFuel; }
-
+	*/
 #pragma endregion 
 
 protected:
