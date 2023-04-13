@@ -177,3 +177,10 @@ void UMenu::MenuTearDown()
 	}
 
 }
+
+void UMenu::ClickJoinButton()
+{
+	if (MultiplayerSessionsSubsystem) {
+		MultiplayerSessionsSubsystem->FindSessions(10000);
+	}
+}

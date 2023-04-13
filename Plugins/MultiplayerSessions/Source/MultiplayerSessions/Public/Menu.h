@@ -58,4 +58,8 @@ private:
 	FString MatchType{ TEXT("FreeForAll") };
 	FString PathToLobby{ TEXT("") };
 	
+public:
+
+	UFUNCTION(BlueprintCallable)
+		void ClickJoinButton();
 };

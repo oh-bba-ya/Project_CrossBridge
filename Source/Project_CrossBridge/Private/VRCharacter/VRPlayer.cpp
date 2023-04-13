@@ -8,6 +8,8 @@
 #include "Camera/CameraComponent.h"
 #include "MotionControllerComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "Components/BoxComponent.h"
+
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -30,6 +32,16 @@ AVRPlayer::AVRPlayer()
 	RightAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightAim"));
 	RightAim->SetupAttachment(RootComponent);
 	RightAim->SetTrackingMotionSource(FName("RightAim"));
+
+	LeftHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftHandBox"));
+	LeftHandBox->SetupAttachment(LeftHand);
+	LeftHandBox->SetRelativeLocation(FVector(3, 1, -4));
+	LeftHandBox->SetBoxExtent(FVector(5));
+
+	RightHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightHandBox"));
+	RightHandBox->SetupAttachment(RightHand);
+	RightHandBox->SetRelativeLocation(FVector(3, -1, -4));
+	RightHandBox->SetBoxExtent(FVector(5));
    
 	LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftHandMesh"));
 	LeftHandMesh->SetupAttachment(LeftHand);
@@ -56,6 +68,9 @@ AVRPlayer::AVRPlayer()
 		RightHandMesh->SetAnimInstanceClass(HandAnim.Class);
 	}
 
+	LeftHandBox->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::OnLeftHandOverlap);
+	RightHandBox->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::OnRightHandOverlap);
+
 }
 
 // Called when the game starts or when spawned
@@ -71,6 +86,7 @@ void AVRPlayer::BeginPlay()
 		auto SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer);
 		if (SubSystem)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("AS"));
 			SubSystem->AddMappingContext(IMC_VRInput, 0);
 			SubSystem->AddMappingContext(IMC_VRHand, 0);
 		}
@@ -120,5 +136,18 @@ void AVRPlayer::Turn(const FInputActionValue& Values)
 
 	AddControllerYawInput(Axis.X);
 	AddControllerPitchInput(Axis.Y);
+
+}
+
+void AVRPlayer::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+}
+
+void AVRPlayer::OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	
+
+
 
 }

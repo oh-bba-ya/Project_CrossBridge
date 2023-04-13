@@ -15,6 +15,15 @@ class PROJECT_CROSSBRIDGE_API AProject_CrossBridgeGameModeBase : public AGameMod
 	GENERATED_BODY()
 
 public:
+
+	AProject_CrossBridgeGameModeBase();
+
+protected:
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
+public:
+
+
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	
 };

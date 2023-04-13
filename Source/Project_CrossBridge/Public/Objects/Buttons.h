@@ -32,9 +32,21 @@ public:
 		class UStaticMeshComponent* ButtonComp;	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UStaticMeshComponent* PushButtonComp;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* JoinWidgetComp;
 	
 	UFUNCTION()
-		void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void OnButtonOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+public:
+
+	class AVRPlayer* Player;
+
+	UPROPERTY()
+	float Timer;
+	bool IsPressed;
+
+	float EaseOutElasticRev(float Number);
+
 
 };

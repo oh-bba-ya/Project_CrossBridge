@@ -49,10 +49,20 @@ public:
 		class UMotionControllerComponent* RightHand;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UMotionControllerComponent* RightAim;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UBoxComponent* LeftHandBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UBoxComponent* RightHandBox;
 
 	void Move(const FInputActionValue& Values);
 	void Turn(const FInputActionValue& Values);
 
+	UFUNCTION()
+	void OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	
+	
 };
 
