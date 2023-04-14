@@ -42,7 +42,7 @@ void AButtons::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
+	Cast<UMenu>(JoinWidgetComp->GetWidget())->MenuSetup(4, FString("FreeForAll"), FString("/Game/Maps/Lobby"));
 }
 
 // Called every frame
@@ -65,7 +65,7 @@ void AButtons::Tick(float DeltaTime)
 void AButtons::OnButtonOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Player = Cast<AVRPlayer>(OtherActor);
-	if (Player)
+	if (Player && Timer ==0)
 	{
 		IsPressed = true;
 	}

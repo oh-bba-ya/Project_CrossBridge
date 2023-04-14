@@ -24,8 +24,7 @@ void AProject_CrossBridgeGameModeBase::InitGame(const FString& MapName, const FS
 
 	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
 	{
-	
-		DefaultPawnClass = AVRPlayer::StaticClass();
+		DefaultPawnClass = VRUser;
 	}
    
 }

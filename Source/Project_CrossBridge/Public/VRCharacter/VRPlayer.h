@@ -36,7 +36,17 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_Move;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_Turn;
+		class UInputAction* IA_Turn;	
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_LeftIndexCurl;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_LeftGrasp;	
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_RightIndexCurl;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_RightGrasp;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UCameraComponent* VRCamera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
@@ -56,13 +66,39 @@ public:
 
 	void Move(const FInputActionValue& Values);
 	void Turn(const FInputActionValue& Values);
+	void LeftIndexCurl();
+	void LeftGrasp();
+	void RightIndexCurl();
+	void RightGrasp();
+	void	LeftIndexCurlEnd();
+	void	LeftGraspEnd();
+	void	RightIndexCurlEnd();
+	void RightGraspEnd();
 
 	UFUNCTION()
 	void OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	UFUNCTION()
+		void OnLeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION()
+		void OnRightHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
+	bool IsLeftIndexCurl;
+	bool IsLeftGrasp;
+	bool IsRightIndexCurl;
+	bool IsRightGrasp;
+	
+	bool IsLeftGrab;
+	bool IsRightGrab;
+
+	UPROPERTY()
+		class ABaseGrabbableActor* GrabbedActorLeft;
+	UPROPERTY()
+		class ABaseGrabbableActor* GrabbedActorRight;
+
+	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
+	void UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
 	
 };
 

@@ -26,4 +26,7 @@ public:
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AVRPlayer> VRUser;
+
 };
