@@ -177,8 +177,7 @@ public:
 
 protected:
 	void DropWeapon();
+#pragma endregion
 	
-
-#pragma endregion 
 	
 };

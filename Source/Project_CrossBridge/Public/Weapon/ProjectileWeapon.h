@@ -68,8 +68,27 @@ public:
 
 private:
 	UFUNCTION(Server, Unreliable)
-	void Server_Fire(class ABaseCharacter* player);
+	void Server_Fire(class ABaseCharacter* player, const FVector hitTarget);
 	
+
+
+	/** Trace Crosshair */
+#pragma region Trace Crosshair
+private:
+	FHitResult HitResult;
+
+	FVector HitTarget;
+
+	float TraceLength = 80000.f;
+
+	bool bEquippedWeapon = false;
+
+	class ABaseCharacter* OwnerCharacter;
+protected:
+	void TraceUnderCosshairs(FHitResult& TraceHitResult);
+
+
+#pragma endregion 
 	
 
 };

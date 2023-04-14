@@ -6,6 +6,8 @@
 #include "Character/BaseCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "Kismet/GameplayStatics.h"
 #include "Weapon/Projectile.h"
 
 // Sets default values
@@ -39,6 +41,11 @@ void AProjectileWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
+	if(bEquippedWeapon && OwnerCharacter != nullptr &&OwnerCharacter->IsLocallyControlled())
+	{
+		TraceUnderCosshairs(HitResult);
+	}
 }
 
 void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -60,18 +67,25 @@ void AProjectileWeapon::Fire(ABaseCharacter* player)
 {
 	if(player != nullptr)
 	{
-		Server_Fire(player);
+		Server_Fire(player,HitTarget);
 	}
 }
 
-void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player)
-{
-	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(projectileFactory,
-		MeshComponent->GetSocketLocation(FName("MuzzleFlash")),
-		MeshComponent->GetSocketRotation(FName("MuzzleFlash"))
-		);
 
-	Projectile->SetOwner(player);
+void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player, const FVector hitTarget)
+{
+	const USkeletalMeshSocket* muzzleSocket = MeshComponent->GetSocketByName(FName("MuzzleFlash"));
+	if(muzzleSocket)
+	{
+		FTransform SocketTransform = muzzleSocket->GetSocketTransform(MeshComponent);
+		FVector ToTarget = hitTarget - SocketTransform.GetLocation();
+		FRotator TargetRotation = ToTarget.Rotation();
+		if(projectileFactory)
+		{
+			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(projectileFactory, SocketTransform.GetLocation(),TargetRotation);
+			Projectile->SetOwner(player);
+		}
+	}
 }
 
 /** Drop Weapon */
@@ -87,6 +101,8 @@ void AProjectileWeapon::MultiCast_DropWeapon_Implementation(ABaseCharacter* play
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	BoxComponent->SetSimulatePhysics(true);
 	player->SetWeapon(nullptr);
+	OwnerCharacter = nullptr;
+	bEquippedWeapon = false;
 }
 #pragma endregion
 
@@ -98,13 +114,66 @@ void AProjectileWeapon::Multicast_PickupWeapon_Implementation(ABaseCharacter* pl
 	BoxComponent->SetSimulatePhysics(false);
 	AttachToComponent(player->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("WeaponSocket"));
 	BoxComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
-
+	OwnerCharacter = player;
+	bEquippedWeapon = true;
 }
 
 void AProjectileWeapon::Server_PickupWeapon_Implementation(ABaseCharacter* player)
 {
 	Multicast_PickupWeapon(player);
 	SetOwner(player);
+}
+#pragma endregion
+
+
+/** Trace Crosshair */
+#pragma region Trace Crosshair
+void AProjectileWeapon::TraceUnderCosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;
+	if(GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation = ViewportSize * 0.5f;
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	// 2D 스크린 좌표를 3D 월드 좌표로 변환
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+		);
+
+	// 변환 작업 성공
+	if(bScreenToWorld)
+	{
+		FVector Start = CrosshairWorldPosition;
+
+		FVector End = CrosshairWorldDirection * TraceLength;
+
+		// 자기자신은 충돌에서 제외
+		//FCollisionQueryParams params;
+		//params.AddIgnoredActor(this);
+		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECC_Visibility);
+
+		// LineTrace 범위안에 감지되는 액터가 존재하지 않을시..
+		if(!TraceHitResult.bBlockingHit)
+		{
+			UE_LOG(LogTemp,Warning, TEXT("Not Trace"));
+			TraceHitResult.ImpactPoint = End;
+			HitTarget = End;
+			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
+		}
+		else  // 범위안에 감지되는 액터가 존재한다면..
+		{
+			HitTarget = TraceHitResult.ImpactPoint;
+			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
+		}
+	}
+	
 }
 #pragma endregion 
 
