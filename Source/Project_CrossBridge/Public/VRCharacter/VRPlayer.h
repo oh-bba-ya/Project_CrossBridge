@@ -83,6 +83,17 @@ public:
 		void OnLeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	UFUNCTION()
 		void OnRightHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	FVector RightPrevLoc;
+	FQuat RightPrevRot;
+
+	FVector RightThrowDir;
+	FQuat RightThrowRot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float ThrowPower;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float ToquePower;
 	
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
@@ -99,6 +110,9 @@ public:
 
 	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
 	void UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
+	
+	void SetGrabInfo();
+
 	
 };
 

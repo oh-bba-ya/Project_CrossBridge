@@ -107,14 +107,7 @@ void AVRPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GrabbedActorRight)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString(TEXT("EXIST")));
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString(TEXT("None")));
-	}
+	SetGrabInfo();
 }
 
 // Called to bind functionality to input
@@ -182,6 +175,8 @@ void AVRPlayer::RightIndexCurl()
 	if (GrabbedActorRight && IsRightGrasp && !IsRightGrab)
 	{
 		GrabTheActor(GrabbedActorRight, FString("Right"));
+		RightPrevLoc = RightHand->GetComponentLocation();
+		RightPrevRot = RightHand->GetComponentQuat();
 	}
 }
 
@@ -191,6 +186,8 @@ void AVRPlayer::RightGrasp()
 	if (GrabbedActorRight && IsRightIndexCurl && !IsRightGrab)
 	{
 		GrabTheActor(GrabbedActorRight, FString("Right"));
+		RightPrevLoc = RightHand->GetComponentLocation();
+		RightPrevRot = RightHand->GetComponentQuat();
 	}
 
 }
@@ -297,9 +294,28 @@ void AVRPlayer::UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPo
 	else if (GrabPosition == FString("Right"))
 	{
 		IsRightGrab = false;
+		GrabbedActor->MeshComp->AddForce(ThrowPower * RightThrowDir);
+
+		float Angle;
+		FVector Axis;
+		float dt = GetWorld()->DeltaTimeSeconds;
+		RightThrowRot.ToAxisAndAngle(Axis, Angle);
+		FVector AngularVelocity = (1.0f / dt) * Angle * Axis;
+		GrabbedActor->MeshComp->SetPhysicsAngularVelocityInRadians(AngularVelocity * ToquePower, true);
+		
 		GrabbedActorRight = NULL;
 	}
 
+}
 
+void AVRPlayer::SetGrabInfo()
+{
+	if (IsRightGrab)
+	{
+		RightThrowDir = RightHand->GetComponentLocation() - RightPrevLoc;
+		RightThrowRot = RightHand->GetComponentQuat() * RightPrevRot.Inverse();
 
+		RightPrevLoc = RightHand->GetComponentLocation();
+		RightPrevRot = RightHand->GetComponentQuat();
+	}
 }
