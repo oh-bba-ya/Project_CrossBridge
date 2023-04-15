@@ -39,13 +39,21 @@ private:
 
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|WeaponProperties")
 	float Damage;
+	
+	bool bEquippedWeapon = false;
 
+	class ABaseCharacter* OwnerCharacter;
+	class ABaseCharacterController* Controller;
+	class AWeaponHUD* HUD;
 
 public:
 	UFUNCTION()
 	void OnBoxComponentBeingOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void PickUp(class ABaseCharacter* player);
+	
 	UFUNCTION(Server, Unreliable)
 	void Server_PickupWeapon(class ABaseCharacter* player);
 
@@ -53,6 +61,9 @@ public:
 	void Multicast_PickupWeapon(class ABaseCharacter* player);
 
 public:
+	UFUNCTION()
+	void DropWeapon(class ABaseCharacter* player);
+	
 	UFUNCTION(Server,Unreliable)
 	void Server_DropWeapon(class ABaseCharacter* player);
 
@@ -74,6 +85,12 @@ private:
 
 	/** Trace Crosshair */
 #pragma region Trace Crosshair
+public:
+	void SetHUDCrosshairs(float DeletaTime);
+	
+protected:
+	void TraceUnderCosshairs(FHitResult& TraceHitResult);
+
 private:
 	FHitResult HitResult;
 
@@ -81,11 +98,24 @@ private:
 
 	float TraceLength = 80000.f;
 
-	bool bEquippedWeapon = false;
+	bool bDisplayCrosshair = false;
+	
+/** Textures for the Weapon crosshairs */
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsCenter;
 
-	class ABaseCharacter* OwnerCharacter;
-protected:
-	void TraceUnderCosshairs(FHitResult& TraceHitResult);
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsTop;
+
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsBottom;
 
 
 #pragma endregion 

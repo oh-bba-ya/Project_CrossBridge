@@ -3,10 +3,13 @@
 
 #include "Weapon/ProjectileWeapon.h"
 
+#include "BaseCharacterController.h"
+#include "Blueprint/UserWidget.h"
 #include "Character/BaseCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "HUD/WeaponHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Weapon/Projectile.h"
 
@@ -33,7 +36,6 @@ void AProjectileWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectileWeapon::OnBoxComponentBeingOverlap);
-	
 }
 
 // Called every frame
@@ -46,6 +48,8 @@ void AProjectileWeapon::Tick(float DeltaTime)
 	{
 		TraceUnderCosshairs(HitResult);
 	}
+
+	SetHUDCrosshairs(DeltaTime);
 }
 
 void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -55,13 +59,20 @@ void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* Overlapp
 	{
 		ABaseCharacter* player = Cast<ABaseCharacter>(OtherActor);
 
-		if(player != nullptr)
+		if(player != nullptr && player->GetOwningWeapon() == nullptr)
 		{
-			Server_PickupWeapon(player);
+			if(OwnerCharacter != nullptr)
+			{
+				OwnerCharacter->SetWeapon(nullptr);	
+			}
+			PickUp(player);
 			UE_LOG(LogTemp,Warning,TEXT("Collision Weapon"));
 		}
 	}
 }
+
+
+
 
 void AProjectileWeapon::Fire(ABaseCharacter* player)
 {
@@ -90,6 +101,21 @@ void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player, const
 
 /** Drop Weapon */
 #pragma region DropWeapon()
+void AProjectileWeapon::DropWeapon(ABaseCharacter* player)
+{
+	if(player !=nullptr)
+	{
+		Server_DropWeapon(player);
+		ABaseCharacterController* myController = Cast<ABaseCharacterController>(player->Controller);
+		
+		if(myController != nullptr)
+		{
+			//myController->DisplayCrosshair(false);
+		}
+
+	}
+}
+
 void AProjectileWeapon::Server_DropWeapon_Implementation(ABaseCharacter* player)
 {
 	MultiCast_DropWeapon(player);
@@ -108,6 +134,23 @@ void AProjectileWeapon::MultiCast_DropWeapon_Implementation(ABaseCharacter* play
 
 /** Pickup Weapon */
 #pragma region PickUp()
+void AProjectileWeapon::PickUp(ABaseCharacter* player)
+{
+	if(player != nullptr)
+	{
+		Server_PickupWeapon(player);
+
+		ABaseCharacterController* myController = Cast<ABaseCharacterController>(player->Controller);
+		
+		if(myController != nullptr)
+		{
+			//myController->DisplayCrosshair(true);
+		}
+		
+	}
+}
+
+
 void AProjectileWeapon::Multicast_PickupWeapon_Implementation(ABaseCharacter* player)
 {
 	player->SetWeapon(this);
@@ -122,6 +165,7 @@ void AProjectileWeapon::Server_PickupWeapon_Implementation(ABaseCharacter* playe
 {
 	Multicast_PickupWeapon(player);
 	SetOwner(player);
+
 }
 #pragma endregion
 
@@ -174,6 +218,33 @@ void AProjectileWeapon::TraceUnderCosshairs(FHitResult& TraceHitResult)
 		}
 	}
 	
+}
+
+void AProjectileWeapon::SetHUDCrosshairs(float DeletaTime)
+{
+	if(OwnerCharacter == nullptr || OwnerCharacter->Controller == nullptr)
+	{
+		return ;
+	}
+
+	Controller = Controller == nullptr ? Cast<ABaseCharacterController>(OwnerCharacter->Controller) : Controller;
+
+	if(Controller)
+	{
+		HUD = HUD == nullptr ? Cast<AWeaponHUD>(Controller->GetHUD()) : HUD;
+
+		if(HUD)
+		{
+			FHUDStruct HudStruct;
+			HudStruct.CrosshairCenter = CrosshairsCenter;
+			HudStruct.CrosshairRight = CrosshairsRight;
+			HudStruct.CrosshairLeft = CrosshairsLeft;
+			HudStruct.CrosshairBottom = CrosshairsBottom;
+			HudStruct.CrosshairTop = CrosshairsTop;
+			HUD->SetHUDStruct(HudStruct);
+			bDisplayCrosshair = true;
+		}
+	}
 }
 #pragma endregion 
 

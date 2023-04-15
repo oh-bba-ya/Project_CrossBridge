@@ -2,6 +2,8 @@
 
 
 #include "Character/BaseCharacter.h"
+
+#include "BaseCharacterController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
@@ -9,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HUD/WeaponHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Weapon/Projectile.h"
@@ -84,6 +87,8 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Started, this, &ABaseCharacter::ContextualActionPressed);
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
 		EnhancedInputComponent->BindAction(InputDropWeaponAction, ETriggerEvent::Started,this,&ABaseCharacter::DropWeapon);
+		
+
 	}
 
 }
@@ -186,14 +191,6 @@ void ABaseCharacter::DeActivateJetPack()
 	Server_DeActivateJetPack();
 }
 
-void ABaseCharacter::SetCurrentHealth(float healthValue)
-{
-	if(GetLocalRole() == ROLE_Authority)
-	{
-		CurrentHP = FMath::Clamp(healthValue,0.f,MaxHP);
-		
-	}
-}
 void ABaseCharacter::Server_DeActivateJetPack_Implementation()
 {
 	bJetPackActive = false;
@@ -206,6 +203,15 @@ void ABaseCharacter::Server_DeActivateJetPack_Implementation()
 
 /** Health() */
 #pragma region Health()
+void ABaseCharacter::SetCurrentHealth(float healthValue)
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		CurrentHP = FMath::Clamp(healthValue,0.f,MaxHP);
+		
+	}
+}
+
 void ABaseCharacter::PlusHealth(int32 value)
 {
 	CurrentHP = FMath::Clamp(CurrentHP + value, 0.f,MaxHP);
@@ -249,8 +255,29 @@ void ABaseCharacter::DropWeapon()
 {
 	if(GetController() != nullptr && GetController()->IsLocalController() && myWeapon != nullptr)
 	{
-		myWeapon->Server_DropWeapon(this);
+		myWeapon->DropWeapon(this);
+		HideCrosshair();
 	}
+}
+
+void ABaseCharacter::HideCrosshair()
+{
+	ABaseCharacterController* controll = Cast<ABaseCharacterController>(GetController());
+	if(Controller)
+	{
+		AWeaponHUD* HUD = Cast<AWeaponHUD>(controll->GetHUD());
+		if(HUD)
+		{
+			FHUDStruct HudStruct;
+			HudStruct.CrosshairCenter = nullptr;
+			HudStruct.CrosshairRight = nullptr;
+			HudStruct.CrosshairLeft = nullptr;
+			HudStruct.CrosshairBottom = nullptr;
+			HudStruct.CrosshairTop = nullptr;
+			HUD->SetHUDStruct(HudStruct);
+		}
+	}
+	
 }
 
 

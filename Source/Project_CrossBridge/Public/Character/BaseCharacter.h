@@ -56,6 +56,7 @@ protected:
 	class UInputAction* InputDropWeaponAction;
 	
 	
+	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
@@ -174,10 +175,16 @@ private:
 	class AProjectileWeapon* myWeapon;
 public:
 	FORCEINLINE void SetWeapon(AProjectileWeapon* w) { myWeapon = w;}
+	FORCEINLINE AProjectileWeapon* GetOwningWeapon() {return myWeapon;}
 
 protected:
 	void DropWeapon();
+
 #pragma endregion
+
+
+private:
+	void HideCrosshair();
 	
 	
 };

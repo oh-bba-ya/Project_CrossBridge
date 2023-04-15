@@ -24,6 +24,9 @@ public:
 
 	FORCEINLINE UBaseCharacterWidget* GetBaseCharacterUI() {return baseCharacterUI;}
 
+
+
+
 private:
 	UBaseCharacterWidget* baseCharacterUI;
 	

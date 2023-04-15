@@ -13,7 +13,6 @@ void UBaseCharacterWidget::NativeConstruct()
 	
 	if(baseCharacter != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Widget"));
 		SetHealthBar(baseCharacter->GetCurrentHP(),baseCharacter->GetMaxHP());
 		SetFuelBar(baseCharacter->GetFuel(),baseCharacter->GetMaxFuel());
 	}
