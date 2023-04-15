@@ -6,6 +6,32 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
 
+#include "HeadMountedDisplayFunctionLibrary.h"
+#include "VRCharacter/VRPlayer.h"
+
+AProject_CrossBridgeGameModeBase::AProject_CrossBridgeGameModeBase()
+{
+	//ConstructorHelpers::FClassFinder<AVRPlayer> VRUser(TEXT("/Script/Engine.Blueprint'/Game/Blueprints/VRPlayer/BP_VRPlayer.BP_VRPlayer_C'"));
+	//if (VRUser.Succeeded())
+	//{
+	//	DefaultPawnClass = VRUser.Class;
+	//}
+}
+
+void AProject_CrossBridgeGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
+	{
+		DefaultPawnClass = VRUser;
+	}
+   
+}
+
+
+
+
 AActor* AProject_CrossBridgeGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 {
 	for(TActorIterator<APlayerStart> iter(GetWorld());iter;++iter)

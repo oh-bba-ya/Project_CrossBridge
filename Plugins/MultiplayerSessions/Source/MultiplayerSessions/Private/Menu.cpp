@@ -47,6 +47,7 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
 		MultiplayerSessionsSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);
 
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("MenuSetup")));
 	}
 
 }
@@ -176,4 +177,14 @@ void UMenu::MenuTearDown()
 		}
 	}
 
+}
+
+void UMenu::ClickJoinButton()
+{
+	if (MultiplayerSessionsSubsystem) {
+		MultiplayerSessionsSubsystem->FindSessions(10000);
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("ClickJoinButtonFindSession")));
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("ClickJoinButton")));
 }
