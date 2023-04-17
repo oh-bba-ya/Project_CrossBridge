@@ -106,13 +106,6 @@ void AProjectileWeapon::DropWeapon(ABaseCharacter* player)
 	if(player !=nullptr)
 	{
 		Server_DropWeapon(player);
-		ABaseCharacterController* myController = Cast<ABaseCharacterController>(player->Controller);
-		
-		if(myController != nullptr)
-		{
-			//myController->DisplayCrosshair(false);
-		}
-
 	}
 }
 
@@ -139,26 +132,21 @@ void AProjectileWeapon::PickUp(ABaseCharacter* player)
 	if(player != nullptr)
 	{
 		Server_PickupWeapon(player);
-
-		ABaseCharacterController* myController = Cast<ABaseCharacterController>(player->Controller);
-		
-		if(myController != nullptr)
-		{
-			//myController->DisplayCrosshair(true);
-		}
-		
 	}
 }
 
 
 void AProjectileWeapon::Multicast_PickupWeapon_Implementation(ABaseCharacter* player)
 {
-	player->SetWeapon(this);
-	BoxComponent->SetSimulatePhysics(false);
-	AttachToComponent(player->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("WeaponSocket"));
-	BoxComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
-	OwnerCharacter = player;
-	bEquippedWeapon = true;
+	if(player != nullptr)
+	{
+		player->SetWeapon(this);
+		BoxComponent->SetSimulatePhysics(false);
+		AttachToComponent(player->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("WeaponSocket"));
+		BoxComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+		OwnerCharacter = player;
+		bEquippedWeapon = true;
+	}
 }
 
 void AProjectileWeapon::Server_PickupWeapon_Implementation(ABaseCharacter* player)

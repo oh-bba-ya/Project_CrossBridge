@@ -14,7 +14,6 @@
 #include "HUD/WeaponHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-#include "Weapon/Projectile.h"
 #include "Weapon/ProjectileWeapon.h"
 
 
@@ -70,6 +69,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		AddMovementInput(FVector(0,0,1));
 	}
+	
 
 }
 
@@ -256,17 +256,20 @@ void ABaseCharacter::DropWeapon()
 	if(GetController() != nullptr && GetController()->IsLocalController() && myWeapon != nullptr)
 	{
 		myWeapon->DropWeapon(this);
-		HideCrosshair();
 	}
 }
 
+
+/*
 void ABaseCharacter::HideCrosshair()
 {
-	ABaseCharacterController* controll = Cast<ABaseCharacterController>(GetController());
-	if(Controller)
+	ABaseCharacterController* test = Cast<ABaseCharacterController>(GetController());
+	
+	
+	if(GetController() != nullptr && HasAuthority())
 	{
-		AWeaponHUD* HUD = Cast<AWeaponHUD>(controll->GetHUD());
-		if(HUD)
+		hud = Cast<AWeaponHUD>(test->GetHUD());
+		if(hud)
 		{
 			FHUDStruct HudStruct;
 			HudStruct.CrosshairCenter = nullptr;
@@ -274,11 +277,17 @@ void ABaseCharacter::HideCrosshair()
 			HudStruct.CrosshairLeft = nullptr;
 			HudStruct.CrosshairBottom = nullptr;
 			HudStruct.CrosshairTop = nullptr;
-			HUD->SetHUDStruct(HudStruct);
+			hud->SetHUDStruct(HudStruct);
+
+		}
+		else if(hud == nullptr)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("NUll HUD"));
 		}
 	}
 	
 }
+*/
 
 
 // 서버에 복제 등록하기 위한 함수

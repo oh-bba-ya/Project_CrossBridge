@@ -156,7 +156,7 @@ private:
 
 
 	/** Fire */
-#pragma region Weapon Properties
+#pragma region Weapon Fire
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
 	UAnimMontage* fireMontage;
@@ -182,9 +182,7 @@ protected:
 
 #pragma endregion
 
-
-private:
-	void HideCrosshair();
+	
 	
 	
 };
