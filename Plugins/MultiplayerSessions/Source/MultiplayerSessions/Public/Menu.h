@@ -20,6 +20,7 @@ public:
 		void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby")));
 
 protected:
+	virtual void NativeConstruct() override;
 	virtual bool Initialize() override;
 
 	virtual void NativeDestruct() override;
@@ -58,8 +59,27 @@ private:
 	FString MatchType{ TEXT("FreeForAll") };
 	FString PathToLobby{ TEXT("") };
 	
+	
 public:
 
 	UFUNCTION(BlueprintCallable)
 		void ClickJoinButton();
+
+	/** Login Properties*/
+#pragma region Login Properties
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UEditableText* editText_id;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UButton* btn_Start;
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UWidgetSwitcher* widgetSwitcher;
+
+private:
+	UFUNCTION()
+	void ClickStart();
+#pragma endregion 
 };

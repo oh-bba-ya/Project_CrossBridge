@@ -4,6 +4,7 @@
 #include "Character/BaseCharacter.h"
 
 #include "BaseCharacterController.h"
+#include "CrossPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
@@ -15,6 +16,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Weapon/ProjectileWeapon.h"
+#include "MultiplayerSessionsSubsystem.h"
+#include "Components/TextBlock.h"
+#include "HUD/OverheadWidget.h"
 
 
 // Sets default values
@@ -35,6 +39,8 @@ ABaseCharacter::ABaseCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+
+
 	
 }
 
@@ -42,7 +48,7 @@ ABaseCharacter::ABaseCharacter()
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	// Health 초기화.
 	if(HasAuthority())
 	{
@@ -55,6 +61,30 @@ void ABaseCharacter::BeginPlay()
 		}
 	}
 
+
+	// 내가 조종하는 캐릭터
+	if(GetController() != nullptr && GetController()->IsLocalController())
+	{
+		// Player Name
+		GameInstance = GetGameInstance();
+
+		if(GameInstance != nullptr)
+		{
+			MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
+			
+			if(MultiplayerSessionsSubsystem)
+			{
+				ServerSetName(MultiplayerSessionsSubsystem->SessionID.ToString());
+			}
+		}
+	}
+
+	
+
+	if(OverheadWidget)
+	{
+		overhead = Cast<UOverheadWidget>(OverheadWidget->GetWidget());
+	}
 	
 }
 
@@ -68,6 +98,11 @@ void ABaseCharacter::Tick(float DeltaTime)
 	if(bJetPackActive)
 	{
 		AddMovementInput(FVector(0,0,1));
+	}
+
+	if(overhead)
+	{
+		overhead->DisplayText->SetText(FText::FromString(myName));
 	}
 	
 
@@ -225,10 +260,6 @@ void ABaseCharacter::SubTractHealth(int32 value)
 #pragma endregion
 
 
-
-
-
-
 /** Fire */
 #pragma region Fire()
 
@@ -260,34 +291,21 @@ void ABaseCharacter::DropWeapon()
 }
 
 
-/*
-void ABaseCharacter::HideCrosshair()
-{
-	ABaseCharacterController* test = Cast<ABaseCharacterController>(GetController());
-	
-	
-	if(GetController() != nullptr && HasAuthority())
-	{
-		hud = Cast<AWeaponHUD>(test->GetHUD());
-		if(hud)
-		{
-			FHUDStruct HudStruct;
-			HudStruct.CrosshairCenter = nullptr;
-			HudStruct.CrosshairRight = nullptr;
-			HudStruct.CrosshairLeft = nullptr;
-			HudStruct.CrosshairBottom = nullptr;
-			HudStruct.CrosshairTop = nullptr;
-			hud->SetHUDStruct(HudStruct);
 
-		}
-		else if(hud == nullptr)
-		{
-			UE_LOG(LogTemp,Warning,TEXT("NUll HUD"));
-		}
+/** Player Name */
+void ABaseCharacter::ServerSetName_Implementation(const FString& name)
+{
+	myName = name;
+	
+	ACrossPlayerState* ps = Cast<ACrossPlayerState>(GetPlayerState());
+
+	if(ps!=nullptr)
+	{
+		ps->SetPlayerName(name);
 	}
 	
 }
-*/
+
 
 
 // 서버에 복제 등록하기 위한 함수
@@ -298,6 +316,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ABaseCharacter,bJetPackActive);
 	DOREPLIFETIME(ABaseCharacter, Fuel);
 	DOREPLIFETIME(ABaseCharacter, CurrentHP);
+	DOREPLIFETIME(ABaseCharacter, myName);
 	
 }
 

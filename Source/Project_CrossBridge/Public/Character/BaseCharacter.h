@@ -75,6 +75,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
 
+	
+private:
+	class UGameInstance* GameInstance;
+
+	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 
 	/** JetPack*/
 #pragma region Jetpack
@@ -182,6 +187,21 @@ protected:
 
 #pragma endregion
 
+
+/** Player Name*/
+#pragma region PlayerName
+
+public:
+
+	UPROPERTY(Replicated)
+	FString myName;
+	
+	UFUNCTION(Server, Unreliable)
+	void ServerSetName(const FString& name);
+	
+	class UOverheadWidget* overhead;
+
+#pragma endregion 
 	
 	
 	

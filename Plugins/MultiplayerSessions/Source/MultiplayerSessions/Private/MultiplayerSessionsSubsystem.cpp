@@ -75,6 +75,10 @@ void UMultiplayerSessionsSubsystem::FindSessions(int32 MaxSearchResults)
 
 		MultiplayerOnFindSessionsComplete.Broadcast(TArray<FOnlineSessionSearchResult>(), false);
 	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("Find Fail")));
+	}
 
 
 }

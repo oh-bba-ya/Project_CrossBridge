@@ -7,7 +7,8 @@
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
-
+#include "Components/EditableText.h"
+#include "Components/WidgetSwitcher.h"
 
 
 void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
@@ -50,6 +51,13 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("MenuSetup")));
 	}
 
+}
+
+void UMenu::NativeConstruct()
+{
+	editText_id->SetText(FText::FromString(""));
+
+	btn_Start->OnClicked.AddDynamic(this, &UMenu::ClickStart);
 }
 
 bool UMenu::Initialize()
@@ -139,10 +147,12 @@ void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 
 void UMenu::OnDestroySession(bool bWasSuccessful)
 {
+	
 }
 
 void UMenu::OnStartSession(bool bWasSuccessful)
 {
+	
 }
 
 void UMenu::HostButtonClicked()
@@ -150,7 +160,6 @@ void UMenu::HostButtonClicked()
 	HostButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem) {
 		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
-
 	}
 
 }
@@ -160,6 +169,7 @@ void UMenu::JoinButtonClicked()
 	JoinButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem) {
 		MultiplayerSessionsSubsystem->FindSessions(10000);
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("ClickJoinButtonFindSession")));
 	}
 }
 
@@ -188,4 +198,14 @@ void UMenu::ClickJoinButton()
 	}
 	
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("ClickJoinButton")));
+}
+
+void UMenu::ClickStart()
+{
+	// 만일, ID가 빈칸이 아니라면 0번-> 1번 캔버스로 변경
+	if(!editText_id->GetText().IsEmpty())
+	{
+		widgetSwitcher->SetActiveWidgetIndex(1);
+		MultiplayerSessionsSubsystem->SessionID = FName(*editText_id->GetText().ToString());
+	}
 }
