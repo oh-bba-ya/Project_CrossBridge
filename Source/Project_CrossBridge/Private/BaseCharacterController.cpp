@@ -18,4 +18,6 @@ void ABaseCharacterController::BeginPlay()
 			baseCharacterUI->AddToViewport();
 		}
 	}
+	
 }
+

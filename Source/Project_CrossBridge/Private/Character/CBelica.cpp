@@ -224,6 +224,7 @@ void ACBelica::Attack()
 	}
 }
 
+/*
 void ACBelica::Multicast_Attack_Implementation()
 {
 	if(FireMontage != nullptr)
@@ -231,11 +232,12 @@ void ACBelica::Multicast_Attack_Implementation()
 		PlayAnimMontage(FireMontage);
 	}
 }
+*/
 
 void ACBelica::Server_Attack_Implementation()
 {
 
-	Multicast_Attack();
+	//Multicast_Attack();
 
 }
 
@@ -254,8 +256,10 @@ void ACBelica::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 }
 
+
 void ACBelica::SetOverlappingWeapon(AWeapon* Weapon)
 {
+	/*
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(false);
@@ -270,7 +274,9 @@ void ACBelica::SetOverlappingWeapon(AWeapon* Weapon)
 			OverlappingWeapon->ShowPickupWidget(true);
 		}
 	}
+	*/
 }
+
 #pragma endregion 
 
 

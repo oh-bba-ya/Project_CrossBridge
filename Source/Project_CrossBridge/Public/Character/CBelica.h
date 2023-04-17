@@ -117,10 +117,11 @@ public:
 	*/
 #pragma endregion 
 
+	/*
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Fire)
 	UAnimMontage* FireMontage;
-
+	*/
 	/**  Aiming */
 #pragma region Aiming
 protected:
@@ -163,9 +164,10 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void Server_Attack();
 
+	/*
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_Attack();
-
+	*/
 	
 	
 	

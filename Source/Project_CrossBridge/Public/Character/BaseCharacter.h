@@ -20,6 +20,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BasePlayer Camera Settings")
 		class USpringArmComponent* springArmComp;
 
@@ -43,8 +51,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
 	class UInputAction* InputContextualAction;
-	
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputDropWeaponAction;
+	
+	
+	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
@@ -56,6 +68,7 @@ protected:
 	virtual void ContextualActionPressed();
 
 	virtual void ContextualActionReleased();
+	
 
 
 	/** overheadwidget */
@@ -139,12 +152,37 @@ private:
 	float CurrentHP;
 
 
-#pragma endregion 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+#pragma endregion
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/** Fire */
+#pragma region Weapon Fire
+protected:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
+	UAnimMontage* fireMontage;
+
+	UFUNCTION()
+	void Fire();
+	
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_Fire();
+#pragma endregion
+
+	
+	/** Weapon Pickup , Drop */
+#pragma region Weapon Properties
+private:
+	class AProjectileWeapon* myWeapon;
+public:
+	FORCEINLINE void SetWeapon(AProjectileWeapon* w) { myWeapon = w;}
+	FORCEINLINE AProjectileWeapon* GetOwningWeapon() {return myWeapon;}
+
+protected:
+	void DropWeapon();
+
+#pragma endregion
+
+	
+	
+	
 };

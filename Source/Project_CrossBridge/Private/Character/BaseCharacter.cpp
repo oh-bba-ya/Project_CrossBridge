@@ -2,6 +2,8 @@
 
 
 #include "Character/BaseCharacter.h"
+
+#include "BaseCharacterController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
@@ -9,7 +11,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HUD/WeaponHUD.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Weapon/ProjectileWeapon.h"
 
 
 // Sets default values
@@ -54,6 +59,7 @@ void ABaseCharacter::BeginPlay()
 }
 
 
+
 // Called every frame
 void ABaseCharacter::Tick(float DeltaTime)
 {
@@ -63,6 +69,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		AddMovementInput(FVector(0,0,1));
 	}
+	
 
 }
 
@@ -79,6 +86,9 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputAttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Started, this, &ABaseCharacter::ContextualActionPressed);
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
+		EnhancedInputComponent->BindAction(InputDropWeaponAction, ETriggerEvent::Started,this,&ABaseCharacter::DropWeapon);
+		
+
 	}
 
 }
@@ -121,6 +131,7 @@ void ABaseCharacter::Jump()
 void ABaseCharacter::Attack()
 {
 	UE_LOG(LogTemp,Warning,TEXT("Base Attack"));
+	Fire();
 }
 
 void ABaseCharacter::ContextualActionPressed()
@@ -180,6 +191,18 @@ void ABaseCharacter::DeActivateJetPack()
 	Server_DeActivateJetPack();
 }
 
+void ABaseCharacter::Server_DeActivateJetPack_Implementation()
+{
+	bJetPackActive = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	GetCharacterMovement()->AirControl= 0.2f;
+	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ABaseCharacter::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
+}
+
+#pragma endregion
+
+/** Health() */
+#pragma region Health()
 void ABaseCharacter::SetCurrentHealth(float healthValue)
 {
 	if(GetLocalRole() == ROLE_Authority)
@@ -199,16 +222,72 @@ void ABaseCharacter::SubTractHealth(int32 value)
 	CurrentHP = FMath::Clamp(CurrentHP - value, 0.f,MaxHP);
 }
 
+#pragma endregion
 
-void ABaseCharacter::Server_DeActivateJetPack_Implementation()
+
+
+
+
+
+/** Fire */
+#pragma region Fire()
+
+void ABaseCharacter::Fire()
 {
-	bJetPackActive = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-	GetCharacterMovement()->AirControl= 0.2f;
-	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ABaseCharacter::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
+	if(myWeapon != nullptr)
+	{
+		myWeapon->Fire(this);
+	}
 }
 
+void ABaseCharacter::Multicast_Fire_Implementation()
+{
+	if(fireMontage !=nullptr)
+	{
+		PlayAnimMontage(fireMontage);
+	}
+}
 #pragma endregion
+
+
+/** Weapon */
+void ABaseCharacter::DropWeapon()
+{
+	if(GetController() != nullptr && GetController()->IsLocalController() && myWeapon != nullptr)
+	{
+		myWeapon->DropWeapon(this);
+	}
+}
+
+
+/*
+void ABaseCharacter::HideCrosshair()
+{
+	ABaseCharacterController* test = Cast<ABaseCharacterController>(GetController());
+	
+	
+	if(GetController() != nullptr && HasAuthority())
+	{
+		hud = Cast<AWeaponHUD>(test->GetHUD());
+		if(hud)
+		{
+			FHUDStruct HudStruct;
+			HudStruct.CrosshairCenter = nullptr;
+			HudStruct.CrosshairRight = nullptr;
+			HudStruct.CrosshairLeft = nullptr;
+			HudStruct.CrosshairBottom = nullptr;
+			HudStruct.CrosshairTop = nullptr;
+			hud->SetHUDStruct(HudStruct);
+
+		}
+		else if(hud == nullptr)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("NUll HUD"));
+		}
+	}
+	
+}
+*/
 
 
 // 서버에 복제 등록하기 위한 함수

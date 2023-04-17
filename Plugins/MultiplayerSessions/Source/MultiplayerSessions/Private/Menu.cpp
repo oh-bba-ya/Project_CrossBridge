@@ -27,7 +27,7 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 			FInputModeUIOnly InputModeData;
 			InputModeData.SetWidgetToFocus(TakeWidget());
 			
-			// DoNotLock : ºäÆ÷Æ® ¼Ó¿¡ ¸¶¿ì½º¸¦ °¡µÎÁö ¾Ê´Â´Ù.
+			// DoNotLock : ë·°í¬íŠ¸ ì†ì— ë§ˆìš°ìŠ¤ë¥¼ ê°€ë‘ì§€ ì•ŠëŠ”ë‹¤.
 			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 
 			PlayerController->SetInputMode(InputModeData);
@@ -162,6 +162,7 @@ void UMenu::JoinButtonClicked()
 		MultiplayerSessionsSubsystem->FindSessions(10000);
 	}
 }
+
 
 void UMenu::MenuTearDown()
 {
