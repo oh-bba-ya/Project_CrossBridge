@@ -19,6 +19,12 @@
 #include "MultiplayerSessionsSubsystem.h"
 #include "Components/TextBlock.h"
 #include "HUD/OverheadWidget.h"
+#include "EnhancedInputSubsystemInterface.h"
+#include "MotionControllerComponent.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
+#include "Components/BoxComponent.h"
+#include "Objects/BaseGrabbableActor.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -40,6 +46,75 @@ ABaseCharacter::ABaseCharacter()
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	VRCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("VRCamera"));
+	VRCamera->SetupAttachment(RootComponent);
+	VRCamera->bUsePawnControlRotation = true;
+
+	LeftHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftHand"));
+	LeftHand->SetupAttachment(RootComponent);
+	LeftHand->SetTrackingMotionSource(FName("Left"));
+
+	RightHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightHand"));
+	RightHand->SetupAttachment(RootComponent);
+	RightHand->SetTrackingMotionSource(FName("Right"));
+
+	LeftGrip = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftGrip"));
+	LeftGrip->SetupAttachment(RootComponent);
+	LeftGrip->SetTrackingMotionSource(FName("LeftGrip"));
+
+	LeftAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftAim"));
+	LeftAim->SetupAttachment(RootComponent);
+	LeftAim->SetTrackingMotionSource(FName("LeftAim"));
+
+	RightAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightAim"));
+	RightAim->SetupAttachment(RootComponent);
+	RightAim->SetTrackingMotionSource(FName("RightAim"));
+
+	LeftHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftHandBox"));
+	LeftHandBox->SetupAttachment(LeftHand);
+	LeftHandBox->SetRelativeLocation(FVector(3, 1, -4));
+	LeftHandBox->SetBoxExtent(FVector(5));
+
+	RightHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightHandBox"));
+	RightHandBox->SetupAttachment(RightHand);
+	RightHandBox->SetRelativeLocation(FVector(3, -1, -4));
+	RightHandBox->SetBoxExtent(FVector(5));
+
+	LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftHandMesh"));
+	LeftHandMesh->SetupAttachment(LeftHand);
+	ConstructorHelpers::FObjectFinder<USkeletalMesh>LeftMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_left.SKM_MannyXR_left'"));
+	if (LeftMesh.Succeeded())
+	{
+		LeftHandMesh->SetSkeletalMesh(LeftMesh.Object);
+		LeftHandMesh->SetRelativeRotation(FRotator(-25, -180, 90));
+	}
+
+	RightHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightHandMesh"));
+	RightHandMesh->SetupAttachment(RightHand);
+	ConstructorHelpers::FObjectFinder<USkeletalMesh>RightMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_right.SKM_MannyXR_right'"));
+	if (RightMesh.Succeeded())
+	{
+		RightHandMesh->SetSkeletalMesh(RightMesh.Object);
+		RightHandMesh->SetRelativeRotation(FRotator(25, 0, 90));
+	}
+
+	ConstructorHelpers::FClassFinder<UAnimInstance>HandAnim(TEXT("/Script/Engine.AnimBlueprint'/Game/Characters/MannequinsXR/Meshes/ABP_MannequinsXR.ABP_MannequinsXR_C'"));
+	if (HandAnim.Succeeded())
+	{
+		LeftHandMesh->SetAnimInstanceClass(HandAnim.Class);
+		RightHandMesh->SetAnimInstanceClass(HandAnim.Class);
+	}
+
+	LeftHandBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnLeftHandOverlap);
+	LeftHandBox->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnLeftHandEndOverlap);
+	RightHandBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandOverlap);
+	RightHandBox->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandEndOverlap);
 
 	
 }
@@ -58,6 +133,8 @@ void ABaseCharacter::BeginPlay()
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController())) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->AddMappingContext(BaseContext, 0);
+			Subsystem->AddMappingContext(IMC_VRInput, 0);
+			Subsystem->AddMappingContext(IMC_VRHand, 0);
 		}
 	}
 
@@ -85,6 +162,80 @@ void ABaseCharacter::BeginPlay()
 	{
 		overhead = Cast<UOverheadWidget>(OverheadWidget->GetWidget());
 	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	if (GetController() && GetController()->IsLocalController())
+	{
+
+		if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
+		{
+			UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
+	
+			GetMesh()->SetVisibility(false);
+			GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			camComp->SetActive(false);
+			VRCamera->SetActive(true);
+			
+			LeftHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			RightHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
+			LeftHandMesh->SetVisibility(true);
+			LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
+			RightHandMesh->SetVisibility(true);
+			RightHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
+			LeftGrip->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			RightAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			LeftAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			LeftHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			RightHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
+	
+			
+		}
+		else
+		{
+			LeftHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			RightHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+			LeftHandMesh->SetVisibility(false);
+			LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+			RightHandMesh->SetVisibility(false);
+			RightHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+			LeftGrip->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			RightAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			LeftAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			LeftHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			RightHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			
+			camComp->SetActive(true);
+			VRCamera->SetActive(false);
+	
+	
+			GetMesh()->SetVisibility(true);
+			GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		
+	
+		}
+	}
+
+	UMaterialInterface* LeftHandBase = LeftHandMesh->GetMaterial(0);
+	if (LeftHandBase)
+	{
+		LeftHandMat = LeftHandMesh->CreateDynamicMaterialInstance(0, LeftHandBase);
+	}
+	UMaterialInterface* RightHandBase = RightHandMesh->GetMaterial(0);
+	if (RightHandBase)
+	{
+		RightHandMat = RightHandMesh->CreateDynamicMaterialInstance(0, RightHandBase);
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
+	}
 	
 }
 
@@ -105,6 +256,21 @@ void ABaseCharacter::Tick(float DeltaTime)
 		overhead->DisplayText->SetText(FText::FromString(myName));
 	}
 	
+	SetGrabInfo();
+
+	if (IsLeftY)
+	{
+		LeftYTimer += DeltaTime;
+		if (LeftYTimer / 5 <= 1)
+		{
+
+			//ColorChange(LeftYTimer / 5, FString("Left"));
+			ServerColorChange(LeftYTimer / 5, FString("Left"));
+		}
+
+	}
+
+
 
 }
 
@@ -114,6 +280,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
+
 		EnhancedInputComponent->BindAction(InputMovementAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
 		EnhancedInputComponent->BindAction(InputJumpAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Jump);
@@ -123,6 +290,24 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
 		EnhancedInputComponent->BindAction(InputDropWeaponAction, ETriggerEvent::Started,this,&ABaseCharacter::DropWeapon);
 		
+		
+
+		
+		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABaseCharacter::VRMove);
+		EnhancedInputComponent->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &ABaseCharacter::Turn);
+		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftIndexCurl);
+		EnhancedInputComponent->BindAction(IA_LeftGrasp, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftGrasp);
+		EnhancedInputComponent->BindAction(IA_LeftY, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftY);
+		EnhancedInputComponent->BindAction(IA_RightIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::RightIndexCurl);
+		EnhancedInputComponent->BindAction(IA_RightGrasp, ETriggerEvent::Triggered, this, &ABaseCharacter::RightGrasp);
+		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Completed, this, &ABaseCharacter::LeftIndexCurlEnd);
+		EnhancedInputComponent->BindAction(IA_LeftGrasp, ETriggerEvent::Completed, this, &ABaseCharacter::LeftGraspEnd);
+		EnhancedInputComponent->BindAction(IA_LeftY, ETriggerEvent::Completed, this, &ABaseCharacter::LeftYEnd);
+		EnhancedInputComponent->BindAction(IA_RightIndexCurl, ETriggerEvent::Completed, this, &ABaseCharacter::RightIndexCurlEnd);
+		EnhancedInputComponent->BindAction(IA_RightGrasp, ETriggerEvent::Completed, this, &ABaseCharacter::RightGraspEnd);
+		
+
+
 
 	}
 
@@ -320,4 +505,284 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void ABaseCharacter::VRMove(const FInputActionValue& Values)
+{
+	FVector2D Axis = Values.Get<FVector2D>();
+
+	AddMovementInput(GetActorForwardVector(), Axis.X);
+	AddMovementInput(GetActorRightVector(), Axis.Y);
+
+
+}
+
+void ABaseCharacter::Turn(const FInputActionValue& Values)
+{
+	FVector2D Axis = Values.Get<FVector2D>();
+
+	AddControllerYawInput(Axis.X);
+	AddControllerPitchInput(Axis.Y);
+
+}
+
+
+
+void ABaseCharacter::LeftIndexCurl()
+{
+	IsLeftIndexCurl = true;
+	if (GrabbedActorLeft && IsLeftGrasp && !IsLeftGrab)
+	{
+		GrabTheActor(GrabbedActorLeft, FString("Left"));
+	}
+}
+
+void ABaseCharacter::LeftGrasp()
+{
+	IsLeftGrasp = true;
+	if (GrabbedActorLeft && IsLeftIndexCurl && !IsLeftGrab)
+	{
+		GrabTheActor(GrabbedActorLeft, FString("Left"));
+	}
+}
+
+void ABaseCharacter::LeftY()
+{
+	if (!IsLeftIndexCurl && !IsLeftGrasp)
+	{
+		IsLeftY = true;
+	}
+}
+void ABaseCharacter::LeftYEnd()
+{
+	if (LeftYTimer > 1)
+	{
+		ServerSpawnGrabbableActor();
+	}
+	IsLeftY = false;
+	LeftYTimer = 0;
+	//ResetColorChange(FString("Left"));
+	ServerResetColorChange(FString("Left"));
+}
+
+void ABaseCharacter::RightIndexCurl()
+{
+	IsRightIndexCurl = true;
+	if (GrabbedActorRight && IsRightGrasp && !IsRightGrab)
+	{
+		GrabTheActor(GrabbedActorRight, FString("Right"));
+		RightPrevLoc = RightHand->GetComponentLocation();
+		RightPrevRot = RightHand->GetComponentQuat();
+	}
+}
+
+void ABaseCharacter::RightGrasp()
+{
+	IsRightGrasp = true;
+	if (GrabbedActorRight && IsRightIndexCurl && !IsRightGrab)
+	{
+		GrabTheActor(GrabbedActorRight, FString("Right"));
+		RightPrevLoc = RightHand->GetComponentLocation();
+		RightPrevRot = RightHand->GetComponentQuat();
+	}
+
+}
+void ABaseCharacter::LeftIndexCurlEnd()
+{
+	IsLeftIndexCurl = false;
+	if (IsLeftGrab)
+	{
+		UnGrabTheActor(GrabbedActorLeft, FString("Left"));
+	}
+}
+
+void ABaseCharacter::LeftGraspEnd()
+{
+	IsLeftGrasp = false;
+	if (IsLeftGrab)
+	{
+		UnGrabTheActor(GrabbedActorLeft, FString("Left"));
+	}
+}
+
+void ABaseCharacter::RightIndexCurlEnd()
+{
+	IsRightIndexCurl = false;
+	if (IsRightGrab)
+	{
+		UnGrabTheActor(GrabbedActorRight, FString("Right"));
+
+	}
+}
+
+void ABaseCharacter::RightGraspEnd()
+{
+	IsRightGrasp = false;
+	if (IsRightGrab)
+	{
+		UnGrabTheActor(GrabbedActorRight, FString("Right"));
+
+	}
+
+}
+
+void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!GrabbedActorLeft)
+	{
+		GrabbedActorLeft = Cast<ABaseGrabbableActor>(OtherActor);
+	}
+
+}
+
+void ABaseCharacter::OnLeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (GrabbedActorLeft && GrabbedActorLeft == Cast<ABaseGrabbableActor>(OtherActor))
+	{
+		GrabbedActorLeft = NULL;
+	}
+
+}
+
+void ABaseCharacter::OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!GrabbedActorRight)
+	{
+		GrabbedActorRight = Cast<ABaseGrabbableActor>(OtherActor);
+	}
+
+}
+
+void ABaseCharacter::OnRightHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (GrabbedActorRight && GrabbedActorRight == Cast<ABaseGrabbableActor>(OtherActor))
+	{
+		GrabbedActorRight = NULL;
+	}
+
+}
+
+void ABaseCharacter::GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition)
+{
+	GrabbedActor->MeshComp->SetSimulatePhysics(false);
+	if (GrabPosition == FString("Left"))
+	{
+		IsLeftGrab = true;
+		GrabbedActor->AttachToComponent(LeftHand, FAttachmentTransformRules::KeepWorldTransform);
+	}
+	else if (GrabPosition == FString("Right"))
+	{
+		IsRightGrab = true;
+		GrabbedActor->AttachToComponent(RightHand, FAttachmentTransformRules::KeepWorldTransform);
+	}
+
+}
+
+void ABaseCharacter::UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition)
+{
+	GrabbedActor->MeshComp->SetSimulatePhysics(true);
+	GrabbedActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	if (GrabPosition == FString("Left"))
+	{
+		IsLeftGrab = false;
+		GrabbedActorLeft = NULL;
+	}
+	else if (GrabPosition == FString("Right"))
+	{
+		IsRightGrab = false;
+		GrabbedActor->MeshComp->AddForce(ThrowPower * RightThrowDir);
+
+		float Angle;
+		FVector Axis;
+		float dt = GetWorld()->DeltaTimeSeconds;
+		RightThrowRot.ToAxisAndAngle(Axis, Angle);
+		FVector AngularVelocity = (1.0f / dt) * Angle * Axis;
+		GrabbedActor->MeshComp->SetPhysicsAngularVelocityInRadians(AngularVelocity * ToquePower, true);
+
+		GrabbedActorRight = NULL;
+	}
+
+}
+
+void ABaseCharacter::SetGrabInfo()
+{
+	if (IsRightGrab)
+	{
+		RightThrowDir = RightHand->GetComponentLocation() - RightPrevLoc;
+		RightThrowRot = RightHand->GetComponentQuat() * RightPrevRot.Inverse();
+
+		RightPrevLoc = RightHand->GetComponentLocation();
+		RightPrevRot = RightHand->GetComponentQuat();
+	}
+}
+
+void ABaseCharacter::ColorChange(float Rate, FString Position)
+{
+	if (Position == FString("Left"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(1, 1, 1), FVector(0, 1, 0), Rate);
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+	else if (Position == FString("Right"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0, 0), FVector(1, 0, 0), Rate);
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+}
+
+void ABaseCharacter::ServerColorChange_Implementation(float Rate, const FString& Position)
+{
+	MulticastColorChange(Rate, Position);
+}
+void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FString& Position)
+{
+	if (Position == FString("Left"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(1, 1, 1), FVector(0, 1, 0), Rate);
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+	else if (Position == FString("Right"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0, 0), FVector(1, 0, 0), Rate);
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+}
+
+void ABaseCharacter::ResetColorChange(FString Position)
+{
+	if (Position == FString("Left"))
+	{
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(1, 1, 1));
+	}
+	else if (Position == FString("Right"))
+	{
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
+	}
+}
+
+void ABaseCharacter::ServerResetColorChange_Implementation(const FString& Position)
+{
+	MulticastResetColorChange(Position);
+}
+
+
+void ABaseCharacter::MulticastResetColorChange_Implementation(const FString& Position)
+{
+	if (Position == FString("Left"))
+	{
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(1, 1, 1));
+	}
+	else if (Position == FString("Right"))
+	{
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
+	}
+}
+void ABaseCharacter::ServerSpawnGrabbableActor_Implementation()
+{
+	ABaseGrabbableActor* GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+}

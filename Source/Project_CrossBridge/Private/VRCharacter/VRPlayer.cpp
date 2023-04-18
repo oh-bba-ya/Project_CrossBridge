@@ -10,6 +10,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Objects/BaseGrabbableActor.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -29,6 +30,10 @@ AVRPlayer::AVRPlayer()
 	RightHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightHand"));
 	RightHand->SetupAttachment(RootComponent);
 	RightHand->SetTrackingMotionSource(FName("Right"));
+
+	LeftGrip = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftGrip"));
+	LeftGrip->SetupAttachment(RootComponent);
+	LeftGrip->SetTrackingMotionSource(FName("LeftGrip"));
 
 	RightAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightAim"));
 	RightAim->SetupAttachment(RootComponent);
@@ -99,8 +104,20 @@ void AVRPlayer::BeginPlay()
 	{
 		UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
 	}
+	UMaterialInterface* LeftHandBase = LeftHandMesh->GetMaterial(0);
+	if (LeftHandBase)
+	{
+		LeftHandMat = LeftHandMesh->CreateDynamicMaterialInstance(0, LeftHandBase);
+	}
+	UMaterialInterface* RightHandBase = RightHandMesh->GetMaterial(0);
+	if (RightHandBase)
+	{
+		RightHandMat = RightHandMesh->CreateDynamicMaterialInstance(0, RightHandBase);
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
+	}
 
 }
+
 
 // Called every frame
 void AVRPlayer::Tick(float DeltaTime)
@@ -108,6 +125,18 @@ void AVRPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SetGrabInfo();
+
+	if (IsLeftY)
+	{
+		LeftYTimer += DeltaTime;
+		if (LeftYTimer / 5 <= 1)
+		{
+
+			//ColorChange(LeftYTimer / 5, FString("Left"));
+			ServerColorChange(LeftYTimer / 5, FString("Left"));
+		}
+
+	}
 }
 
 // Called to bind functionality to input
@@ -122,10 +151,12 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		InputSystem->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &AVRPlayer::Turn);
 		InputSystem->BindAction(IA_LeftIndexCurl, ETriggerEvent::Triggered, this, &AVRPlayer::LeftIndexCurl);
 		InputSystem->BindAction(IA_LeftGrasp, ETriggerEvent::Triggered, this, &AVRPlayer::LeftGrasp);
+		InputSystem->BindAction(IA_LeftY, ETriggerEvent::Triggered, this, &AVRPlayer::LeftY);
 		InputSystem->BindAction(IA_RightIndexCurl, ETriggerEvent::Triggered, this, &AVRPlayer::RightIndexCurl);
 		InputSystem->BindAction(IA_RightGrasp, ETriggerEvent::Triggered, this, &AVRPlayer::RightGrasp);	
 		InputSystem->BindAction(IA_LeftIndexCurl, ETriggerEvent::Completed, this, &AVRPlayer::LeftIndexCurlEnd);
 		InputSystem->BindAction(IA_LeftGrasp, ETriggerEvent::Completed, this, &AVRPlayer::LeftGraspEnd);
+		InputSystem->BindAction(IA_LeftY, ETriggerEvent::Completed, this, &AVRPlayer::LeftYEnd);
 		InputSystem->BindAction(IA_RightIndexCurl, ETriggerEvent::Completed, this, &AVRPlayer::RightIndexCurlEnd);
 		InputSystem->BindAction(IA_RightGrasp, ETriggerEvent::Completed, this, &AVRPlayer::RightGraspEnd);
 	}
@@ -167,6 +198,25 @@ void AVRPlayer::LeftGrasp()
 	{
 		GrabTheActor(GrabbedActorLeft, FString("Left"));
 	}
+}
+
+void AVRPlayer::LeftY()
+{
+	if (!IsLeftIndexCurl && !IsLeftGrasp)
+	{
+		IsLeftY = true;
+	}
+}
+void AVRPlayer::LeftYEnd()
+{
+	if (LeftYTimer > 1)
+	{
+		ServerSpawnGrabbableActor();
+	}
+	IsLeftY = false;
+	LeftYTimer = 0;
+	//ResetColorChange(FString("Left"));
+	ServerResetColorChange(FString("Left"));
 }
 
 void AVRPlayer::RightIndexCurl()
@@ -318,4 +368,70 @@ void AVRPlayer::SetGrabInfo()
 		RightPrevLoc = RightHand->GetComponentLocation();
 		RightPrevRot = RightHand->GetComponentQuat();
 	}
+}
+
+void AVRPlayer::ColorChange(float Rate, FString Position)
+{
+	if (Position == FString("Left"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(1, 1, 1), FVector(0, 1, 0), Rate);
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+	else if (Position == FString("Right"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0, 0), FVector(1, 0, 0), Rate);
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+}
+
+void AVRPlayer::ServerColorChange_Implementation(float Rate, const FString& Position)
+{
+	MulticastColorChange(Rate, Position);
+}
+void AVRPlayer::MulticastColorChange_Implementation(float Rate, const FString& Position)
+{
+	if (Position == FString("Left"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(1, 1, 1), FVector(0, 1, 0), Rate);
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+	else if (Position == FString("Right"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0, 0), FVector(1, 0, 0), Rate);
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+}
+
+void AVRPlayer::ResetColorChange(FString Position)
+{
+	if (Position == FString("Left"))
+	{
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(1, 1, 1));
+	}
+	else if (Position == FString("Right"))
+	{
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
+	}
+}
+
+void AVRPlayer::ServerResetColorChange_Implementation(const FString& Position)
+{
+	MulticastResetColorChange(Position);
+}
+
+
+void AVRPlayer::MulticastResetColorChange_Implementation(const FString& Position)
+{
+	if (Position == FString("Left"))
+	{
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(1, 1, 1));
+	}
+	else if (Position == FString("Right"))
+	{
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
+	}
+}
+void AVRPlayer::ServerSpawnGrabbableActor_Implementation()
+{
+	ABaseGrabbableActor* GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
 }

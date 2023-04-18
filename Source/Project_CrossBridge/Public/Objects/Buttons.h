@@ -40,8 +40,9 @@ public:
 
 public:
 
-	class AVRPlayer* Player;
-
+	
+	//class AVRPlayer* Player;
+	class ABaseCharacter* Player;
 	UPROPERTY()
 	float Timer;
 	bool IsPressed;

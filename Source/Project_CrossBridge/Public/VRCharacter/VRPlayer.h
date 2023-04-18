@@ -42,6 +42,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_LeftGrasp;	
 	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_LeftY;
+		UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_RightIndexCurl;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_RightGrasp;
@@ -58,20 +60,32 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UMotionControllerComponent* RightHand;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UMotionControllerComponent* LeftGrip;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UMotionControllerComponent* RightAim;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UMotionControllerComponent* LeftAim;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UBoxComponent* LeftHandBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UBoxComponent* RightHandBox;
+	UPROPERTY()
+		class UMaterialInstanceDynamic* LeftHandMat;
+	UPROPERTY()
+		class UMaterialInstanceDynamic* RightHandMat;
+
 
 	void Move(const FInputActionValue& Values);
 	void Turn(const FInputActionValue& Values);
 	void LeftIndexCurl();
 	void LeftGrasp();
+	void LeftY();
 	void RightIndexCurl();
 	void RightGrasp();
 	void	LeftIndexCurlEnd();
 	void	LeftGraspEnd();
+	void LeftYEnd();
 	void	RightIndexCurlEnd();
 	void RightGraspEnd();
 
@@ -94,9 +108,13 @@ public:
 		float ThrowPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float ToquePower;
+
+	UPROPERTY()
+		float LeftYTimer;
 	
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
+	bool IsLeftY;
 	bool IsRightIndexCurl;
 	bool IsRightGrasp;
 	
@@ -108,10 +126,29 @@ public:
 	UPROPERTY()
 		class ABaseGrabbableActor* GrabbedActorRight;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
+
+
 	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
 	void UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
 	
 	void SetGrabInfo();
+
+	void ColorChange(float Rate, FString Position);
+	void ResetColorChange(FString Position);
+
+	UFUNCTION(Server, Unreliable)
+		void ServerColorChange(float Rate, const FString& Position);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastColorChange(float Rate, const FString& Position);
+	UFUNCTION(Server, Unreliable)
+		void ServerResetColorChange(const FString& Position);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastResetColorChange(const FString& Position);
+	UFUNCTION(Server, Unreliable)
+		void ServerSpawnGrabbableActor();
+
 
 	
 };
