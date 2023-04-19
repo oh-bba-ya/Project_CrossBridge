@@ -227,6 +227,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_LeftY;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_LeftX;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_RightIndexCurl;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_RightGrasp;
@@ -263,11 +265,13 @@ public:
 	void LeftIndexCurl();
 	void LeftGrasp();
 	void LeftY();
+	void LeftX();
 	void RightIndexCurl();
 	void RightGrasp();
 	void	LeftIndexCurlEnd();
 	void	LeftGraspEnd();
 	void LeftYEnd();
+	void LeftXEnd();
 	void	RightIndexCurlEnd();
 	void RightGraspEnd();
 
@@ -291,12 +295,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float ToquePower;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float BlackHoleForwardPower = 2000;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Gravity = -4000;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float UnitTime = 0.2;
+
 	UPROPERTY()
 		float LeftYTimer;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float LeftYCastTime = 5;
+	UPROPERTY()
+		float LeftXTimer;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float LeftXCastTime = 5;
+
+	bool IsVR;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
 	bool IsLeftY;
+	bool IsLeftX;
 	bool IsRightIndexCurl;
 	bool IsRightGrasp;
 
@@ -304,18 +324,28 @@ public:
 	bool IsRightGrab;
 
 	UPROPERTY()
+		TArray<FVector> LeftXTraces;
+
+	UPROPERTY()
 		class ABaseGrabbableActor* GrabbedActorLeft;
 	UPROPERTY()
 		class ABaseGrabbableActor* GrabbedActorRight;
 
+	UPROPERTY()
+		class ABlackhole* Blackhole;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class ABlackhole> SpawnBlackhole;
 
 
 	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
 	void UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
 
 	void SetGrabInfo();
+
+	FVector BlackHoleTrace();
 
 	void ColorChange(float Rate, FString Position);
 	void ResetColorChange(FString Position);
@@ -331,7 +361,27 @@ public:
 	UFUNCTION(Server, Unreliable)
 		void ServerSpawnGrabbableActor();
 
+	UFUNCTION(Server, Unreliable)
+		void ServerVRSetting();
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastVRSetting();
 
-	
+	UFUNCTION(Server, Unreliable)
+		void ServerPCSetting();
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastPCSetting();
+
+	UFUNCTION(Server, Unreliable)
+		void ServerBlackholeSet(float Rate, FVector Loc);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastBlackholeSet(float Rate, FVector Loc);
+	UFUNCTION(Server, Unreliable)
+		void ServerBlackholeReset();
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastBlackholeReset();
+	UFUNCTION(Server, Unreliable)
+		void ServerHandTransform(FTransform LeftTransform, FTransform RightTransform);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastHandTransform(FTransform LeftTransform, FTransform RightTransform);
 	
 };

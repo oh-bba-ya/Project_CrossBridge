@@ -25,6 +25,7 @@
 #include "Components/BoxComponent.h"
 #include "Objects/BaseGrabbableActor.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Objects/Blackhole.h"
 
 
 // Sets default values
@@ -33,6 +34,9 @@ ABaseCharacter::ABaseCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	bReplicates = true;
+	SetReplicateMovement(true);
+	SetReplicates(true);
 
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
@@ -169,59 +173,16 @@ void ABaseCharacter::BeginPlay()
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	if (GetController() && GetController()->IsLocalController())
 	{
-
-		if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
+		IsVR = UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled();
+		if (IsVR)
 		{
 			UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
 	
-			GetMesh()->SetVisibility(false);
-			GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			camComp->SetActive(false);
-			VRCamera->SetActive(true);
-			
-			LeftHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			RightHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	
-			LeftHandMesh->SetVisibility(true);
-			LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	
-			RightHandMesh->SetVisibility(true);
-			RightHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	
-			LeftGrip->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			RightAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			LeftAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			LeftHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			RightHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	
-	
-			
+			ServerVRSetting();
 		}
 		else
 		{
-			LeftHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			RightHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	
-			LeftHandMesh->SetVisibility(false);
-			LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	
-			RightHandMesh->SetVisibility(false);
-			RightHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	
-			LeftGrip->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			RightAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			LeftAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			LeftHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			RightHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			
-			camComp->SetActive(true);
-			VRCamera->SetActive(false);
-	
-	
-			GetMesh()->SetVisibility(true);
-			GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		
-	
+			ServerPCSetting();
 		}
 	}
 
@@ -255,21 +216,47 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		overhead->DisplayText->SetText(FText::FromString(myName));
 	}
+	if (IsVR)
+	{
+		ServerHandTransform(LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, *LeftHand->GetRelativeLocation().ToString());
+	}
 	
 	SetGrabInfo();
 
 	if (IsLeftY)
 	{
 		LeftYTimer += DeltaTime;
-		if (LeftYTimer / 5 <= 1)
+		if (LeftYTimer / LeftYCastTime <= 1)
 		{
 
 			//ColorChange(LeftYTimer / 5, FString("Left"));
-			ServerColorChange(LeftYTimer / 5, FString("Left"));
+			ServerColorChange(LeftYTimer / LeftYCastTime, FString("LeftY"));
+			
 		}
 
 	}
 
+	if (IsLeftX)
+	{
+		if (!Blackhole) 
+		{
+			Blackhole = Cast<ABlackhole>(UGameplayStatics::GetActorOfClass(GetWorld(), ABlackhole::StaticClass()));
+		}
+		FVector BlackHoleLoc = BlackHoleTrace();
+		LeftXTimer += DeltaTime;
+		if (LeftXTimer / LeftXCastTime <= 1)
+		{ 
+			ServerColorChange(LeftXTimer / LeftXCastTime, FString("LeftX"));
+			//Blackhole->ServerBlackholeSize(LeftXTimer / LeftXCastTime);
+			ServerBlackholeSet(LeftXTimer / LeftXCastTime, BlackHoleLoc);
+		}
+
+	}
+
+	//FVector StartPos = LeftGrip->GetComponentLocation();
+	//FVector EndPos = StartPos + LeftGrip->GetRightVector() * 1000;
+	//DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
 
 
 }
@@ -298,11 +285,13 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftIndexCurl);
 		EnhancedInputComponent->BindAction(IA_LeftGrasp, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftGrasp);
 		EnhancedInputComponent->BindAction(IA_LeftY, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftY);
+		EnhancedInputComponent->BindAction(IA_LeftX, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftX);
 		EnhancedInputComponent->BindAction(IA_RightIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::RightIndexCurl);
 		EnhancedInputComponent->BindAction(IA_RightGrasp, ETriggerEvent::Triggered, this, &ABaseCharacter::RightGrasp);
 		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Completed, this, &ABaseCharacter::LeftIndexCurlEnd);
 		EnhancedInputComponent->BindAction(IA_LeftGrasp, ETriggerEvent::Completed, this, &ABaseCharacter::LeftGraspEnd);
 		EnhancedInputComponent->BindAction(IA_LeftY, ETriggerEvent::Completed, this, &ABaseCharacter::LeftYEnd);
+		EnhancedInputComponent->BindAction(IA_LeftX, ETriggerEvent::Completed, this, &ABaseCharacter::LeftXEnd);
 		EnhancedInputComponent->BindAction(IA_RightIndexCurl, ETriggerEvent::Completed, this, &ABaseCharacter::RightIndexCurlEnd);
 		EnhancedInputComponent->BindAction(IA_RightGrasp, ETriggerEvent::Completed, this, &ABaseCharacter::RightGraspEnd);
 		
@@ -553,20 +542,42 @@ void ABaseCharacter::LeftGrasp()
 
 void ABaseCharacter::LeftY()
 {
-	if (!IsLeftIndexCurl && !IsLeftGrasp)
+	if (!IsLeftIndexCurl && !IsLeftGrasp &&!IsLeftX)
 	{
 		IsLeftY = true;
 	}
 }
 void ABaseCharacter::LeftYEnd()
 {
-	if (LeftYTimer > 1)
+	if (LeftYTimer / LeftYCastTime > 1)
 	{
 		ServerSpawnGrabbableActor();
 	}
 	IsLeftY = false;
 	LeftYTimer = 0;
 	//ResetColorChange(FString("Left"));
+	ServerResetColorChange(FString("Left"));
+}
+
+void ABaseCharacter::LeftX()
+{
+	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY)
+	{
+		IsLeftX = true;
+	}
+
+}
+
+void ABaseCharacter::LeftXEnd()
+{
+	if (LeftXTimer / LeftXCastTime > 1)
+	{
+		//Blackhole->ServerBlackholeReset();
+		ServerBlackholeReset();
+
+	}
+	IsLeftX = false;
+	LeftXTimer = 0;
 	ServerResetColorChange(FString("Left"));
 }
 
@@ -721,6 +732,46 @@ void ABaseCharacter::SetGrabInfo()
 	}
 }
 
+FVector ABaseCharacter::BlackHoleTrace()
+{
+	LeftXTraces.RemoveAt(0, LeftXTraces.Num());
+
+	FVector CurPos = LeftHand->GetComponentLocation();
+	FVector Dir = LeftHand->GetRightVector() * BlackHoleForwardPower;
+	
+	LeftXTraces.Add(CurPos);
+	
+	bool IsHit;
+	for (int32 i = 0; i < 40; i++)
+	{
+		FVector StartPos = CurPos;
+		Dir += FVector::UpVector * Gravity * UnitTime;
+		CurPos += Dir * UnitTime;
+
+		FHitResult HitInfo;
+		FCollisionQueryParams Param;
+		Param.AddIgnoredActor(this);
+		Param.AddIgnoredActor(Blackhole);
+
+		IsHit = GetWorld()->LineTraceSingleByChannel(HitInfo, StartPos, CurPos, ECC_Visibility, Param);
+		
+		if (IsHit)
+		{
+			LeftXTraces.Add(HitInfo.Location);
+			break;
+		}
+	}
+	if (IsHit)
+	{
+		return LeftXTraces[LeftXTraces.Num() - 1];
+	}
+	else
+	{
+		return FVector(0, 0, -10000);
+	}
+	
+}
+
 void ABaseCharacter::ColorChange(float Rate, FString Position)
 {
 	if (Position == FString("Left"))
@@ -741,9 +792,14 @@ void ABaseCharacter::ServerColorChange_Implementation(float Rate, const FString&
 }
 void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FString& Position)
 {
-	if (Position == FString("Left"))
+	if (Position == FString("LeftY"))
 	{
 		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(1, 1, 1), FVector(0, 1, 0), Rate);
+		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
+	else if (Position == FString("LeftX"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(1, 1, 1), FVector(0, 0, 1), Rate);
 		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
 	}
 	else if (Position == FString("Right"))
@@ -785,4 +841,103 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString& Pos
 void ABaseCharacter::ServerSpawnGrabbableActor_Implementation()
 {
 	ABaseGrabbableActor* GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+}
+
+void ABaseCharacter::ServerVRSetting_Implementation()
+{
+	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -100), FRotator(0, 0, 0));
+	MulticastVRSetting();
+}
+
+void ABaseCharacter::MulticastVRSetting_Implementation()
+{
+	GetMesh()->SetVisibility(false);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	camComp->SetActive(false);
+	VRCamera->SetActive(true);
+
+	LeftHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	RightHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	LeftHandMesh->SetVisibility(true);
+	LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	RightHandMesh->SetVisibility(true);
+	RightHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	LeftGrip->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	RightAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	LeftAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	LeftHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	RightHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+
+}
+
+void ABaseCharacter::ServerPCSetting_Implementation()
+{
+	MulticastPCSetting();
+}
+
+void ABaseCharacter::MulticastPCSetting_Implementation()
+{
+	LeftHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RightHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	LeftHandMesh->SetVisibility(false);
+	LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	RightHandMesh->SetVisibility(false);
+	RightHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	LeftGrip->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RightAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	LeftAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	LeftHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RightHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	camComp->SetActive(true);
+	VRCamera->SetActive(false);
+
+
+	GetMesh()->SetVisibility(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void ABaseCharacter::ServerBlackholeSet_Implementation(float Rate, FVector Loc)
+{
+	MulticastBlackholeSet(Rate, Loc);
+}
+
+void ABaseCharacter::MulticastBlackholeSet_Implementation(float Rate, FVector Loc)
+{
+	Blackhole->SetActorScale3D(UKismetMathLibrary::VLerp(Blackhole->OriginSize, Blackhole->LimitSize, Rate));
+	if (Loc != FVector(0, 0, -10000))
+	{
+		Blackhole->SetActorLocation(Loc);
+	}
+}
+
+void ABaseCharacter::ServerBlackholeReset_Implementation()
+{
+	MulticastBlackholeReset();
+}
+
+void ABaseCharacter::MulticastBlackholeReset_Implementation()
+{
+	Blackhole->SetActorScale3D(Blackhole->OriginSize);
+	Blackhole->SetActorLocation(FVector(0, 0, -10000));
+}
+
+void ABaseCharacter::ServerHandTransform_Implementation(FTransform LeftTransform, FTransform RightTransform)
+{
+	//MulticastHandTransform(LeftTransform, RightTransform);
+	LeftHand->SetRelativeTransform(LeftTransform);
+	RightHand->SetRelativeTransform(RightTransform);
+}
+
+void ABaseCharacter::MulticastHandTransform_Implementation(FTransform LeftTransform, FTransform RightTransform)
+{
+	LeftHand->SetRelativeTransform(LeftTransform);
+	RightHand->SetRelativeTransform(RightTransform);
 }
