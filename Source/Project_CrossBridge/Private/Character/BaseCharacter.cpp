@@ -26,6 +26,8 @@
 #include "Objects/BaseGrabbableActor.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Objects/Blackhole.h"
+#include "Components/CapsuleComponent.h"
+#include "Objects/ThrowingWeapon.h"
 
 
 // Sets default values
@@ -216,13 +218,19 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		overhead->DisplayText->SetText(FText::FromString(myName));
 	}
+
+
+
+
+
 	if (IsVR)
 	{
 		ServerHandTransform(LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, *LeftHand->GetRelativeLocation().ToString());
+		
 	}
 	
 	SetGrabInfo();
+	
 
 	if (IsLeftY)
 	{
@@ -251,11 +259,45 @@ void ABaseCharacter::Tick(float DeltaTime)
 			//Blackhole->ServerBlackholeSize(LeftXTimer / LeftXCastTime);
 			ServerBlackholeSet(LeftXTimer / LeftXCastTime, BlackHoleLoc);
 		}
+		else
+		{
+			ServerBlackholeSet(1, BlackHoleLoc);
+		}
 
 	}
+	 if (IsBlackholeSet)
+	{
+		if (BlackholeTimer == 0)
+		{
+			Blackhole->IsBlackholeActive = true;
+		}
+		BlackholeTimer += DeltaTime;
+			
+		if (BlackholeTimer / LeftXCastTime > 1)
+		{
+			ServerBlackholeActivate(false);
+			ServerBlackholeReset();
+		}
+	}
+	else if (!IsBlackholeSet && BlackholeTimer > 0)
+	{
+		BlackholeTimer = 0;
+		Blackhole->IsBlackholeActive = false;
+	}
 
-	//FVector StartPos = LeftGrip->GetComponentLocation();
-	//FVector EndPos = StartPos + LeftGrip->GetRightVector() * 1000;
+	 if (IsRightAB)
+	 {
+		 RightABTimer += DeltaTime;
+		 if (RightABTimer / RightABCastTime <= 1)
+		 {
+			 ServerColorChange(RightABTimer / RightABCastTime, FString("Right"));
+		 }
+	 }
+
+
+
+	FVector StartPos = RightAim->GetComponentLocation();
+	FVector EndPos = StartPos + RightAim->GetForwardVector() * 1000;
 	//DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
 
 
@@ -288,12 +330,16 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(IA_LeftX, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftX);
 		EnhancedInputComponent->BindAction(IA_RightIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::RightIndexCurl);
 		EnhancedInputComponent->BindAction(IA_RightGrasp, ETriggerEvent::Triggered, this, &ABaseCharacter::RightGrasp);
+		EnhancedInputComponent->BindAction(IA_RightB, ETriggerEvent::Triggered, this, &ABaseCharacter::RightB);
+		EnhancedInputComponent->BindAction(IA_RightA, ETriggerEvent::Triggered, this, &ABaseCharacter::RightA);
 		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Completed, this, &ABaseCharacter::LeftIndexCurlEnd);
 		EnhancedInputComponent->BindAction(IA_LeftGrasp, ETriggerEvent::Completed, this, &ABaseCharacter::LeftGraspEnd);
 		EnhancedInputComponent->BindAction(IA_LeftY, ETriggerEvent::Completed, this, &ABaseCharacter::LeftYEnd);
 		EnhancedInputComponent->BindAction(IA_LeftX, ETriggerEvent::Completed, this, &ABaseCharacter::LeftXEnd);
 		EnhancedInputComponent->BindAction(IA_RightIndexCurl, ETriggerEvent::Completed, this, &ABaseCharacter::RightIndexCurlEnd);
 		EnhancedInputComponent->BindAction(IA_RightGrasp, ETriggerEvent::Completed, this, &ABaseCharacter::RightGraspEnd);
+		EnhancedInputComponent->BindAction(IA_RightB, ETriggerEvent::Completed, this, &ABaseCharacter::RightBEnd);
+		EnhancedInputComponent->BindAction(IA_RightA, ETriggerEvent::Completed, this, &ABaseCharacter::RightAEnd);
 		
 
 
@@ -491,6 +537,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ABaseCharacter, Fuel);
 	DOREPLIFETIME(ABaseCharacter, CurrentHP);
 	DOREPLIFETIME(ABaseCharacter, myName);
+	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
 	
 }
 
@@ -561,7 +608,7 @@ void ABaseCharacter::LeftYEnd()
 
 void ABaseCharacter::LeftX()
 {
-	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY)
+	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY && !IsBlackholeSet)
 	{
 		IsLeftX = true;
 	}
@@ -573,9 +620,11 @@ void ABaseCharacter::LeftXEnd()
 	if (LeftXTimer / LeftXCastTime > 1)
 	{
 		//Blackhole->ServerBlackholeReset();
-		ServerBlackholeReset();
-
+		//ServerBlackholeReset();
 	}
+	
+	ServerBlackholeActivate(true);
+	
 	IsLeftX = false;
 	LeftXTimer = 0;
 	ServerResetColorChange(FString("Left"));
@@ -640,6 +689,59 @@ void ABaseCharacter::RightGraspEnd()
 
 	}
 
+}
+
+void ABaseCharacter::RightB()
+{
+	IsRightB = true;
+	if (IsRightA && !IsRightAB)
+	{
+		IsRightAB = true;
+	}
+}
+
+void ABaseCharacter::RightBEnd()
+{
+	IsRightB = false;
+	if (IsRightAB)
+	{
+		IsRightAB = false;
+		RightABTimer = 0;
+
+		FVector StartVec = RightAim->GetComponentLocation();
+		FVector EndVec = StartVec + RightAim->GetForwardVector() * 100;
+		//FRotator Rot = (EndVec - StartVec).Rotation();
+		FRotator Rot = RightAim->GetComponentRotation();
+		ServerSpawnThrowingWeapon(EndVec, Rot);
+		ServerResetColorChange(FString("Right"));
+	}
+
+}
+
+void ABaseCharacter::RightA()
+{
+	IsRightA = true;
+	if (IsRightB && !IsRightAB)
+	{
+		IsRightAB = true;
+	}
+}
+
+void ABaseCharacter::RightAEnd()
+{
+	IsRightA = false;
+	if (IsRightAB)
+	{
+		IsRightAB = false;
+		RightABTimer = 0;
+
+		FVector StartVec = RightAim->GetComponentLocation();
+		FVector EndVec = StartVec + RightAim->GetForwardVector() * 10;
+		//FRotator Rot = (EndVec - StartVec).Rotation();
+		FRotator Rot = RightAim->GetComponentRotation();
+		ServerSpawnThrowingWeapon(EndVec, Rot);
+		ServerResetColorChange(FString("Right"));
+	}
 }
 
 void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -856,6 +958,8 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	camComp->SetActive(false);
 	VRCamera->SetActive(true);
 
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("VRPlayerPreset"));
+
 	LeftHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	RightHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
@@ -899,6 +1003,7 @@ void ABaseCharacter::MulticastPCSetting_Implementation()
 	camComp->SetActive(true);
 	VRCamera->SetActive(false);
 
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerPreset"));
 
 	GetMesh()->SetVisibility(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -938,6 +1043,17 @@ void ABaseCharacter::ServerHandTransform_Implementation(FTransform LeftTransform
 
 void ABaseCharacter::MulticastHandTransform_Implementation(FTransform LeftTransform, FTransform RightTransform)
 {
-	LeftHand->SetRelativeTransform(LeftTransform);
-	RightHand->SetRelativeTransform(RightTransform);
+	//LeftHand->SetRelativeTransform(LeftTransform);
+	//RightHand->SetRelativeTransform(RightTransform);
 }
+
+void ABaseCharacter::ServerBlackholeActivate_Implementation(bool IsActive)
+{
+	IsBlackholeSet = IsActive;
+}
+
+void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, FRotator SpawnRot)
+{
+	AThrowingWeapon* ThrowingWeaponActor = GetWorld()->SpawnActor<AThrowingWeapon>(SpawnThrowingWeapon, SpawnLoc, SpawnRot);
+}
+

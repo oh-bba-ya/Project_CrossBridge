@@ -34,5 +34,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector LimitSize = FVector(3);
 
+	UFUNCTION()
+		void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+
+	UPROPERTY()
+		class ABaseCharacter* Target;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Power = 50;
+	UPROPERTY()
+	bool IsBlackholeActive;
+
+	UFUNCTION(Server, Unreliable)
+		void ServerBlackholeActive();
+
+
 
 };

@@ -232,6 +232,10 @@ public:
 		class UInputAction* IA_RightIndexCurl;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_RightGrasp;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_RightB;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_RightA;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
@@ -268,12 +272,17 @@ public:
 	void LeftX();
 	void RightIndexCurl();
 	void RightGrasp();
+	void RightB();
+	void RightA();
 	void	LeftIndexCurlEnd();
 	void	LeftGraspEnd();
 	void LeftYEnd();
 	void LeftXEnd();
 	void	RightIndexCurlEnd();
 	void RightGraspEnd();
+	void RightBEnd();
+	void RightAEnd();
+
 
 	UFUNCTION()
 		void OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -308,6 +317,12 @@ public:
 		float LeftYCastTime = 5;
 	UPROPERTY()
 		float LeftXTimer;
+	UPROPERTY()
+		float BlackholeTimer;
+	UPROPERTY()
+		float RightABTimer;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float RightABCastTime = 2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float LeftXCastTime = 5;
 
@@ -317,8 +332,13 @@ public:
 	bool IsLeftGrasp;
 	bool IsLeftY;
 	bool IsLeftX;
+	UPROPERTY(Replicated)
+	bool IsBlackholeSet;
 	bool IsRightIndexCurl;
 	bool IsRightGrasp;
+	bool IsRightB;
+	bool IsRightA;
+	bool IsRightAB;
 
 	bool IsLeftGrab;
 	bool IsRightGrab;
@@ -338,6 +358,9 @@ public:
 		TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ABlackhole> SpawnBlackhole;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AThrowingWeapon> SpawnThrowingWeapon;
 
 
 	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
@@ -383,5 +406,10 @@ public:
 		void ServerHandTransform(FTransform LeftTransform, FTransform RightTransform);
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastHandTransform(FTransform LeftTransform, FTransform RightTransform);
+	UFUNCTION(Server, Unreliable)
+		void ServerBlackholeActivate(bool IsActivate);
+
+	UFUNCTION(Server, Unreliable)
+		void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
 	
 };

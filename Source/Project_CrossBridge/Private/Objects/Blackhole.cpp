@@ -4,6 +4,7 @@
 #include "Objects/Blackhole.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Character/BaseCharacter.h"
 
 // Sets default values
 ABlackhole::ABlackhole()
@@ -21,7 +22,8 @@ ABlackhole::ABlackhole()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetupAttachment(RootComponent);
 
-
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ABlackhole::OnOverlap);
+	SphereComp->OnComponentEndOverlap.AddDynamic(this, &ABlackhole::OnEndOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -35,5 +37,29 @@ void ABlackhole::BeginPlay()
 void ABlackhole::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (Target)
+	{
+		if (IsBlackholeActive)
+		{
+			ServerBlackholeActive();
+		}
+	}
 
+}
+
+void ABlackhole::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	Target = Cast<ABaseCharacter>(OtherActor);
+
+}
+void ABlackhole::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	Target = NULL;
+}
+
+void ABlackhole::ServerBlackholeActive_Implementation()
+{
+	FVector Dir = (GetActorLocation() - Target->GetActorLocation()).GetSafeNormal();
+	float Dist = GetDistanceTo(Target);
+	Target->AddMovementInput(Power * Dir / Dist);
 }
