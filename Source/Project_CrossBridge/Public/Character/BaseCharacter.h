@@ -204,6 +204,30 @@ public:
 #pragma endregion 
 
 
+	/** Skill : Freeze */
+#pragma region Skill Freeze
+private:
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Skill Freeze")
+	TSubclassOf<class AFreeze> FreezeFactory;
+
+	UPROPERTY(Replicated)
+	class AFreeze* freeze;
+protected:
+
+	void FreezeSpawn();
+	
+	UFUNCTION(Server,Unreliable)
+	void Server_FreezeSpawn();
+
+	void RemoveFreeze();
+
+	UFUNCTION(Server,Unreliable)
+	void Server_RemoveFreeze();
+
+
+
+#pragma region endregion 
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,7 +335,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float LeftXCastTime = 5;
 
-	bool IsVR;
+	bool IsVR = false;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;

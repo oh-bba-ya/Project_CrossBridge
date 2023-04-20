@@ -24,6 +24,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Objects/BaseGrabbableActor.h"
+#include "Skill/Freeze.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Objects/Blackhole.h"
 
@@ -216,6 +217,13 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		overhead->DisplayText->SetText(FText::FromString(myName));
 	}
+
+	if(freeze != nullptr)
+	{
+		freeze->SetActorLocation(GetActorLocation());
+	}
+	
+	
 	if (IsVR)
 	{
 		ServerHandTransform(LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
@@ -346,11 +354,13 @@ void ABaseCharacter::Attack()
 void ABaseCharacter::ContextualActionPressed()
 {
 	UE_LOG(LogTemp,Warning,TEXT("Base ContextualAction Pressed"));
+	FreezeSpawn();
 }
 
 void ABaseCharacter::ContextualActionReleased()
 {
 	UE_LOG(LogTemp,Warning,TEXT("Base ContextualAction Released"));
+	RemoveFreeze();
 }
 
 
@@ -386,12 +396,15 @@ void ABaseCharacter::ActivateJetPack()
 
 void ABaseCharacter::Server_ActivateJetPack_Implementation()
 {
-	bJetPackActive = true;
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-	GetCharacterMovement()->AirControl = 1.f;
+	if(freeze == nullptr)
+	{
+		bJetPackActive = true;
+		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+		GetCharacterMovement()->AirControl = 1.f;
 
-	FuelConsumption(FuelConsumptionSpeed);
-	GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
+		FuelConsumption(FuelConsumptionSpeed);
+		GetWorld()->GetTimerManager().ClearTimer(fuelTimer);
+	}
 }
 
 
@@ -402,10 +415,14 @@ void ABaseCharacter::DeActivateJetPack()
 
 void ABaseCharacter::Server_DeActivateJetPack_Implementation()
 {
+	if(freeze == nullptr)
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+		GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ABaseCharacter::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
+	}
 	bJetPackActive = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	GetCharacterMovement()->AirControl= 0.2f;
-	GetWorld()->GetTimerManager().SetTimer(fuelTimer,this, &ABaseCharacter::FillUpFuel, FuelRechargeSpeed,true,FuelRechargeDelay);
+	
 }
 
 #pragma endregion
@@ -439,7 +456,7 @@ void ABaseCharacter::SubTractHealth(int32 value)
 
 void ABaseCharacter::Fire()
 {
-	if(myWeapon != nullptr)
+	if(myWeapon != nullptr && freeze == nullptr)
 	{
 		myWeapon->Fire(this);
 	}
@@ -480,6 +497,46 @@ void ABaseCharacter::ServerSetName_Implementation(const FString& name)
 	
 }
 
+/** Freeze Skill */
+#pragma region Skill Freeze
+void ABaseCharacter::FreezeSpawn()
+{
+	Server_FreezeSpawn();
+}
+
+void ABaseCharacter::Server_FreezeSpawn_Implementation()
+{
+	freeze = GetWorld()->SpawnActor<AFreeze>(FreezeFactory,GetActorLocation(),GetActorRotation());
+	if(freeze != nullptr)
+	{
+		freeze->SetOwner(this);
+	}
+	
+	GetCharacterMovement()->DisableMovement();
+	
+}
+
+void ABaseCharacter::RemoveFreeze()
+{
+	Server_RemoveFreeze();
+}
+
+void ABaseCharacter::Server_RemoveFreeze_Implementation()
+{
+	freeze->Destroy();
+	if(freeze != nullptr)
+	{
+		freeze=nullptr;
+	}
+	
+	DeActivateJetPack();
+}
+
+
+
+
+#pragma endregion
+
 
 
 // 서버에 복제 등록하기 위한 함수
@@ -491,6 +548,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ABaseCharacter, Fuel);
 	DOREPLIFETIME(ABaseCharacter, CurrentHP);
 	DOREPLIFETIME(ABaseCharacter, myName);
+	DOREPLIFETIME(ABaseCharacter, freeze);
 	
 }
 

@@ -187,8 +187,8 @@ void AProjectileWeapon::TraceUnderCosshairs(FHitResult& TraceHitResult)
 		FVector End = CrosshairWorldDirection * TraceLength;
 
 		// 자기자신은 충돌에서 제외
-		//FCollisionQueryParams params;
-		//params.AddIgnoredActor(this);
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECC_Visibility);
 
 		// LineTrace 범위안에 감지되는 액터가 존재하지 않을시..
