@@ -296,7 +296,9 @@ public:
 	FVector RightPrevLoc;
 	FQuat RightPrevRot;
 
+	UPROPERTY()
 	FVector RightThrowDir;
+	UPROPERTY()
 	FQuat RightThrowRot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -362,9 +364,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AThrowingWeapon> SpawnThrowingWeapon;
 
-
-	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
-	void UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
+	//UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Unreliable)
+	void ServerGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition);
+	UFUNCTION(Server,Unreliable)
+	void ServerUnGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition, FVector RightDirThrow, FQuat RightRotThrow);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastUnGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition, FVector RightDirThrow, FQuat RightRotThrow);
 
 	void SetGrabInfo();
 

@@ -574,7 +574,7 @@ void ABaseCharacter::LeftIndexCurl()
 	IsLeftIndexCurl = true;
 	if (GrabbedActorLeft && IsLeftGrasp && !IsLeftGrab)
 	{
-		GrabTheActor(GrabbedActorLeft, FString("Left"));
+		ServerGrabTheActor(GrabbedActorLeft, FString("Left"));
 	}
 }
 
@@ -583,7 +583,7 @@ void ABaseCharacter::LeftGrasp()
 	IsLeftGrasp = true;
 	if (GrabbedActorLeft && IsLeftIndexCurl && !IsLeftGrab)
 	{
-		GrabTheActor(GrabbedActorLeft, FString("Left"));
+		ServerGrabTheActor(GrabbedActorLeft, FString("Left"));
 	}
 }
 
@@ -635,7 +635,7 @@ void ABaseCharacter::RightIndexCurl()
 	IsRightIndexCurl = true;
 	if (GrabbedActorRight && IsRightGrasp && !IsRightGrab)
 	{
-		GrabTheActor(GrabbedActorRight, FString("Right"));
+		ServerGrabTheActor(GrabbedActorRight, FString("Right"));
 		RightPrevLoc = RightHand->GetComponentLocation();
 		RightPrevRot = RightHand->GetComponentQuat();
 	}
@@ -646,7 +646,7 @@ void ABaseCharacter::RightGrasp()
 	IsRightGrasp = true;
 	if (GrabbedActorRight && IsRightIndexCurl && !IsRightGrab)
 	{
-		GrabTheActor(GrabbedActorRight, FString("Right"));
+		ServerGrabTheActor(GrabbedActorRight, FString("Right"));
 		RightPrevLoc = RightHand->GetComponentLocation();
 		RightPrevRot = RightHand->GetComponentQuat();
 	}
@@ -657,7 +657,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 	IsLeftIndexCurl = false;
 	if (IsLeftGrab)
 	{
-		UnGrabTheActor(GrabbedActorLeft, FString("Left"));
+		ServerUnGrabTheActor(GrabbedActorLeft, FString("Left"), RightThrowDir, RightThrowRot);
 	}
 }
 
@@ -666,7 +666,7 @@ void ABaseCharacter::LeftGraspEnd()
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{
-		UnGrabTheActor(GrabbedActorLeft, FString("Left"));
+		ServerUnGrabTheActor(GrabbedActorLeft, FString("Left"), RightThrowDir, RightThrowRot);
 	}
 }
 
@@ -675,7 +675,7 @@ void ABaseCharacter::RightIndexCurlEnd()
 	IsRightIndexCurl = false;
 	if (IsRightGrab)
 	{
-		UnGrabTheActor(GrabbedActorRight, FString("Right"));
+		ServerUnGrabTheActor(GrabbedActorRight, FString("Right"), RightThrowDir, RightThrowRot);
 
 	}
 }
@@ -685,7 +685,7 @@ void ABaseCharacter::RightGraspEnd()
 	IsRightGrasp = false;
 	if (IsRightGrab)
 	{
-		UnGrabTheActor(GrabbedActorRight, FString("Right"));
+		ServerUnGrabTheActor(GrabbedActorRight, FString("Right"), RightThrowDir, RightThrowRot);
 
 	}
 
@@ -780,7 +780,23 @@ void ABaseCharacter::OnRightHandEndOverlap(UPrimitiveComponent* OverlappedCompon
 
 }
 
-void ABaseCharacter::GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition)
+void ABaseCharacter::ServerGrabTheActor_Implementation(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition)
+{
+	//GrabbedActor->MeshComp->SetSimulatePhysics(false);
+	//if (GrabPosition == FString("Left"))
+	//{
+	//	IsLeftGrab = true;
+	//	GrabbedActor->AttachToComponent(LeftHand, FAttachmentTransformRules::KeepWorldTransform);
+	//}
+	//else if (GrabPosition == FString("Right"))
+	//{
+	//	IsRightGrab = true;
+	//	GrabbedActor->AttachToComponent(RightHand, FAttachmentTransformRules::KeepWorldTransform);
+	//}
+	MulticastGrabTheActor(GrabbedActor, GrabPosition);
+
+}
+void ABaseCharacter::MulticastGrabTheActor_Implementation(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition)
 {
 	GrabbedActor->MeshComp->SetSimulatePhysics(false);
 	if (GrabPosition == FString("Left"))
@@ -796,10 +812,18 @@ void ABaseCharacter::GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString Gra
 
 }
 
-void ABaseCharacter::UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition)
+void ABaseCharacter::ServerUnGrabTheActor_Implementation(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition, FVector RightDirThrow, FQuat RightRotThrow)
+{
+
+	MulticastUnGrabTheActor(GrabbedActor, GrabPosition, RightDirThrow, RightRotThrow);
+
+}
+
+void ABaseCharacter::MulticastUnGrabTheActor_Implementation(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition, FVector RightDirThrow, FQuat RightRotThrow)
 {
 	GrabbedActor->MeshComp->SetSimulatePhysics(true);
 	GrabbedActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	GrabbedActor->IsThrow = true;
 	if (GrabPosition == FString("Left"))
 	{
 		IsLeftGrab = false;
@@ -808,15 +832,15 @@ void ABaseCharacter::UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString G
 	else if (GrabPosition == FString("Right"))
 	{
 		IsRightGrab = false;
-		GrabbedActor->MeshComp->AddForce(ThrowPower * RightThrowDir);
-
+		GrabbedActor->MeshComp->AddForce(ThrowPower * RightDirThrow);
+	
 		float Angle;
 		FVector Axis;
 		float dt = GetWorld()->DeltaTimeSeconds;
-		RightThrowRot.ToAxisAndAngle(Axis, Angle);
+		RightRotThrow.ToAxisAndAngle(Axis, Angle);
 		FVector AngularVelocity = (1.0f / dt) * Angle * Axis;
 		GrabbedActor->MeshComp->SetPhysicsAngularVelocityInRadians(AngularVelocity * ToquePower, true);
-
+	
 		GrabbedActorRight = NULL;
 	}
 
@@ -828,11 +852,13 @@ void ABaseCharacter::SetGrabInfo()
 	{
 		RightThrowDir = RightHand->GetComponentLocation() - RightPrevLoc;
 		RightThrowRot = RightHand->GetComponentQuat() * RightPrevRot.Inverse();
-
+	
 		RightPrevLoc = RightHand->GetComponentLocation();
 		RightPrevRot = RightHand->GetComponentQuat();
 	}
 }
+
+
 
 FVector ABaseCharacter::BlackHoleTrace()
 {

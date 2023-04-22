@@ -17,6 +17,8 @@ ABaseGrabbableActor::ABaseGrabbableActor()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	SetRootComponent(MeshComp);
 	MeshComp->SetSimulatePhysics(true);
+
+	MeshComp->OnComponentBeginOverlap.AddDynamic(this, &ABaseGrabbableActor::OnOverlap);
 	
 }
 
@@ -39,6 +41,14 @@ void ABaseGrabbableActor::Tick(float DeltaTime)
 	FString myOwner = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
 	FString infoText = FString::Printf(TEXT("Owner: %s"),  *myOwner);
 	DrawDebugString(GetWorld(), GetActorLocation(), infoText, nullptr, FColor::White, 0.0f, true, 1.0f);
+
+	if (IsThrow)
+	{
+		if (PCPlayer)
+		{
+
+		}
+	}
 
 }
 
@@ -64,3 +74,7 @@ void ABaseGrabbableActor::FindOwner()
 	}
 }
 
+void ABaseGrabbableActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	PCPlayer = Cast<ABaseCharacter>(OtherActor);
+}
