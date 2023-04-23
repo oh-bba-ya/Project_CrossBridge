@@ -23,6 +23,7 @@
 #include "MotionControllerComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Objects/BaseGrabbableActor.h"
 #include "Skill/Freeze.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -284,7 +285,10 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Started, this, &ABaseCharacter::ContextualActionPressed);
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
 		EnhancedInputComponent->BindAction(InputDropWeaponAction, ETriggerEvent::Started,this,&ABaseCharacter::DropWeapon);
-		
+		EnhancedInputComponent->BindAction(InputRollingAction, ETriggerEvent::Started,this,&ABaseCharacter::RollingActionPressed);
+		EnhancedInputComponent->BindAction(InputRollingAction, ETriggerEvent::Completed, this, &ABaseCharacter::RollingActionReleased);
+		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Started,this,&ABaseCharacter::SlidingActionPressed);
+		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Completed, this, &ABaseCharacter::SlidingActionRelease);
 		
 
 		
@@ -362,6 +366,65 @@ void ABaseCharacter::ContextualActionReleased()
 	UE_LOG(LogTemp,Warning,TEXT("Base ContextualAction Released"));
 	RemoveFreeze();
 }
+
+/** Sliding , Rolling Functions()*/
+#pragma region Sliding, Rolling Function()
+void ABaseCharacter::RollingActionPressed()
+{
+	Multicast_RollingActionPressed();
+}
+
+void ABaseCharacter::RollingActionReleased()
+{
+	Multicast_RollingActionReleased();
+}
+
+
+void ABaseCharacter::Multicast_RollingActionPressed_Implementation()
+{
+	
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	if(RollingMontage)
+	{
+		PlayAnimMontage(RollingMontage);
+	}
+	GetCapsuleComponent()->SetCapsuleHalfHeight(20.f);
+}
+
+void ABaseCharacter::Multicast_RollingActionReleased_Implementation()
+{
+	GetCapsuleComponent()->SetCapsuleHalfHeight(88.f);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+}
+
+
+void ABaseCharacter::SlidingActionPressed()
+{
+	Multicast_SlidingActionPressed();
+}
+
+void ABaseCharacter::SlidingActionRelease()
+{
+	Multicast_SlidingActionRelease();
+}
+
+void ABaseCharacter::Multicast_SlidingActionPressed_Implementation()
+{
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	if(SlidingMontage)
+	{
+		PlayAnimMontage(SlidingMontage);
+	}
+	GetCapsuleComponent()->SetCapsuleHalfHeight(20.f);
+}
+
+void ABaseCharacter::Multicast_SlidingActionRelease_Implementation()
+{
+	GetCapsuleComponent()->SetCapsuleHalfHeight(88.f);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+}
+#pragma endregion 
+
 
 
 
@@ -458,6 +521,7 @@ void ABaseCharacter::Fire()
 {
 	if(myWeapon != nullptr && freeze == nullptr)
 	{
+		Multicast_Fire();
 		myWeapon->Fire(this);
 	}
 }
@@ -466,6 +530,7 @@ void ABaseCharacter::Multicast_Fire_Implementation()
 {
 	if(fireMontage !=nullptr)
 	{
+		UE_LOG(LogTemp,Warning,TEXT("Fire Montage"));
 		PlayAnimMontage(fireMontage);
 	}
 }

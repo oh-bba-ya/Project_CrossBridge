@@ -55,6 +55,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
 	class UInputAction* InputDropWeaponAction;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputRollingAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputSlidingAction;
+	
 	
 	
 	void Move(const FInputActionValue& Value);
@@ -68,8 +74,37 @@ protected:
 	virtual void ContextualActionPressed();
 
 	virtual void ContextualActionReleased();
-	
 
+/** Sliding, Rolling */
+#pragma region Sliding, Rolling Action
+private:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
+	UAnimMontage* RollingMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
+	UAnimMontage* SlidingMontage;
+protected:
+
+	void RollingActionPressed();
+
+	void RollingActionReleased();
+	
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_RollingActionPressed();
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_RollingActionReleased();
+
+	void SlidingActionPressed();
+	void SlidingActionRelease();
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_SlidingActionPressed();
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_SlidingActionRelease();
+	
+#pragma endregion 
 
 	/** overheadwidget */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
