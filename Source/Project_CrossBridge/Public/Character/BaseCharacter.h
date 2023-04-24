@@ -60,6 +60,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
 	class UInputAction* InputSlidingAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputQuitAction;
 	
 	
 	
@@ -173,6 +176,13 @@ public:
 	FORCEINLINE float GetMaxHP() const {return MaxHP;}
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 
+	UFUNCTION(BlueprintCallable,Server, Unreliable)
+	void Server_TakeDamage(float value);
+
+	UFUNCTION(BlueprintCallable,Server, Unreliable)
+	void Server_RecoveryHP(float value);
+	
+
 protected:
 	/** 현재 체력 세터. 값을 0과 MaxHealth 사이로 범위제한하고 OnHealthUpdate를 호출합니다. 서버에서만 호출되어야 합니다.*/
 	UFUNCTION(BlueprintCallable, Category="Health")
@@ -270,7 +280,7 @@ protected:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+public:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputMappingContext* IMC_VRInput;
 	UPROPERTY(EditDefaultsOnly, Category = Input)

@@ -492,6 +492,22 @@ void ABaseCharacter::Server_DeActivateJetPack_Implementation()
 
 /** Health() */
 #pragma region Health()
+void ABaseCharacter::Server_TakeDamage_Implementation(float value)
+{
+	if(CurrentHP > 0)
+	{
+		SubTractHealth(value);
+	}
+}
+
+void ABaseCharacter::Server_RecoveryHP_Implementation(float value)
+{
+	if(CurrentHP < 100)
+	{
+		PlusHealth(value);
+	}
+}
+
 void ABaseCharacter::SetCurrentHealth(float healthValue)
 {
 	if(GetLocalRole() == ROLE_Authority)
