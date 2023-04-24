@@ -18,7 +18,7 @@ ABaseGrabbableActor::ABaseGrabbableActor()
 	SetRootComponent(MeshComp);
 	MeshComp->SetSimulatePhysics(true);
 
-	MeshComp->OnComponentBeginOverlap.AddDynamic(this, &ABaseGrabbableActor::OnOverlap);
+	OnActorBeginOverlap.AddDynamic(this, &ABaseGrabbableActor::OnGrabbableActorOverlap);
 	
 }
 
@@ -74,7 +74,7 @@ void ABaseGrabbableActor::FindOwner()
 	}
 }
 
-void ABaseGrabbableActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseGrabbableActor::OnGrabbableActorOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
 	PCPlayer = Cast<ABaseCharacter>(OtherActor);
 }

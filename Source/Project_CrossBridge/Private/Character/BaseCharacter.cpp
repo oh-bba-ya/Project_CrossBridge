@@ -62,6 +62,14 @@ ABaseCharacter::ABaseCharacter()
 	VRCamera->SetupAttachment(RootComponent);
 	VRCamera->bUsePawnControlRotation = true;
 
+	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HeadMesh"));
+	HeadMesh->SetupAttachment(VRCamera);
+
+	HeadComp = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadComp"));
+	HeadComp->SetupAttachment(HeadMesh);
+	HeadComp->SetRelativeLocation(FVector(0, 0, 170));
+	HeadComp->SetBoxExtent(FVector(10, 10, 12));
+
 	LeftHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftHand"));
 	LeftHand->SetupAttachment(RootComponent);
 	LeftHand->SetTrackingMotionSource(FName("Left"));
@@ -94,6 +102,16 @@ ABaseCharacter::ABaseCharacter()
 
 	LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftHandMesh"));
 	LeftHandMesh->SetupAttachment(LeftHand);
+
+	ConstructorHelpers::FObjectFinder<USkeletalMesh>VRHeadMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/VR_Head.VR_Head'"));
+	if (VRHeadMesh.Succeeded())
+	{
+		HeadMesh->SetSkeletalMesh(VRHeadMesh.Object);
+		HeadMesh->SetRelativeLocation(FVector(0, 0, -170));
+		HeadMesh->SetRelativeRotation(FRotator(0, -90, 0));
+		HeadMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>LeftMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_left.SKM_MannyXR_left'"));
 	if (LeftMesh.Succeeded())
 	{
@@ -179,8 +197,12 @@ void ABaseCharacter::BeginPlay()
 		if (IsVR)
 		{
 			UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
-	
 			ServerVRSetting();
+
+			RedDot = GetWorld()->SpawnActor<AActor>(SpawnRedDot, GetActorLocation(), GetActorRotation());
+			RedDot->SetActorHiddenInGame(true);
+			RedDot->SetActorEnableCollision(false);
+			VRCurHP = VRMaxHP;
 		}
 		else
 		{
@@ -188,6 +210,11 @@ void ABaseCharacter::BeginPlay()
 		}
 	}
 
+	UMaterialInterface* HeadBase = HeadMesh->GetMaterial(0);
+	if (HeadBase)
+	{
+		HeadMat = HeadMesh->CreateDynamicMaterialInstance(0, HeadBase);
+	}
 	UMaterialInterface* LeftHandBase = LeftHandMesh->GetMaterial(0);
 	if (LeftHandBase)
 	{
@@ -225,8 +252,8 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsVR)
 	{
-		ServerHandTransform(LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
-		
+		ServerVRTransform(VRCamera->GetRelativeTransform(), LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
+
 	}
 	
 	SetGrabInfo();
@@ -288,6 +315,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	 if (IsRightAB)
 	 {
 		 RightABTimer += DeltaTime;
+		 SetRedDot();
 		 if (RightABTimer / RightABCastTime <= 1)
 		 {
 			 ServerColorChange(RightABTimer / RightABCastTime, FString("Right"));
@@ -697,6 +725,7 @@ void ABaseCharacter::RightB()
 	if (IsRightA && !IsRightAB)
 	{
 		IsRightAB = true;
+		RedDot->SetActorHiddenInGame(false);
 	}
 }
 
@@ -707,7 +736,7 @@ void ABaseCharacter::RightBEnd()
 	{
 		IsRightAB = false;
 		RightABTimer = 0;
-
+		RedDot->SetActorHiddenInGame(true);
 		FVector StartVec = RightAim->GetComponentLocation();
 		FVector EndVec = StartVec + RightAim->GetForwardVector() * 100;
 		//FRotator Rot = (EndVec - StartVec).Rotation();
@@ -724,6 +753,7 @@ void ABaseCharacter::RightA()
 	if (IsRightB && !IsRightAB)
 	{
 		IsRightAB = true;
+		RedDot->SetActorHiddenInGame(false);
 	}
 }
 
@@ -734,6 +764,7 @@ void ABaseCharacter::RightAEnd()
 	{
 		IsRightAB = false;
 		RightABTimer = 0;
+		RedDot->SetActorHiddenInGame(true);
 
 		FVector StartVec = RightAim->GetComponentLocation();
 		FVector EndVec = StartVec + RightAim->GetForwardVector() * 10;
@@ -986,6 +1017,9 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("VRPlayerPreset"));
 
+	HeadMesh->SetVisibility(true);
+	HeadComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
 	LeftHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	RightHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
@@ -1011,6 +1045,8 @@ void ABaseCharacter::ServerPCSetting_Implementation()
 
 void ABaseCharacter::MulticastPCSetting_Implementation()
 {
+	HeadMesh->SetVisibility(false);
+	HeadComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	LeftHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RightHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -1060,14 +1096,15 @@ void ABaseCharacter::MulticastBlackholeReset_Implementation()
 	Blackhole->SetActorLocation(FVector(0, 0, -10000));
 }
 
-void ABaseCharacter::ServerHandTransform_Implementation(FTransform LeftTransform, FTransform RightTransform)
+void ABaseCharacter::ServerVRTransform_Implementation(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform)
 {
 	//MulticastHandTransform(LeftTransform, RightTransform);
+	VRCamera->SetRelativeTransform(HeadTransform);
 	LeftHand->SetRelativeTransform(LeftTransform);
 	RightHand->SetRelativeTransform(RightTransform);
 }
 
-void ABaseCharacter::MulticastHandTransform_Implementation(FTransform LeftTransform, FTransform RightTransform)
+void ABaseCharacter::MulticastVRTransform_Implementation(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform)
 {
 	//LeftHand->SetRelativeTransform(LeftTransform);
 	//RightHand->SetRelativeTransform(RightTransform);
@@ -1083,3 +1120,51 @@ void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, 
 	AThrowingWeapon* ThrowingWeaponActor = GetWorld()->SpawnActor<AThrowingWeapon>(SpawnThrowingWeapon, SpawnLoc, SpawnRot);
 }
 
+void ABaseCharacter::SetRedDot()
+{
+	FVector DotStart = RightAim->GetComponentLocation();
+	FVector DotEnd = DotStart + RightAim->GetForwardVector() * 100000;
+
+	FHitResult HitInfo;
+	FCollisionQueryParams Param;
+	Param.AddIgnoredActor(this);
+	float Distance;
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitInfo, DotStart, DotEnd, ECC_Visibility, Param);
+	if (IsHit)
+	{
+		RedDot->SetActorLocation(HitInfo.Location);
+		Distance = HitInfo.Distance;
+	}
+	else 
+	{
+		RedDot->SetActorLocation(DotEnd);
+		Distance = (DotEnd - DotStart).Size();
+	}
+	RedDot->SetActorScale3D(FVector(Distance / 500));
+	RedDot->SetActorRotation((-RedDot->GetActorLocation() + VRCamera->GetComponentLocation()).Rotation());
+}
+
+void ABaseCharacter::VRGetDamage(float Damage)
+{
+	VRCurHP -= Damage;
+	ServerVRGetDamage(Damage, 1 - VRCurHP/VRMaxHP);
+}
+
+void ABaseCharacter::ServerVRGetDamage_Implementation(float Damage, float Rate)
+{
+	MulticastVRGetDamage(Damage, Rate);
+}
+
+void ABaseCharacter::MulticastVRGetDamage_Implementation(float Damage, float Rate)
+{
+	if (Rate <= 0.45)
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0.8, 0), FVector(0.8, 0.8, 0), Rate * 20 / 9);
+		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)ColorVector);
+	}
+	else if (Rate <= 0.9)
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0.8, 0.8, 0), FVector(0.8, 0, 0), (Rate - 0.45) * 20 / 9);
+		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)ColorVector);
+	}
+}

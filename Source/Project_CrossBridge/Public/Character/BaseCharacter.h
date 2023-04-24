@@ -241,6 +241,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UCameraComponent* VRCamera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class USkeletalMeshComponent* HeadMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UBoxComponent* HeadComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class USkeletalMeshComponent* LeftHandMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class USkeletalMeshComponent* RightHandMesh;
@@ -259,6 +263,8 @@ public:
 		class UBoxComponent* LeftHandBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UBoxComponent* RightHandBox;
+	UPROPERTY()
+		class UMaterialInstanceDynamic* HeadMat;
 	UPROPERTY()
 		class UMaterialInstanceDynamic* LeftHandMat;
 	UPROPERTY()
@@ -327,7 +333,6 @@ public:
 		float RightABCastTime = 2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float LeftXCastTime = 5;
-
 	bool IsVR;
 
 	bool IsLeftIndexCurl;
@@ -355,6 +360,8 @@ public:
 
 	UPROPERTY()
 		class ABlackhole* Blackhole;
+	UPROPERTY()
+		class AActor* RedDot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
@@ -363,6 +370,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AThrowingWeapon> SpawnThrowingWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AActor> SpawnRedDot;
 
 	//UFUNCTION(Server, Unreliable)
 	UFUNCTION(Server, Unreliable)
@@ -375,6 +385,7 @@ public:
 	void MulticastUnGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition, FVector RightDirThrow, FQuat RightRotThrow);
 
 	void SetGrabInfo();
+	void SetRedDot();
 
 	FVector BlackHoleTrace();
 
@@ -411,13 +422,29 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastBlackholeReset();
 	UFUNCTION(Server, Unreliable)
-		void ServerHandTransform(FTransform LeftTransform, FTransform RightTransform);
+		void ServerVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastHandTransform(FTransform LeftTransform, FTransform RightTransform);
+		void MulticastVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
 	UFUNCTION(Server, Unreliable)
 		void ServerBlackholeActivate(bool IsActivate);
 
 	UFUNCTION(Server, Unreliable)
 		void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
+
+	public:
+
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRCurHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRMaxHP = 100;
+
+	UFUNCTION(BlueprintCallable)
+		void VRGetDamage(float Damage);
+	UFUNCTION(Server, Unreliable)
+		void ServerVRGetDamage(float Damage, float Rate);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastVRGetDamage(float Damage, float Rate);
+
+
 };
