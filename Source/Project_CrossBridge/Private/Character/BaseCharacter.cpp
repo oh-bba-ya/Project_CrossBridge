@@ -28,6 +28,7 @@
 #include "Objects/Blackhole.h"
 #include "Components/CapsuleComponent.h"
 #include "Objects/ThrowingWeapon.h"
+#include "VRCharacter/Widget/VRStatusWidget.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -102,6 +103,13 @@ ABaseCharacter::ABaseCharacter()
 	LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftHandMesh"));
 	LeftHandMesh->SetupAttachment(LeftHand);
 
+	VRStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("VRStatus"));
+	VRStatusWidget->SetupAttachment(LeftHand);
+	VRStatusWidget->SetRelativeLocation(FVector(-2, 0.15, 6));
+	VRStatusWidget->SetRelativeRotation(FRotator(8, 92, -70));
+	VRStatusWidget->SetRelativeScale3D(FVector(0.025));
+	VRStatusWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> VRHeadMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/VR_Head.VR_Head'"));
 	if (VRHeadMesh.Succeeded())
 	{
@@ -132,6 +140,14 @@ ABaseCharacter::ABaseCharacter()
 	{
 		LeftHandMesh->SetAnimInstanceClass(HandAnim.Class);
 		RightHandMesh->SetAnimInstanceClass(HandAnim.Class);
+	}
+
+	ConstructorHelpers::FClassFinder<UVRStatusWidget> VRStat(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Blueprints/VRPlayer/Widget/BP_VRStatusWidget.BP_VRStatusWidget_C'"));
+	if (VRStat.Succeeded())
+	{
+	
+		VRStatusWidget->SetWidgetClass(VRStat.Class);
+
 	}
 
 	LeftHandBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnLeftHandOverlap);
@@ -187,24 +203,25 @@ void ABaseCharacter::BeginPlay()
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	if (GetController() && GetController()->IsLocalController())
+	
+	IsVR = UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled();
+	if (IsVR)
 	{
-		IsVR = UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled();
-		if (IsVR)
-		{
-			UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
-			ServerVRSetting();
+		UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
+		ServerVRSetting();
 
-			RedDot = GetWorld()->SpawnActor<AActor>(SpawnRedDot, GetActorLocation(), GetActorRotation());
-			RedDot->SetActorHiddenInGame(true);
-			RedDot->SetActorEnableCollision(false);
-			VRCurHP = VRMaxHP;
-		}
-		else
-		{
-			ServerPCSetting();
-		}
+		RedDot = GetWorld()->SpawnActor<AActor>(SpawnRedDot, GetActorLocation(), GetActorRotation());
+		RedDot->SetActorHiddenInGame(true);
+		RedDot->SetActorEnableCollision(false);
+		VRCurHP = VRMaxHP;
+		Cast<UVRStatusWidget>(VRStatusWidget->GetWidget())->SetHPBar(0);
+
 	}
+	else
+	{
+		ServerPCSetting();
+	}
+	
 
 	UMaterialInterface *HeadBase = HeadMesh->GetMaterial(0);
 	if (HeadBase)
@@ -1019,6 +1036,9 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	LeftAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	LeftHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	RightHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	VRStatusWidget->SetVisibility(true);
+
 }
 
 void ABaseCharacter::ServerPCSetting_Implementation()
@@ -1044,6 +1064,8 @@ void ABaseCharacter::MulticastPCSetting_Implementation()
 	LeftAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	LeftHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RightHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	VRStatusWidget->SetVisibility(false);
 
 	camComp->SetActive(true);
 	VRCamera->SetActive(false);
@@ -1129,17 +1151,21 @@ void ABaseCharacter::SetRedDot()
 
 void ABaseCharacter::VRGetDamage(float Damage)
 {
+	
+	ServerVRGetDamage(Damage);
+}
+
+void ABaseCharacter::ServerVRGetDamage_Implementation(float Damage)
+{
+	MulticastVRGetDamage(Damage);
+}
+
+void ABaseCharacter::MulticastVRGetDamage_Implementation(float Damage)
+{
 	VRCurHP -= Damage;
-	ServerVRGetDamage(Damage, 1 - VRCurHP / VRMaxHP);
-}
+	float Rate = 1 - (VRCurHP / VRMaxHP);
+	Cast<UVRStatusWidget>(VRStatusWidget->GetWidget())->SetHPBar(Rate);
 
-void ABaseCharacter::ServerVRGetDamage_Implementation(float Damage, float Rate)
-{
-	MulticastVRGetDamage(Damage, Rate);
-}
-
-void ABaseCharacter::MulticastVRGetDamage_Implementation(float Damage, float Rate)
-{
 	if (Rate <= 0.45)
 	{
 		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0.8, 0), FVector(0.8, 0.8, 0), Rate * 20 / 9);

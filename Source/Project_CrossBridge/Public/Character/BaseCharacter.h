@@ -278,6 +278,9 @@ protected:
 	UPROPERTY()
 	class UMaterialInstanceDynamic *RightHandMat;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* VRStatusWidget;
+
 	void VRMove(const FInputActionValue &Values);
 	void Turn(const FInputActionValue &Values);
 	void LeftIndexCurl();
@@ -448,7 +451,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void VRGetDamage(float Damage);
 	UFUNCTION(Server, Unreliable)
-	void ServerVRGetDamage(float Damage, float Rate);
+	void ServerVRGetDamage(float Damage);
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastVRGetDamage(float Damage, float Rate);
+	void MulticastVRGetDamage(float Damage);
 };

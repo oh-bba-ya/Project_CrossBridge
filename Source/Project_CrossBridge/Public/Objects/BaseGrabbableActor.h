@@ -35,6 +35,9 @@ public:
 	UFUNCTION()
 	void OnGrabbableActorOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
+	UFUNCTION()
+		void OnGrabbableActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
 
 	UPROPERTY()
 	bool IsThrow;

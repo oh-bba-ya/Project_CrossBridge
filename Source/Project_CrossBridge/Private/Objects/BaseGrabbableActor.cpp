@@ -46,7 +46,7 @@ void ABaseGrabbableActor::Tick(float DeltaTime)
 	{
 		if (PCPlayer)
 		{
-
+			//PCPlayer->Server_TakeDamage(20);
 		}
 	}
 
@@ -77,4 +77,9 @@ void ABaseGrabbableActor::FindOwner()
 void ABaseGrabbableActor::OnGrabbableActorOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
 	PCPlayer = Cast<ABaseCharacter>(OtherActor);
+}
+
+void ABaseGrabbableActor::OnGrabbableActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	PCPlayer = NULL;
 }
