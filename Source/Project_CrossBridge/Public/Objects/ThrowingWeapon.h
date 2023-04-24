@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BaseGrabbableActor.generated.h"
+#include "ThrowingWeapon.generated.h"
 
 UCLASS()
-class PROJECT_CROSSBRIDGE_API ABaseGrabbableActor : public AActor
+class PROJECT_CROSSBRIDGE_API AThrowingWeapon : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ABaseGrabbableActor();
+	AThrowingWeapon();
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,20 +24,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* BoxComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UStaticMeshComponent* MeshComp;
 
-	UPROPERTY()
-		class ABaseCharacter* PCPlayer;
-
-	void FindOwner();
-
-	UFUNCTION()
-	void OnGrabbableActorOverlap(AActor* OverlappedActor, AActor* OtherActor);
-
-
-	UPROPERTY()
-	bool IsThrow;
-	
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float WeaponSpeed = 50;
 };

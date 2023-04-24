@@ -20,45 +20,43 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BasePlayer Camera Settings")
-		class USpringArmComponent* springArmComp;
+	class USpringArmComponent *springArmComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BasePlayer Camera Settings")
-		class UCameraComponent* camComp;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-		class UInputMappingContext* BaseContext;
+	class UCameraComponent *camComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-		class UInputAction* InputMovementAction;
+	class UInputMappingContext *BaseContext;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-		class UInputAction* LookAction;
+	class UInputAction *InputMovementAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-		class UInputAction* InputJumpAction;
+	class UInputAction *LookAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-		class UInputAction* InputAttackAction;
+	class UInputAction *InputJumpAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-	class UInputAction* InputContextualAction;
+	class UInputAction *InputAttackAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-	class UInputAction* InputDropWeaponAction;
-	
-	
-	
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
+	class UInputAction *InputContextualAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction *InputDropWeaponAction;
+
+	void Move(const FInputActionValue &Value);
+	void Look(const FInputActionValue &Value);
 
 	// 하위 클래스에서 캐릭터마다 슈퍼점프, 일반점프, 제트팩 시스템을 구현할 예정이므로 virtual 키워드를 사용했다.
 	virtual void Jump() override;
@@ -68,18 +66,15 @@ protected:
 	virtual void ContextualActionPressed();
 
 	virtual void ContextualActionReleased();
-	
-
 
 	/** overheadwidget */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* OverheadWidget;
+	class UWidgetComponent *OverheadWidget;
 
-	
 private:
-	class UGameInstance* GameInstance;
+	class UGameInstance *GameInstance;
 
-	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
+	class UMultiplayerSessionsSubsystem *MultiplayerSessionsSubsystem;
 
 	/** JetPack*/
 #pragma region Jetpack
@@ -87,9 +82,9 @@ protected:
 	void Release_Jump();
 
 public:
-	FORCEINLINE bool IsFlying() const {return bJetPackActive;}
-	FORCEINLINE float GetFuel() const {return Fuel;}
-	FORCEINLINE float GetMaxFuel() const {return MaxFuel; }
+	FORCEINLINE bool IsFlying() const { return bJetPackActive; }
+	FORCEINLINE float GetFuel() const { return Fuel; }
+	FORCEINLINE float GetMaxFuel() const { return MaxFuel; }
 
 private:
 	FTimerHandle fuelTimer;
@@ -97,25 +92,25 @@ private:
 	UPROPERTY(Replicated)
 	bool bJetPackActive = false;
 
-	UPROPERTY(EditAnywhere, Replicated, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Replicated, Category = JetPackSettings)
 	float Fuel = 10;
 
-	UPROPERTY(EditAnywhere,Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Category = JetPackSettings)
 	float MaxFuel = Fuel;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Category = JetPackSettings)
 	float FuelConsumptionSpeed = 0.03f;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Category = JetPackSettings)
 	float FuelRechargeSpeed = 0.03f;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Category = JetPackSettings)
 	float FuelRechargeDelay = 1.f;
 
 	void FillUpFuel();
-	
+
 	void FuelConsumption(float value);
-	
+
 	UFUNCTION()
 	void ActivateJetPack();
 
@@ -124,23 +119,21 @@ private:
 
 	UFUNCTION(Server, Unreliable)
 	void Server_ActivateJetPack();
-	
+
 	UFUNCTION(Server, Unreliable)
 	void Server_DeActivateJetPack();
-
-
 
 #pragma endregion
 
 	/** Player Status HP, TakeDamage... */
 #pragma region Health
 public:
-	FORCEINLINE float GetMaxHP() const {return MaxHP;}
+	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 
 protected:
 	/** 현재 체력 세터. 값을 0과 MaxHealth 사이로 범위제한하고 OnHealthUpdate를 호출합니다. 서버에서만 호출되어야 합니다.*/
-	UFUNCTION(BlueprintCallable, Category="Health")
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void SetCurrentHealth(float healthValue);
 
 private:
@@ -149,85 +142,77 @@ private:
 
 	UFUNCTION()
 	void SubTractHealth(int32 value);
-	
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Status Health")
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Status Health")
 	float MaxHP;
 
-	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Status Health")
+	UPROPERTY(EditDefaultsOnly, Replicated, Category = "Settings|Status Health")
 	float CurrentHP;
 
-
 #pragma endregion
-
 
 	/** Fire */
 #pragma region Weapon Fire
 protected:
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
-	UAnimMontage* fireMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Animation")
+	UAnimMontage *fireMontage;
 
 	UFUNCTION()
 	void Fire();
-	
-	UFUNCTION(NetMulticast,Unreliable)
+
+	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_Fire();
 #pragma endregion
 
-	
 	/** Weapon Pickup , Drop */
 #pragma region Weapon Properties
 private:
-	class AProjectileWeapon* myWeapon;
+	class AProjectileWeapon *myWeapon;
+
 public:
-	FORCEINLINE void SetWeapon(AProjectileWeapon* w) { myWeapon = w;}
-	FORCEINLINE AProjectileWeapon* GetOwningWeapon() {return myWeapon;}
+	FORCEINLINE void SetWeapon(AProjectileWeapon *w) { myWeapon = w; }
+	FORCEINLINE AProjectileWeapon *GetOwningWeapon() { return myWeapon; }
 
 protected:
 	void DropWeapon();
 
 #pragma endregion
 
-
 /** Player Name*/
 #pragma region PlayerName
 
 public:
-
 	UPROPERTY(Replicated)
 	FString myName;
-	
+
 	UFUNCTION(Server, Unreliable)
-	void ServerSetName(const FString& name);
-	
-	class UOverheadWidget* overhead;
+	void ServerSetName(const FString &name);
 
-#pragma endregion 
+	class UOverheadWidget *overhead;
 
+#pragma endregion
 
 	/** Skill : Freeze */
 #pragma region Skill Freeze
 private:
-	UPROPERTY(EditDefaultsOnly,Category="Settings|Skill Freeze")
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Skill Freeze")
 	TSubclassOf<class AFreeze> FreezeFactory;
 
 	UPROPERTY(Replicated)
-	class AFreeze* freeze;
-protected:
+	class AFreeze *freeze;
 
+protected:
 	void FreezeSpawn();
-	
-	UFUNCTION(Server,Unreliable)
+
+	UFUNCTION(Server, Unreliable)
 	void Server_FreezeSpawn();
 
 	void RemoveFreeze();
 
-	UFUNCTION(Server,Unreliable)
+	UFUNCTION(Server, Unreliable)
 	void Server_RemoveFreeze();
 
-
-
-#pragma region endregion 
-
+#pragma region endregion
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -237,137 +222,178 @@ protected:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputMappingContext* IMC_VRInput;
+	class UInputMappingContext *IMC_VRInput;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputMappingContext* IMC_VRHand;
+	class UInputMappingContext *IMC_VRHand;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_Move;
+	class UInputAction *IA_Move;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_Turn;
+	class UInputAction *IA_Turn;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_LeftIndexCurl;
+	class UInputAction *IA_LeftIndexCurl;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_LeftGrasp;
+	class UInputAction *IA_LeftGrasp;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_LeftY;
+	class UInputAction *IA_LeftY;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_LeftX;
+	class UInputAction *IA_LeftX;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_RightIndexCurl;
+	class UInputAction *IA_RightIndexCurl;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_RightGrasp;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UCameraComponent* VRCamera;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class USkeletalMeshComponent* LeftHandMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class USkeletalMeshComponent* RightHandMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UMotionControllerComponent* LeftHand;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UMotionControllerComponent* RightHand;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UMotionControllerComponent* LeftGrip;
+	class UInputAction *IA_RightGrasp;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction *IA_RightB;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction *IA_RightA;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UMotionControllerComponent* RightAim;
+	class UCameraComponent *VRCamera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UMotionControllerComponent* LeftAim;
+	class USkeletalMeshComponent *HeadMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UBoxComponent* LeftHandBox;
+	class UBoxComponent *HeadComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class UBoxComponent* RightHandBox;
+	class USkeletalMeshComponent *LeftHandMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class USkeletalMeshComponent *RightHandMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UMotionControllerComponent *LeftHand;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UMotionControllerComponent *RightHand;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UMotionControllerComponent *LeftGrip;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UMotionControllerComponent *RightAim;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UMotionControllerComponent *LeftAim;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UBoxComponent *LeftHandBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UBoxComponent *RightHandBox;
 	UPROPERTY()
-		class UMaterialInstanceDynamic* LeftHandMat;
+	class UMaterialInstanceDynamic *HeadMat;
 	UPROPERTY()
-		class UMaterialInstanceDynamic* RightHandMat;
+	class UMaterialInstanceDynamic *LeftHandMat;
+	UPROPERTY()
+	class UMaterialInstanceDynamic *RightHandMat;
 
-	void VRMove(const FInputActionValue& Values);
-	void Turn(const FInputActionValue& Values);
+	void VRMove(const FInputActionValue &Values);
+	void Turn(const FInputActionValue &Values);
 	void LeftIndexCurl();
 	void LeftGrasp();
 	void LeftY();
 	void LeftX();
 	void RightIndexCurl();
 	void RightGrasp();
-	void	LeftIndexCurlEnd();
-	void	LeftGraspEnd();
+	void RightB();
+	void RightA();
+	void LeftIndexCurlEnd();
+	void LeftGraspEnd();
 	void LeftYEnd();
 	void LeftXEnd();
-	void	RightIndexCurlEnd();
+	void RightIndexCurlEnd();
 	void RightGraspEnd();
+	void RightBEnd();
+	void RightAEnd();
 
 	UFUNCTION()
-		void OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnLeftHandOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 	UFUNCTION()
-		void OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnRightHandOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 	UFUNCTION()
-		void OnLeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnLeftHandEndOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex);
 	UFUNCTION()
-		void OnRightHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnRightHandEndOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex);
 
 	FVector RightPrevLoc;
 	FQuat RightPrevRot;
 
+	UPROPERTY()
 	FVector RightThrowDir;
+	UPROPERTY()
 	FQuat RightThrowRot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float ThrowPower;
+	float ThrowPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float ToquePower;
+	float ToquePower;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float BlackHoleForwardPower = 2000;
+	float BlackHoleForwardPower = 2000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Gravity = -4000;
+	float Gravity = -4000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float UnitTime = 0.2;
+	float UnitTime = 0.2;
 
 	UPROPERTY()
-		float LeftYTimer;
+	float LeftYTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float LeftYCastTime = 5;
+	float LeftYCastTime = 5;
 	UPROPERTY()
-		float LeftXTimer;
+	float LeftXTimer;
+	UPROPERTY()
+	float BlackholeTimer;
+	UPROPERTY()
+	float RightABTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float LeftXCastTime = 5;
+	float RightABCastTime = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LeftXCastTime = 5;
 
-	bool IsVR = false;
+	bool IsVR;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
 	bool IsLeftY;
 	bool IsLeftX;
+	UPROPERTY(Replicated)
+	bool IsBlackholeSet;
 	bool IsRightIndexCurl;
 	bool IsRightGrasp;
+	bool IsRightB;
+	bool IsRightA;
+	bool IsRightAB;
 
 	bool IsLeftGrab;
 	bool IsRightGrab;
 
 	UPROPERTY()
-		TArray<FVector> LeftXTraces;
+	TArray<FVector> LeftXTraces;
 
 	UPROPERTY()
-		class ABaseGrabbableActor* GrabbedActorLeft;
+	class ABaseGrabbableActor *GrabbedActorLeft;
 	UPROPERTY()
-		class ABaseGrabbableActor* GrabbedActorRight;
+	class ABaseGrabbableActor *GrabbedActorRight;
 
 	UPROPERTY()
-		class ABlackhole* Blackhole;
+	class ABlackhole *Blackhole;
+	UPROPERTY()
+	class AActor *RedDot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
+	TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TSubclassOf<class ABlackhole> SpawnBlackhole;
+	TSubclassOf<class ABlackhole> SpawnBlackhole;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class AThrowingWeapon> SpawnThrowingWeapon;
 
-	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
-	void UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class AActor> SpawnRedDot;
+
+	// UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Unreliable)
+	void ServerGrabTheActor(ABaseGrabbableActor *GrabbedActor, const FString &GrabPosition);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastGrabTheActor(ABaseGrabbableActor *GrabbedActor, const FString &GrabPosition);
+	UFUNCTION(Server, Unreliable)
+	void ServerUnGrabTheActor(ABaseGrabbableActor *GrabbedActor, const FString &GrabPosition, FVector RightDirThrow, FQuat RightRotThrow);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastUnGrabTheActor(ABaseGrabbableActor *GrabbedActor, const FString &GrabPosition, FVector RightDirThrow, FQuat RightRotThrow);
 
 	void SetGrabInfo();
+	void SetRedDot();
 
 	FVector BlackHoleTrace();
 
@@ -375,37 +401,54 @@ protected:
 	void ResetColorChange(FString Position);
 
 	UFUNCTION(Server, Unreliable)
-		void ServerColorChange(float Rate, const FString& Position);
+	void ServerColorChange(float Rate, const FString &Position);
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastColorChange(float Rate, const FString& Position);
+	void MulticastColorChange(float Rate, const FString &Position);
 	UFUNCTION(Server, Unreliable)
-		void ServerResetColorChange(const FString& Position);
+	void ServerResetColorChange(const FString &Position);
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastResetColorChange(const FString& Position);
+	void MulticastResetColorChange(const FString &Position);
 	UFUNCTION(Server, Unreliable)
-		void ServerSpawnGrabbableActor();
+	void ServerSpawnGrabbableActor();
 
 	UFUNCTION(Server, Unreliable)
-		void ServerVRSetting();
+	void ServerVRSetting();
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastVRSetting();
+	void MulticastVRSetting();
 
 	UFUNCTION(Server, Unreliable)
-		void ServerPCSetting();
+	void ServerPCSetting();
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastPCSetting();
+	void MulticastPCSetting();
 
 	UFUNCTION(Server, Unreliable)
-		void ServerBlackholeSet(float Rate, FVector Loc);
+	void ServerBlackholeSet(float Rate, FVector Loc);
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastBlackholeSet(float Rate, FVector Loc);
+	void MulticastBlackholeSet(float Rate, FVector Loc);
 	UFUNCTION(Server, Unreliable)
-		void ServerBlackholeReset();
+	void ServerBlackholeReset();
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastBlackholeReset();
+	void MulticastBlackholeReset();
 	UFUNCTION(Server, Unreliable)
-		void ServerHandTransform(FTransform LeftTransform, FTransform RightTransform);
+	void ServerVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastHandTransform(FTransform LeftTransform, FTransform RightTransform);
-	
+	void MulticastVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
+	UFUNCTION(Server, Unreliable)
+	void ServerBlackholeActivate(bool IsActivate);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float VRCurHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float VRMaxHP = 100;
+
+	UFUNCTION(BlueprintCallable)
+	void VRGetDamage(float Damage);
+	UFUNCTION(Server, Unreliable)
+	void ServerVRGetDamage(float Damage, float Rate);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastVRGetDamage(float Damage, float Rate);
 };
