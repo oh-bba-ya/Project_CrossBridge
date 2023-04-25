@@ -26,6 +26,12 @@ void UBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		isinAir = baseCharacter->GetCharacterMovement()->IsFalling();
 
 		bIsFlying = baseCharacter->IsFlying();
+
+		FRotator viewRot = baseCharacter->GetBaseAimRotation();
+		FRotator baseRot = baseCharacter->GetActorRotation();
+		FRotator deltaRot = baseRot-viewRot;
+
+		pitch = FMath::Clamp(deltaRot.GetNormalized().Pitch,-45.f,45.f);
 		
 	}
 

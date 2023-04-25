@@ -194,7 +194,6 @@ void AProjectileWeapon::TraceUnderCosshairs(FHitResult& TraceHitResult)
 		// LineTrace 범위안에 감지되는 액터가 존재하지 않을시..
 		if(!TraceHitResult.bBlockingHit)
 		{
-			UE_LOG(LogTemp,Warning, TEXT("Not Trace"));
 			TraceHitResult.ImpactPoint = End;
 			HitTarget = End;
 			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
@@ -203,7 +202,6 @@ void AProjectileWeapon::TraceUnderCosshairs(FHitResult& TraceHitResult)
 		{
 			HitTarget = TraceHitResult.ImpactPoint;
 			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
-			UE_LOG(LogTemp,Warning,TEXT("Hit Name : %s"),*TraceHitResult.GetActor()->GetName());
 		}
 	}
 	

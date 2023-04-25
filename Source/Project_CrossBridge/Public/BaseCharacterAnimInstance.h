@@ -31,6 +31,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Settings|Anim")
 	bool bAiming = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Anim")
+	float pitch;
+	
 private:
 	class ABaseCharacter* baseCharacter;
 	

@@ -16,6 +16,8 @@ class PROJECT_CROSSBRIDGE_API ABaseCharacterController : public APlayerControlle
 
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void SetupInputComponent() override;
 	
 
 public:
@@ -29,5 +31,23 @@ public:
 
 private:
 	UBaseCharacterWidget* baseCharacterUI;
+
+	/** Quit Widget */
+protected:
+	void ShowReturnToMainMenu();
+
+private:
+	/**
+	 * return to main menu
+	 */
+
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+
+	UPROPERTY()
+	class UReturnToMainMenu* ReturnToMainMenu;
+
+	bool bReturnToMainMenuOpen = false;
+	
 	
 };
