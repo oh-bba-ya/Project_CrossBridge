@@ -74,7 +74,7 @@ void ABaseCharacter::Look(const FInputActionValue& Value)
 
 void ABaseCharacter::Jump()
 {
-	// Super::Jump ´Â Character Å¬·¡½ºÀÇ Jump ÇÔ¼ö¸¦ ÂüÁ¶ÇÏ±â À§ÇØ
+	// Super::Jump ëŠ” Character í´ë˜ìŠ¤ì˜ Jump í•¨ìˆ˜ë¥¼ ì°¸ì¡°í•˜ê¸° ìœ„í•´
 	Super::Jump();
 }
 
