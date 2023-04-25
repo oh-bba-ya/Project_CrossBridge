@@ -40,13 +40,13 @@ void ABaseGrabbableActor::Tick(float DeltaTime)
 	}
 	FString myOwner = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
 	FString infoText = FString::Printf(TEXT("Owner: %s"),  *myOwner);
-	DrawDebugString(GetWorld(), GetActorLocation(), infoText, nullptr, FColor::White, 0.0f, true, 1.0f);
+
 
 	if (IsThrow)
 	{
 		if (PCPlayer)
 		{
-
+			//PCPlayer->Server_TakeDamage(20);
 		}
 	}
 
@@ -77,4 +77,9 @@ void ABaseGrabbableActor::FindOwner()
 void ABaseGrabbableActor::OnGrabbableActorOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
 	PCPlayer = Cast<ABaseCharacter>(OtherActor);
+}
+
+void ABaseGrabbableActor::OnGrabbableActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	PCPlayer = NULL;
 }
