@@ -262,11 +262,13 @@ protected:
 	class UMotionControllerComponent *RightHand;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 	class UMotionControllerComponent *LeftGrip;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UMotionControllerComponent *RightGrip;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-	class UMotionControllerComponent *RightAim;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 	class UMotionControllerComponent *LeftAim;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+	class UMotionControllerComponent *RightAim;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 	class UBoxComponent *LeftHandBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
@@ -343,6 +345,10 @@ protected:
 	float RightABCastTime = 2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LeftXCastTime = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRHealTime;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRHealDelayTime = 2;
 
 	bool IsVR;
 
@@ -443,7 +449,7 @@ protected:
 	void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite)
 	float VRCurHP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float VRMaxHP = 100;
@@ -453,5 +459,5 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void ServerVRGetDamage(float Damage);
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastVRGetDamage(float Damage);
+	void MulticastVRGetDamage(float Rate);
 };

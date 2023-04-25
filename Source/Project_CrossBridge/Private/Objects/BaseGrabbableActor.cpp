@@ -40,7 +40,7 @@ void ABaseGrabbableActor::Tick(float DeltaTime)
 	}
 	FString myOwner = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
 	FString infoText = FString::Printf(TEXT("Owner: %s"),  *myOwner);
-	DrawDebugString(GetWorld(), GetActorLocation(), infoText, nullptr, FColor::White, 0.0f, true, 1.0f);
+
 
 	if (IsThrow)
 	{

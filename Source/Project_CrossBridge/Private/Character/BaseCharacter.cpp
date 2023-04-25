@@ -29,6 +29,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Objects/ThrowingWeapon.h"
 #include "VRCharacter/Widget/VRStatusWidget.h"
+#include "Math/Vector.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -81,6 +82,10 @@ ABaseCharacter::ABaseCharacter()
 	LeftGrip = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftGrip"));
 	LeftGrip->SetupAttachment(RootComponent);
 	LeftGrip->SetTrackingMotionSource(FName("LeftGrip"));
+
+	RightGrip = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightGrip"));
+	RightGrip->SetupAttachment(RootComponent);
+	RightGrip->SetTrackingMotionSource(FName("RightGrip"));
 
 	LeftAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftAim"));
 	LeftAim->SetupAttachment(RootComponent);
@@ -209,11 +214,9 @@ void ABaseCharacter::BeginPlay()
 	{
 		UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
 		ServerVRSetting();
-
 		RedDot = GetWorld()->SpawnActor<AActor>(SpawnRedDot, GetActorLocation(), GetActorRotation());
 		RedDot->SetActorHiddenInGame(true);
 		RedDot->SetActorEnableCollision(false);
-		VRCurHP = VRMaxHP;
 		Cast<UVRStatusWidget>(VRStatusWidget->GetWidget())->SetHPBar(0);
 
 	}
@@ -264,6 +267,31 @@ void ABaseCharacter::Tick(float DeltaTime)
 	if (IsVR)
 	{
 		ServerVRTransform(VRCamera->GetRelativeTransform(), LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
+
+		float AimDotProduct = FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector());
+		float GripDotProduct = FVector::DotProduct(RightGrip->GetRightVector(), LeftGrip->GetRightVector());
+
+		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9)
+		{
+			VRHealTime += DeltaTime;
+			if (VRCurHP <= VRMaxHP)
+			{
+				if (VRHealTime <= VRHealDelayTime)
+				{
+					ServerColorChange(VRHealTime / VRHealDelayTime, FString("Heal"));
+				}
+				else
+				{
+					VRGetDamage(-0.5 * DeltaTime);
+				}
+
+			}
+		}
+		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9) && VRHealTime > 0)
+		{
+			VRHealTime = 0;
+			ServerResetColorChange("Right");
+		}
 	}
 
 	SetGrabInfo();
@@ -328,9 +356,14 @@ void ABaseCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	FVector StartPos = RightAim->GetComponentLocation();
-	FVector EndPos = StartPos + RightAim->GetForwardVector() * 1000;
+
+	
+
+	FVector StartPos = RightGrip->GetComponentLocation();
+	FVector EndPos = StartPos + RightGrip->GetRightVector() * 1000;
 	// DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector())));
+
 }
 
 // Called to bind functionality to input
@@ -592,6 +625,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, myName);
 	DOREPLIFETIME(ABaseCharacter, freeze);
 	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
+	DOREPLIFETIME(ABaseCharacter, VRCurHP);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -736,6 +770,7 @@ void ABaseCharacter::RightGraspEnd()
 
 void ABaseCharacter::RightB()
 {
+	VRGetDamage(5);
 	IsRightB = true;
 	if (IsRightA && !IsRightAB)
 	{
@@ -969,6 +1004,11 @@ void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FStri
 		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0, 0), FVector(1, 0, 0), Rate);
 		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
 	}
+	else if (Position == FString("Heal"))
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0, 0), FVector(1, 1, 1), Rate);
+		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
+	}
 }
 
 void ABaseCharacter::ResetColorChange(FString Position)
@@ -1006,6 +1046,7 @@ void ABaseCharacter::ServerSpawnGrabbableActor_Implementation()
 
 void ABaseCharacter::ServerVRSetting_Implementation()
 {
+	VRCurHP = VRMaxHP;
 	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -100), FRotator(0, 0, 0));
 	MulticastVRSetting();
 }
@@ -1151,29 +1192,34 @@ void ABaseCharacter::SetRedDot()
 
 void ABaseCharacter::VRGetDamage(float Damage)
 {
-	
 	ServerVRGetDamage(Damage);
 }
 
 void ABaseCharacter::ServerVRGetDamage_Implementation(float Damage)
 {
-	MulticastVRGetDamage(Damage);
-}
-
-void ABaseCharacter::MulticastVRGetDamage_Implementation(float Damage)
-{
 	VRCurHP -= Damage;
 	float Rate = 1 - (VRCurHP / VRMaxHP);
+	MulticastVRGetDamage(Rate);
+}
+
+void ABaseCharacter::MulticastVRGetDamage_Implementation(float Rate)
+{
+
 	Cast<UVRStatusWidget>(VRStatusWidget->GetWidget())->SetHPBar(Rate);
+	
 
 	if (Rate <= 0.45)
 	{
 		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0, 0.8, 0), FVector(0.8, 0.8, 0), Rate * 20 / 9);
 		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)ColorVector);
+
+		
 	}
 	else if (Rate <= 0.9)
 	{
 		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0.8, 0.8, 0), FVector(0.8, 0, 0), (Rate - 0.45) * 20 / 9);
 		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)ColorVector);
+	
+
 	}
 }
