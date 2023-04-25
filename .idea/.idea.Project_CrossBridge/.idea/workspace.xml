@@ -5,15 +5,7 @@
     <projectFile>Intermediate/ProjectFiles/UE5.vcxproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a2971c65-37e9-4602-8519-d53502efa9c7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultGame.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultGame.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/DevelopLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/DevelopLevel.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StarterContent/Architecture/Floor_400x400.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StarterContent/Architecture/Floor_400x400.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StarterContent/Blueprints/Blueprint_CeilingLight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StarterContent/Blueprints/Blueprint_CeilingLight.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Project_CrossBridge/Private/Character/BaseCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Project_CrossBridge/Private/Character/BaseCharacter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Project_CrossBridge/Public/Character/BaseCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Project_CrossBridge/Public/Character/BaseCharacter.h" afterDir="false" />
-    </list>
+    <list default="true" id="a2971c65-37e9-4602-8519-d53502efa9c7" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -168,7 +160,7 @@
       <workItem from="1682408678665" duration="53000" />
       <workItem from="1682409187909" duration="89000" />
       <workItem from="1682409809415" duration="1338000" />
-      <workItem from="1682414056418" duration="332000" />
+      <workItem from="1682414056418" duration="928000" />
     </task>
     <servers />
   </component>
