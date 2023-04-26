@@ -18,12 +18,17 @@ AButtons::AButtons()
 	PrimaryActorTick.bCanEverTick = true;
 
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+	BoxComp->SetBoxExtent(FVector(15, 15, 5));
 	SetRootComponent(BoxComp);
 
 	ButtonComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ButtonComp"));
 	ButtonComp->SetupAttachment(RootComponent);
+	ButtonComp->SetRelativeLocation(FVector(0, 0, -15));
+	ButtonComp->SetRelativeScale3D(FVector(0.5, 0.5, 0.2));
 	PushButtonComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PushButtonComp"));
 	PushButtonComp->SetupAttachment(RootComponent);
+	PushButtonComp->SetRelativeLocation(FVector(0, 0, -3));
+	PushButtonComp->SetRelativeScale3D(FVector(0.3, 0.3, 0.15));
 
 	JoinWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("JoinWidgetComp"));
 	JoinWidgetComp->SetupAttachment(RootComponent);
@@ -54,7 +59,7 @@ void AButtons::Tick(float DeltaTime)
 	if (IsPressed && Timer <= 1)
 	{	
 		Timer += DeltaTime;
-		PushButtonComp->SetRelativeLocation(FVector(0, 0, EaseOutElasticRev(Timer / 3) * 20));	
+		PushButtonComp->SetRelativeLocation(FVector(0, 0, -3 + EaseOutElasticRev(Timer / 30) * 20));	
 	}
 	else if (IsPressed && Timer >1)
 	{

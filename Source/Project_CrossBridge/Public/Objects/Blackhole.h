@@ -28,11 +28,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class USphereComponent* SphereComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UStaticMeshComponent* MeshComp;
+		class UStaticMeshComponent* BlackSphereMeshComp;	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector OriginSize = FVector(1);
+		class UStaticMeshComponent* ShineSphereMeshComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector LimitSize = FVector(3);
+		class UStaticMeshComponent* FloorMeshComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UNiagaraComponent* CenterNiagaraComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UNiagaraComponent* ExternalNiagaraComp;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector OriginSize = FVector(0.5);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector LimitSize = FVector(1);
 
 	UFUNCTION()
 		void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -46,11 +56,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Power = 50;
 	UPROPERTY()
-	bool IsBlackholeActive;
+	bool IsBlackholeActive = false;
 
 	UFUNCTION(Server, Unreliable)
 		void ServerBlackholeActive();
+	
+	void BlackholeActiveSetting();
+	void BlackholeDeactivate();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastBlackholeActiveSetting();
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastBlackholeDeactivate();
 
 
 };

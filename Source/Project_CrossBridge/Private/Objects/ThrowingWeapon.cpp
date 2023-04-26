@@ -16,8 +16,11 @@ AThrowingWeapon::AThrowingWeapon()
 
 
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+	BoxComp->SetBoxExtent(FVector(4, 1, 1));
 	SetRootComponent(BoxComp);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+	MeshComp->SetRelativeLocation(FVector(-3.5, 0, 0));
+	MeshComp->SetRelativeRotation(FRotator(-90, 0, 0));
 	MeshComp->SetupAttachment(RootComponent);
 
 }

@@ -282,7 +282,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9)
 		{
 			VRHealTime += DeltaTime;
-			if (VRCurHP <= VRMaxHP)
+			if (VRCurHP < VRMaxHP)
 			{
 				if (VRHealTime <= VRHealDelayTime)
 				{
@@ -1184,7 +1184,7 @@ void ABaseCharacter::ServerSpawnGrabbableActor_Implementation()
 void ABaseCharacter::ServerVRSetting_Implementation()
 {
 	VRCurHP = VRMaxHP;
-	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -100), FRotator(0, 0, 0));
+	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	MulticastVRSetting();
 }
 
@@ -1297,6 +1297,14 @@ void ABaseCharacter::MulticastVRTransform_Implementation(FTransform HeadTransfor
 void ABaseCharacter::ServerBlackholeActivate_Implementation(bool IsActive)
 {
 	IsBlackholeSet = IsActive;
+	if (IsActive)
+	{
+		Blackhole->BlackholeActiveSetting();
+	}
+	else
+	{
+		Blackhole->BlackholeDeactivate();
+	}
 }
 
 void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, FRotator SpawnRot)
