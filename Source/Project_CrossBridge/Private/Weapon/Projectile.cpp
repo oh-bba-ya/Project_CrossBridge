@@ -2,7 +2,7 @@
 
 
 #include "Weapon/Projectile.h"
-#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 
@@ -12,18 +12,17 @@ AProjectile::AProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
-	SetRootComponent(BoxComponent);
-	BoxComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	BoxComponent->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
-	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionBox"));
+	SetRootComponent(SphereComponent);
+	SphereComponent->SetCollisionProfileName(FName("BulletPreset"));
+	SphereComponent->SetSphereRadius(32.f);
+	SphereComponent->SetWorldScale3D(FVector(0.2f,0.2f,0.2f));
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetRelativeScale3D(FVector(0.2f,0.2f,0.2f));
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+	
 	
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComponent"));
 
@@ -36,7 +35,15 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnBeginOverlap);
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnBeginOverlap);
+
+	FTimerHandle destroyTimer;
+
+	GetWorld()->GetTimerManager().SetTimer(destroyTimer,FTimerDelegate::CreateLambda([this]()->void
+	{
+		Destroy();
+	}),LifeSpan,false);
+
 }
 
 // Called every frame
@@ -44,11 +51,31 @@ void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	ReadyShoot(DeltaTime);
 }
 
 void AProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Destroy();
+}
+
+void AProjectile::ReadyShoot(float deltaTime)
+{
+	if(!Ready)
+	{
+		currentTime += deltaTime;
+		CurrentScale = FMath::Lerp<float>(CurrentScale,ScaleLimit,currentTime/GrowTime);
+
+		SphereComponent->SetWorldScale3D(FVector(CurrentScale,CurrentScale,CurrentScale));
+	}
+
+
+	if(currentTime >= GrowTime)
+	{
+		SphereComponent->SetWorldScale3D(FVector(ScaleLimit,ScaleLimit,ScaleLimit));
+		Ready = true;
+	}
+	
 }
 

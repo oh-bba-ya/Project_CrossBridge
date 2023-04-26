@@ -18,6 +18,11 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void SetupInputComponent() override;
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	virtual float GetServerTimer();
+	virtual void ReceivedPlayer() override;
 	
 
 public:
@@ -26,6 +31,25 @@ public:
 
 	FORCEINLINE UBaseCharacterWidget* GetBaseCharacterUI() {return baseCharacterUI;}
 
+/** MatchTime*/
+	void SetHUDCountDown(float CountdownTime);
+	void SetHUDTime();
+
+	/** Sync time between client and server */
+	UFUNCTION(Server, Reliable)
+	void ServerRequestServerTime(float TimeOfClinetRequest);
+
+	UFUNCTION(Client, Reliable)
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
+
+	float ClientServerDelta = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Time")
+	float TimeSyncFrequency = 5.f;
+
+	float TimeSyncRunningTime = 0.f;
+
+	void CheckTimeSync(float DeltaTime);
 
 
 
@@ -48,6 +72,9 @@ private:
 	class UReturnToMainMenu* ReturnToMainMenu;
 
 	bool bReturnToMainMenuOpen = false;
-	
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Time")
+	float MatchTime = 120.f;
+	float CountdownInt = 0.f;
 	
 };

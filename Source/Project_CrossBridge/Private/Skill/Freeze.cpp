@@ -3,8 +3,10 @@
 
 #include "Skill/Freeze.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Character/BaseCharacter.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AFreeze::AFreeze()
@@ -31,6 +33,14 @@ void AFreeze::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AFreeze::Destroyed()
+{
+	if(breakEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),breakEffect,GetActorLocation());
+	}
 }
 
 // Called every frame
