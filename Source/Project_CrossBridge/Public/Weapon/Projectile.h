@@ -25,7 +25,7 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere)
-	class UBoxComponent* BoxComponent;
+	class USphereComponent* SphereComponent;
 
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* MeshComponent; 
@@ -33,11 +33,33 @@ private:
 	UPROPERTY(VisibleAnywhere, Category=Movement)
 	class UProjectileMovementComponent* MovementComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	float Damage =1.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	bool Ready = false;
+	
+	float currentTime = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	float GrowTime = 1.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	float ScaleLimit = 1.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	float CurrentScale = 0.2f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	float LifeSpan = 3.0f;
+
 public:
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+
+	void ReadyShoot(float deltaTime);
 
 	
 };

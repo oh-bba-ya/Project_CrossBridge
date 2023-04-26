@@ -26,6 +26,9 @@ public:
 
 	void SetHealthBar(float curHP, float MaxHP);
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* CountdownText;
+	
 protected:
 	virtual void NativeConstruct() override;
 
