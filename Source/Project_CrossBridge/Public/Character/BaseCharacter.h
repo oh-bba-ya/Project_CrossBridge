@@ -301,10 +301,17 @@ public:
 		class UInputAction* IA_RightIndexCurl;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_RightGrasp;
-
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_RightB;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_RightA;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UCameraComponent* VRCamera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class USkeletalMeshComponent* HeadMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UBoxComponent* HeadComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class USkeletalMeshComponent* LeftHandMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
@@ -315,7 +322,8 @@ public:
 		class UMotionControllerComponent* RightHand;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UMotionControllerComponent* LeftGrip;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UMotionControllerComponent* RightGrip;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UMotionControllerComponent* RightAim;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
@@ -325,9 +333,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UBoxComponent* RightHandBox;
 	UPROPERTY()
+		class UMaterialInstanceDynamic* HeadMat;
+	UPROPERTY()
 		class UMaterialInstanceDynamic* LeftHandMat;
 	UPROPERTY()
 		class UMaterialInstanceDynamic* RightHandMat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* VRStatusWidget;
+
 
 	void VRMove(const FInputActionValue& Values);
 	void Turn(const FInputActionValue& Values);
@@ -337,12 +350,16 @@ public:
 	void LeftX();
 	void RightIndexCurl();
 	void RightGrasp();
+	void RightB();
+	void RightA();
 	void	LeftIndexCurlEnd();
 	void	LeftGraspEnd();
 	void LeftYEnd();
 	void LeftXEnd();
 	void	RightIndexCurlEnd();
 	void RightGraspEnd();
+	void RightBEnd();
+	void RightAEnd();
 
 	UFUNCTION()
 		void OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -355,8 +372,9 @@ public:
 
 	FVector RightPrevLoc;
 	FQuat RightPrevRot;
-
+	UPROPERTY()
 	FVector RightThrowDir;
+	UPROPERTY()
 	FQuat RightThrowRot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -379,15 +397,30 @@ public:
 		float LeftXTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float LeftXCastTime = 5;
+	UPROPERTY()
+		float BlackholeTimer;
+	UPROPERTY()
+		float RightABTimer;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float RightABCastTime = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRHealTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRHealDelayTime = 2;
 
-	bool IsVR = false;
+	bool IsVR;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
 	bool IsLeftY;
 	bool IsLeftX;
+	UPROPERTY(Replicated)
+	bool IsBlackholeSet;
 	bool IsRightIndexCurl;
 	bool IsRightGrasp;
+	bool IsRightB;
+	bool IsRightA;
+	bool IsRightAB;
 
 	bool IsLeftGrab;
 	bool IsRightGrab;
@@ -402,17 +435,31 @@ public:
 
 	UPROPERTY()
 		class ABlackhole* Blackhole;
+	UPROPERTY()
+		class AActor* RedDot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ABlackhole> SpawnBlackhole;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AThrowingWeapon> SpawnThrowingWeapon;
 
-	void GrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
-	void UnGrabTheActor(ABaseGrabbableActor* GrabbedActor, FString GrabPosition);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AActor> SpawnRedDot;
+
+	UFUNCTION(Server, Unreliable)
+		void ServerGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition);
+	UFUNCTION(Server, Unreliable)
+		void ServerUnGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition, FVector RightDirThrow, FQuat RightRotThrow);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastUnGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition, FVector RightDirThrow, FQuat RightRotThrow);
 
 	void SetGrabInfo();
+	void SetRedDot();
 
 	FVector BlackHoleTrace();
 
@@ -448,9 +495,30 @@ public:
 		void ServerBlackholeReset();
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastBlackholeReset();
-	UFUNCTION(Server, Unreliable)
-		void ServerHandTransform(FTransform LeftTransform, FTransform RightTransform);
+
+		UFUNCTION(Server, Unreliable)
+		void ServerVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastHandTransform(FTransform LeftTransform, FTransform RightTransform);
+		void MulticastVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
+	UFUNCTION(Server, Unreliable)
+		void ServerBlackholeActivate(bool IsActivate);
+
+	UFUNCTION(Server, Unreliable)
+		void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
+
+public:
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite)
+		float VRCurHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRMaxHP = 100;
+
+	UFUNCTION(BlueprintCallable)
+		void VRGetDamage(float Damage);
+
+	UFUNCTION(Server, Unreliable)
+		void ServerVRGetDamage(float Damage);
+
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastVRGetDamage(float Rate);
 	
 };
