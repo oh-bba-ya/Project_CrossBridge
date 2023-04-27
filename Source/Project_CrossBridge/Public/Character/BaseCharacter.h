@@ -332,12 +332,21 @@ public:
 		class UBoxComponent* LeftHandBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UBoxComponent* RightHandBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UStaticMeshComponent* SwordMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UBoxComponent* SwordComp;
+
 	UPROPERTY()
 		class UMaterialInstanceDynamic* HeadMat;
 	UPROPERTY()
 		class UMaterialInstanceDynamic* LeftHandMat;
 	UPROPERTY()
 		class UMaterialInstanceDynamic* RightHandMat;
+	UPROPERTY()
+		class UMaterialInstanceDynamic* SwordMat;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetComponent* VRStatusWidget;
 
@@ -400,13 +409,21 @@ public:
 	UPROPERTY()
 		float BlackholeTimer;
 	UPROPERTY()
-		float RightABTimer;
+		float RightBTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float RightABCastTime = 2;
+		float RightBCastTime = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float VRHealTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float VRHealDelayTime = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float SwordSetTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float SwordCompleteTime = 3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float SwordActivateTime;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float SwordActivateLimitTime = 5;
 
 	bool IsVR;
 
@@ -420,7 +437,8 @@ public:
 	bool IsRightGrasp;
 	bool IsRightB;
 	bool IsRightA;
-	bool IsRightAB;
+	bool IsRedDotSet;
+	bool IsSwordSet;
 
 	bool IsLeftGrab;
 	bool IsRightGrab;
