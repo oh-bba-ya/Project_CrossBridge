@@ -31,6 +31,7 @@
 #include "Objects/ThrowingWeapon.h"
 #include "VRCharacter/Widget/VRStatusWidget.h"
 #include "Math/Vector.h"
+#include "Weapon/Cannon.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -258,7 +259,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if(bJetPackActive)
 	{
-		AddMovementInput(FVector(0,0,1));
+		AddMovementInput(FVector(0,0,JetPackSpeed));
 	}
 
 	if(overhead)
@@ -712,6 +713,7 @@ void ABaseCharacter::RemoveFreeze()
 	Server_RemoveFreeze();
 }
 
+
 void ABaseCharacter::Server_RemoveFreeze_Implementation()
 {
 	freeze->Destroy();
@@ -722,11 +724,9 @@ void ABaseCharacter::Server_RemoveFreeze_Implementation()
 	
 	DeActivateJetPack();
 }
-
-
-
-
 #pragma endregion
+
+
 
 
 

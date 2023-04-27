@@ -94,7 +94,10 @@ void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player, const
 		if(projectileFactory)
 		{
 			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(projectileFactory, SocketTransform.GetLocation(),TargetRotation);
-			Projectile->SetOwner(player);
+			if(Projectile != nullptr)
+			{
+				Projectile->SetOwner(player);
+			}
 		}
 	}
 }
