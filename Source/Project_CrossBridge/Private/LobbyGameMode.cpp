@@ -18,7 +18,7 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 		if(World)
 		{
 			bUseSeamlessTravel = true;
-			World->ServerTravel(FString("/Game/HYY/Levels/Bridge_MK2?listen"));
+			World->ServerTravel(FString("/Game/Maps/Bridge?listen"));
 			UE_LOG(LogTemp,Warning,TEXT("Go Lobby"));
 		}
 	}
