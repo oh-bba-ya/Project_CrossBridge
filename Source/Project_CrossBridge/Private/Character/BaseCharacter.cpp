@@ -31,6 +31,7 @@
 #include "Objects/ThrowingWeapon.h"
 #include "VRCharacter/Widget/VRStatusWidget.h"
 #include "Math/Vector.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -113,10 +114,20 @@ ABaseCharacter::ABaseCharacter()
 	SwordMesh->SetupAttachment(RightHand);
 	SwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SwordMesh->SetVisibility(false);
+
+	InvisibleSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvisibleSwordMesh"));
+	InvisibleSwordMesh->SetupAttachment(RightHand);
+	InvisibleSwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	InvisibleSwordMesh->SetVisibility(false);
 	
 	SwordComp = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordComp"));
 	SwordComp->SetupAttachment(SwordMesh);
 	SwordComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GrabbableObjectCreateEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("GrabbableObjectCreateEffect"));
+	GrabbableObjectCreateEffect->SetupAttachment(LeftHand);
+	GrabbableObjectCreateEffect->SetRelativeLocation(FVector(3, 4, -6));
+	GrabbableObjectCreateEffect->SetVisibility(false);
 
 	VRStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("VRStatus"));
 	VRStatusWidget->SetupAttachment(LeftHand);
@@ -232,13 +243,14 @@ void ABaseCharacter::BeginPlay()
 		RedDot = GetWorld()->SpawnActor<AActor>(SpawnRedDot, GetActorLocation(), GetActorRotation());
 		RedDot->SetActorHiddenInGame(true);
 		RedDot->SetActorEnableCollision(false);
-		Cast<UVRStatusWidget>(VRStatusWidget->GetWidget())->SetHPBar(0);
+		
 	}
 	else
 	{
 		ServerPCSetting();
 	}
 	
+	Cast<UVRStatusWidget>(VRStatusWidget->GetWidget())->SetHPBar(0);
 	UMaterialInterface* HeadBase = HeadMesh->GetMaterial(0);
 	if (HeadBase)
 	{
@@ -261,6 +273,14 @@ void ABaseCharacter::BeginPlay()
 		SwordMat = SwordMesh->CreateDynamicMaterialInstance(0, SwordBase);
 		SwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
 	}
+	UMaterialInterface* InvisibleSwordBase = InvisibleSwordMesh->GetMaterial(0);
+	if (InvisibleSwordBase)
+	{
+		InvisibleSwordMat = InvisibleSwordMesh->CreateDynamicMaterialInstance(0, InvisibleSwordBase);
+		InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+	}
+
+	ServerResetColorChange(FString("SwordDissolve"));
 
 }
 
@@ -315,6 +335,22 @@ void ABaseCharacter::Tick(float DeltaTime)
 			VRHealTime = 0;
 			ServerResetColorChange("Right");
 		}
+
+		float StatusWidgetDotProduct = FVector::DotProduct(LeftHand->GetRightVector(), -VRCamera->GetForwardVector());
+		if (StatusWidgetDotProduct >= 0.8)
+		{
+			if (!VRStatusWidget->IsVisible())
+			{
+				VRStatusWidget->SetVisibility(true);
+			}
+		}
+		else
+		{
+			if (VRStatusWidget->IsVisible())
+			{
+				VRStatusWidget->SetVisibility(false);
+			}
+		}
 		
 	}
 	
@@ -333,7 +369,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	}
 
-	if (IsLeftX)
+	if (IsLeftX && !IsBlackholeCool)
 	{
 		if (!Blackhole) 
 		{
@@ -372,7 +408,20 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		BlackholeTimer = 0;
 		Blackhole->IsBlackholeActive = false;
+		IsBlackholeCool = true;
 	}
+
+	if (IsBlackholeCool)
+	{
+		BlackholeCoolTime += DeltaTime;
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), BlackholeCoolTime));
+		if (BlackholeCoolTime > BlackholeCoolTimeLimit)
+		{
+			IsBlackholeCool = false;
+			BlackholeCoolTime = 0;
+		}
+	}
+
 
 	if (IsRedDotSet)
 	{
@@ -384,7 +433,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if (IsRightA)
+	if (IsRightA && !IsSwordCool)
 	{
 
 		float AimDotProduct = FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector());
@@ -394,7 +443,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 			SwordSetTime += DeltaTime;
 			if (SwordSetTime / SwordCompleteTime <= 1)
 			{
-				ServerColorChange(SwordSetTime / SwordCompleteTime, FString("SwordOpacity"));
+				ServerColorChange(SwordSetTime / SwordCompleteTime, FString("SwordDissolve"));
 				ServerColorChange(SwordSetTime / SwordCompleteTime, FString("RightA"));
 			}
 			else
@@ -408,6 +457,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 			{
 				SwordSetTime = 0;
 				ServerResetColorChange(FString("SwordOpacity"));
+				ServerResetColorChange(FString("SwordDissolve"));
 				ServerResetColorChange(FString("Left"));
 			}
 		}
@@ -420,15 +470,30 @@ void ABaseCharacter::Tick(float DeltaTime)
 		if (SwordActivateTime > SwordActivateLimitTime)
 		{
 			IsSwordSet = false;
+			IsSwordCool = true;
 			SwordSetTime = 0;
 			SwordActivateTime = 0;
 			ServerResetColorChange(FString("SwordOpacity"));
+			ServerResetColorChange(FString("SwordDissolve"));
 			ServerResetColorChange(FString("Left"));
 		}
 	}
 
-	FVector StartPos = LeftGrip->GetComponentLocation() + LeftAim->GetForwardVector() * 10;
-	FVector EndPos = StartPos + LeftGrip->GetRightVector() * 1000;
+	if (IsSwordCool)
+	{
+		SwordCoolTime += DeltaTime;
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), SwordCoolTime));
+		if (SwordCoolTime > SwordCoolTimeLimit)
+		{
+			IsSwordCool = false;
+			SwordCoolTime = 0;
+		}
+	}
+
+	//FVector StartPos = LeftGrip->GetComponentLocation() + LeftAim->GetForwardVector() * 10;
+	//FVector EndPos = StartPos + LeftGrip->GetRightVector() * 1000;
+	//FVector StartPos = LeftHand->GetComponentLocation();
+	//FVector EndPos = StartPos + LeftHand->GetRightVector() * 1000;
 	//DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
 
 
@@ -881,17 +946,14 @@ void ABaseCharacter::LeftX()
 
 void ABaseCharacter::LeftXEnd()
 {
-	if (LeftXTimer / LeftXCastTime > 1)
-	{
-		//Blackhole->ServerBlackholeReset();
-		//ServerBlackholeReset();
-
-	}
-	ServerBlackholeActivate(true);
-
 	IsLeftX = false;
-	LeftXTimer = 0;
-	ServerResetColorChange(FString("Left"));
+	if (!IsBlackholeCool)
+	{
+		ServerBlackholeActivate(true);
+		LeftXTimer = 0;
+		ServerResetColorChange(FString("Left"));
+	}
+
 }
 
 void ABaseCharacter::RightIndexCurl()
@@ -970,14 +1032,17 @@ void ABaseCharacter::RightBEnd()
 	IsRightB = false;
 	if  (IsRedDotSet)
 	{
+		if (RightBTimer / RightBCastTime > 1)
+		{
+			FVector StartVec = RightAim->GetComponentLocation();
+			FVector EndVec = StartVec + RightAim->GetForwardVector() * 100;
+			// FRotator Rot = (EndVec - StartVec).Rotation();
+			FRotator Rot = RightAim->GetComponentRotation();
+			ServerSpawnThrowingWeapon(EndVec, Rot);
+		}
 		IsRedDotSet = false;
 		RightBTimer = 0;
 		RedDot->SetActorHiddenInGame(true);
-		FVector StartVec = RightAim->GetComponentLocation();
-		FVector EndVec = StartVec + RightAim->GetForwardVector() * 100;
-		// FRotator Rot = (EndVec - StartVec).Rotation();
-		FRotator Rot = RightAim->GetComponentRotation();
-		ServerSpawnThrowingWeapon(EndVec, Rot);
 		ServerResetColorChange(FString("Right"));
 	}
 }
@@ -985,7 +1050,7 @@ void ABaseCharacter::RightBEnd()
 void ABaseCharacter::RightA()
 {
 	//VRGetDamage(5);
-	if (!IsRightA)
+	if (!IsRightA && !IsSwordCool)
 	{
 		ServerColorChange(0, FString("SwordOpacity"));
 	}
@@ -994,12 +1059,18 @@ void ABaseCharacter::RightA()
 
 void ABaseCharacter::RightAEnd()
 {
+	if (IsSwordSet)
+	{
+		IsSwordSet = false;
+		IsSwordCool = true;
+	}
 	IsRightA = false;
-	IsSwordSet = false;
 	SwordSetTime = 0;
 	SwordActivateTime = 0;
 	ServerResetColorChange(FString("SwordOpacity"));
+	ServerResetColorChange(FString("SwordDissolve"));
 	ServerResetColorChange(FString("Left"));
+	
 }
 
 void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -1175,6 +1246,10 @@ void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FStri
 {
 	if (Position == FString("LeftY"))
 	{
+		if (!GrabbableObjectCreateEffect->IsVisible())
+		{
+			GrabbableObjectCreateEffect->SetVisibility(true);
+		}
 		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(1, 1, 1), FVector(0, 1, 0), Rate);
 		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)ColorVector);
 	}
@@ -1196,7 +1271,16 @@ void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FStri
 	else if (Position == FString("SwordOpacity"))
 	{
 		float OpacityRate = UKismetMathLibrary::Lerp(0.3, 1, Rate);
-		SwordMat->SetScalarParameterValue(FName("SwordOpacity"), OpacityRate);
+		InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), OpacityRate);
+	}
+	else if (Position == FString("SwordDissolve"))
+	{
+		if (!SwordMesh->IsVisible())
+		{
+			SwordMesh->SetVisibility(true);
+		}
+		float DissolveRate = UKismetMathLibrary::Lerp(0, 1, Rate);
+		SwordMat->SetScalarParameterValue(FName("Dissolve"), DissolveRate);
 	}
 	else if (Position == FString("RightA"))
 	{
@@ -1228,6 +1312,10 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString& Pos
 {
 	if (Position == FString("Left"))
 	{
+		if (GrabbableObjectCreateEffect->IsVisible())
+		{
+			GrabbableObjectCreateEffect->SetVisibility(false);
+		}
 		LeftHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(1, 1, 1));
 	}
 	else if (Position == FString("Right"))
@@ -1236,7 +1324,12 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString& Pos
 	}
 	else if (Position == FString("SwordOpacity"))
 	{
-		SwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+		InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+	}	
+	else if (Position == FString("SwordDissolve"))
+	{
+		SwordMat->SetScalarParameterValue(FName("Dissolve"), 0);
+		SwordMesh->SetVisibility(false);
 	}
 }
 void ABaseCharacter::ServerSpawnGrabbableActor_Implementation()
@@ -1285,7 +1378,7 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	RightHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	VRStatusWidget->SetVisibility(true);
-	SwordMesh->SetVisibility(true);
+	InvisibleSwordMesh->SetVisibility(true);
 
 }
 
@@ -1314,6 +1407,8 @@ void ABaseCharacter::MulticastPCSetting_Implementation()
 	RightHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	VRStatusWidget->SetVisibility(false);
+	SwordMesh->SetVisibility(false);
+	InvisibleSwordMesh->SetVisibility(false);
 
 	camComp->SetActive(true);
 	VRCamera->SetActive(false);

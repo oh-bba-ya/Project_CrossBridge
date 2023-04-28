@@ -31,5 +31,5 @@ public:
 		class UStaticMeshComponent* MeshComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float WeaponSpeed = 200;
+		float WeaponSpeed = 800;
 };
