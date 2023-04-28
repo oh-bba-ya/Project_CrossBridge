@@ -50,50 +50,97 @@ void ACannon::Tick(float DeltaTime)
 
 }
 
-void ACannon::HomingFire()
+
+
+void ACannon::Entrance(class ABaseCharacter* p)
 {
-	Server_HomingFire();
+	if(p !=nullptr)
+	{
+		Server_Entrance(p);
+	}
 }
 
-void ACannon::Server_HomingFire_Implementation()
+
+
+void ACannon::MultiCast_Entrance_Implementation(class ABaseCharacter* p)
 {
-	if(bIsFire)
+	p->mycanon = this;
+}
+
+void ACannon::Server_Entrance_Implementation(class ABaseCharacter* p)
+{
+	SetOwner(p);
+	MultiCast_Entrance(p);
+}
+
+
+void ACannon::Exit(class ABaseCharacter* p)
+{
+	if(p != nullptr)
 	{
-		AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
-		UE_LOG(LogTemp,Warning,TEXT("Projectile Spawn"));
-		if(homing != nullptr)
+		Server_Exit(p);
+	}
+}
+
+void ACannon::MultiCast_Exit_Implementation(class ABaseCharacter* p)
+{
+	p->mycanon = nullptr;
+}
+
+void ACannon::Server_Exit_Implementation(class ABaseCharacter* p)
+{
+	MultiCast_Exit(p);
+	SetOwner(nullptr);
+	
+}
+
+
+
+void ACannon::HomingFire(class ABaseCharacter* p)
+{
+	UE_LOG(LogTemp,Warning,TEXT("HOming Fire start"));
+	Server_HomingFire(p);
+}
+
+
+
+void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
+{
+	AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
+	UE_LOG(LogTemp,Warning,TEXT("Projectile Spawn"));
+	Multicast_HomingFire(p,homing);
+	homing->SetOwner(p);
+}
+
+void ACannon::Multicast_HomingFire_Implementation(ABaseCharacter* p, class AHomingProjectile* h)
+{
+	if(h!=nullptr)
+	{
+		if(core != nullptr)
 		{
-			if(core != nullptr)
-			{
-				homing->MovementComponent->HomingTargetComponent = core->GetRootComponent();
-				homing->SetOwner(player);
-			}
+			h->MovementComponent->HomingTargetComponent = core->GetRootComponent();
 		}
 	}
 }
 
-void ACannon::MultiCast_HomingFire_Implementation()
-{
-	Server_HomingFire();
-}
+
 
 void ACannon::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                              int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(HasAuthority())
 	{
-		ABaseCharacter* PCPlayer = Cast<ABaseCharacter>(OtherActor);
+		ABaseCharacter* player = Cast<ABaseCharacter>(OtherActor);
 
-		if(PCPlayer != nullptr)
+		if(player != nullptr)
 		{
-			if(!(PCPlayer->IsVR))
+			if(!(player->IsVR))
 			{
-				bIsFire = true;
-				player = PCPlayer;
-				HomingFire();
+				Entrance(player);
 			}
 		}
 	}
+
 
 }
 
@@ -102,18 +149,17 @@ void ACannon::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 {
 	if(HasAuthority())
 	{
-		ABaseCharacter* PCPlayer = Cast<ABaseCharacter>(OtherActor);
+		ABaseCharacter* player = Cast<ABaseCharacter>(OtherActor);
 
-		if(PCPlayer != nullptr)
+		if(player != nullptr)
 		{
-			if(!(PCPlayer->IsVR))
+			if(!(player->IsVR))
 			{
-				bIsFire = false;
-				
+				Exit(player);
 			}
 		}
 	}
-
+	
 }
 
 void ACannon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

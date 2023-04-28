@@ -43,7 +43,7 @@ void AProjectile::BeginPlay()
 	{
 		Destroy();
 	}),LifeSpan,false);
-
+	
 }
 
 // Called every frame

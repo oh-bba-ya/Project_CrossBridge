@@ -43,17 +43,36 @@ private:
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Projectile")
 	class AVRCore* core;
 
-	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Projectile")
-	class ABaseCharacter* player;
-	
 public:
-	void HomingFire();
+	UFUNCTION()
+	void HomingFire(class ABaseCharacter* p);
 
 	UFUNCTION(Server,Unreliable)
-	void Server_HomingFire();
+	void Server_HomingFire(class ABaseCharacter* p);
 
 	UFUNCTION(NetMulticast,Unreliable)
-	void MultiCast_HomingFire();
+	void Multicast_HomingFire(class ABaseCharacter* p, class AHomingProjectile* h);
+
+	UFUNCTION()
+	void Entrance(class ABaseCharacter* p);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MultiCast_Entrance(class ABaseCharacter* p);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_Entrance(class ABaseCharacter* p);
+
+
+	UFUNCTION()
+	void Exit(class ABaseCharacter* p);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MultiCast_Exit(class ABaseCharacter* p);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_Exit(class ABaseCharacter* p);
+	
+	
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

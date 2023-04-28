@@ -32,9 +32,6 @@ void AHomingProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&AHomingProjectile::OnOverlap);
-
-	GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Spawn Homing!"), true, FVector2d(1.2f));
-	
 	
 }
 
