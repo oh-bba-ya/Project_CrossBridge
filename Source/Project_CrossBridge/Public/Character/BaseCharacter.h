@@ -353,7 +353,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UStaticMeshComponent* SwordMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UStaticMeshComponent* InvisibleSwordMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UBoxComponent* SwordComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* GrabbableObjectCreateEffect;
 
 	UPROPERTY()
 		class UMaterialInstanceDynamic* HeadMat;
@@ -363,6 +367,8 @@ public:
 		class UMaterialInstanceDynamic* RightHandMat;
 	UPROPERTY()
 		class UMaterialInstanceDynamic* SwordMat;
+	UPROPERTY()
+		class UMaterialInstanceDynamic* InvisibleSwordMat;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetComponent* VRStatusWidget;
@@ -404,9 +410,9 @@ public:
 	FQuat RightThrowRot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float ThrowPower;
+		float ThrowPower = 5000000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float ToquePower;
+		float ToquePower = 100.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float BlackHoleForwardPower = 2000;
@@ -426,6 +432,10 @@ public:
 	UPROPERTY()
 		float BlackholeTimer;
 	UPROPERTY()
+		float BlackholeCoolTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float BlackholeCoolTimeLimit = 10;
+	UPROPERTY()
 		float RightBTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float RightBCastTime = 1;
@@ -441,6 +451,11 @@ public:
 		float SwordActivateTime;	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float SwordActivateLimitTime = 5;
+	UPROPERTY()
+		float SwordCoolTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float SwordCoolTimeLimit = 15;
+
 
 	bool IsVR;
 
@@ -459,6 +474,9 @@ public:
 
 	bool IsLeftGrab;
 	bool IsRightGrab;
+
+	bool IsBlackholeCool;
+	bool IsSwordCool;
 
 	UPROPERTY()
 		TArray<FVector> LeftXTraces;
