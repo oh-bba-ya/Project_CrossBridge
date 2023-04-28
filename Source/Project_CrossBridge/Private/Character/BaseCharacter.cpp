@@ -31,6 +31,7 @@
 #include "Objects/ThrowingWeapon.h"
 #include "VRCharacter/Widget/VRStatusWidget.h"
 #include "Math/Vector.h"
+#include "Weapon/Cannon.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -273,7 +274,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if(bJetPackActive)
 	{
-		AddMovementInput(FVector(0,0,1));
+		AddMovementInput(FVector(0,0,JetPackSpeed));
 	}
 
 	if(overhead)
@@ -453,6 +454,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputRollingAction, ETriggerEvent::Completed, this, &ABaseCharacter::RollingActionReleased);
 		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Started,this,&ABaseCharacter::SlidingActionPressed);
 		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Completed, this, &ABaseCharacter::SlidingActionRelease);
+		EnhancedInputComponent->BindAction(InputPickupAction, ETriggerEvent::Started, this, &ABaseCharacter::CanonFire);
 		
 
 		
@@ -770,6 +772,7 @@ void ABaseCharacter::RemoveFreeze()
 	Server_RemoveFreeze();
 }
 
+
 void ABaseCharacter::Server_RemoveFreeze_Implementation()
 {
 	freeze->Destroy();
@@ -780,9 +783,18 @@ void ABaseCharacter::Server_RemoveFreeze_Implementation()
 	
 	DeActivateJetPack();
 }
+#pragma endregion
 
 
-
+#pragma region Canon
+void ABaseCharacter::CanonFire()
+{
+	if(mycanon != nullptr)
+	{
+		mycanon->HomingFire(this);
+		UE_LOG(LogTemp,Warning,TEXT("Canon Fire"));
+	}
+}
 
 #pragma endregion
 

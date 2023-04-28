@@ -12,13 +12,13 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	int32 NumberofPlayers = GameState.Get()->PlayerArray.Num();
 
 	UE_LOG(LogTemp,Warning,TEXT("Player NUm : %d"),NumberofPlayers);
-	if(NumberofPlayers == 3)
+	if(NumberofPlayers == 2)
 	{
 		UWorld* World = GetWorld();
 		if(World)
 		{
 			bUseSeamlessTravel = true;
-			World->ServerTravel(FString("/Game/Maps/Bridge?listen"));
+			World->ServerTravel(FString("/Game/HYY/Levels/Bridge_MK2?listen"));
 			UE_LOG(LogTemp,Warning,TEXT("Go Lobby"));
 		}
 	}

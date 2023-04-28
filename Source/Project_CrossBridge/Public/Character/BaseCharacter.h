@@ -63,6 +63,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
 	class UInputAction* InputQuitAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputPickupAction;
 	
 	
 	
@@ -130,24 +133,27 @@ public:
 	FORCEINLINE float GetMaxFuel() const {return MaxFuel; }
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|JectPack")
+	float JetPackSpeed = 1.f;
+	
 	FTimerHandle fuelTimer;
 
 	UPROPERTY(Replicated)
 	bool bJetPackActive = false;
 
-	UPROPERTY(EditAnywhere, Replicated, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Replicated, Category="Settings|JetPack")
 	float Fuel = 10;
 
-	UPROPERTY(EditAnywhere,Category=JetPackSettings)
+	UPROPERTY(EditAnywhere,Category="Settings|JetPack")
 	float MaxFuel = Fuel;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Category="Settings|JetPack")
 	float FuelConsumptionSpeed = 0.03f;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Category="Settings|JetPack")
 	float FuelRechargeSpeed = 0.03f;
 
-	UPROPERTY(EditAnywhere, Category=JetPackSettings)
+	UPROPERTY(EditAnywhere, Category="Settings|JetPack")
 	float FuelRechargeDelay = 1.f;
 
 	void FillUpFuel();
@@ -270,16 +276,27 @@ protected:
 	void Server_RemoveFreeze();
 
 
+#pragma endregion 
 
-#pragma region endregion 
+
+	/** Canon Fire */
+#pragma region Canon
+public:
+	UFUNCTION()
+	void CanonFire();
+	
+	class ACannon* mycanon;
+#pragma endregion 
 
 
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 public:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputMappingContext* IMC_VRInput;
