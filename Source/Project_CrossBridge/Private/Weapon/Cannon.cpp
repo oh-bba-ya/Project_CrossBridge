@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Objects/VRCore.h"
+#include "PickupItem/HomingItem.h"
 #include "Weapon/HomingProjectile.h"
 
 // Sets default values
@@ -48,6 +49,11 @@ void ACannon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if(core == nullptr)
+	{
+		core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
+	}
+
 }
 
 
@@ -64,7 +70,10 @@ void ACannon::Entrance(class ABaseCharacter* p)
 
 void ACannon::MultiCast_Entrance_Implementation(class ABaseCharacter* p)
 {
-	p->mycanon = this;
+	if(p!=nullptr)
+	{
+		p->mycanon = this;
+	}
 }
 
 void ACannon::Server_Entrance_Implementation(class ABaseCharacter* p)
@@ -99,7 +108,10 @@ void ACannon::Server_Exit_Implementation(class ABaseCharacter* p)
 void ACannon::HomingFire(class ABaseCharacter* p)
 {
 	UE_LOG(LogTemp,Warning,TEXT("HOming Fire start"));
-	Server_HomingFire(p);
+	if(HommingAmmo > 0)
+	{
+		Server_HomingFire(p);
+	}
 }
 
 
@@ -110,6 +122,9 @@ void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
 	UE_LOG(LogTemp,Warning,TEXT("Projectile Spawn"));
 	Multicast_HomingFire(p,homing);
 	homing->SetOwner(p);
+	GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
+	SubtractHominAmmo(1);
+	
 }
 
 void ACannon::Multicast_HomingFire_Implementation(ABaseCharacter* p, class AHomingProjectile* h)
@@ -118,10 +133,39 @@ void ACannon::Multicast_HomingFire_Implementation(ABaseCharacter* p, class AHomi
 	{
 		if(core != nullptr)
 		{
+			UE_LOG(LogTemp,Warning,TEXT("Target 선정완료"));
 			h->MovementComponent->HomingTargetComponent = core->GetRootComponent();
 		}
 	}
 }
+
+void ACannon::SetHommingAmmo(int32 v)
+{
+	v = v >= 0 ? v : 0;
+	HommingAmmo = v;
+}
+
+void ACannon::AddHomingAmmo(int32 v)
+{
+	HommingAmmo += v;
+}
+
+void ACannon::SubtractHominAmmo(int32 v)
+{
+	HommingAmmo -= v;
+	HommingAmmo = HommingAmmo >= 0 ? HommingAmmo : 0;
+}
+
+void ACannon::ReloadHoming(int32 v)
+{
+	Server_ReloadHoming(v);
+}
+
+void ACannon::Server_ReloadHoming_Implementation(int32 v)
+{
+	AddHomingAmmo(v);
+}
+
 
 
 
@@ -139,6 +183,7 @@ void ACannon::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 				Entrance(player);
 			}
 		}
+		
 	}
 
 
@@ -166,6 +211,7 @@ void ACannon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACannon, core);
+	DOREPLIFETIME(ACannon, HommingAmmo);
 	DOREPLIFETIME(ACannon, bIsFire);
 
 }

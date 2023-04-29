@@ -37,11 +37,14 @@ private:
 	TSubclassOf<class AHomingProjectile> HomingFactory;
 
 
-	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Projectile")
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
 	bool bIsFire = false;
 	
-	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Projectile")
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
 	class AVRCore* core;
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
+	int32 HommingAmmo = 0;
 
 public:
 	UFUNCTION()
@@ -71,9 +74,24 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	void Server_Exit(class ABaseCharacter* p);
-	
-	
 
+
+	UFUNCTION()
+	void SetHommingAmmo(int32 v);
+	
+	UFUNCTION()
+	void AddHomingAmmo(int32 v);
+
+	UFUNCTION()
+	void SubtractHominAmmo(int32 v);
+
+	UFUNCTION()
+	void ReloadHoming(int32 v);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_ReloadHoming(int32 v);
+	
+	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -82,3 +100,4 @@ public:
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 };
+
