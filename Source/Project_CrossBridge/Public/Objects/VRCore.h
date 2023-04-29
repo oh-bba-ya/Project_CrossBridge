@@ -29,4 +29,40 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UStaticMeshComponent* MeshComponent;
 
+	UFUNCTION()
+	void SetHealth(float v);
+
+	UFUNCTION()
+	void AddHealth(float v);
+
+	UFUNCTION()
+	void SubtractHealth(float v);
+
+	UFUNCTION()
+	void OnTakeDamage(float v);
+
+	UFUNCTION(Server,Unreliable)
+	void Server_OnTakeDamage(float v);
+
+	FORCEINLINE float GetHealth() const {return CureentHealth;}
+
+	UFUNCTION()
+	void ChangeColor();
+	
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(EditDefaultsOnly, Replicated, Category="Settings|Properties")
+	float CureentHealth;
+
+	UPROPERTY(ReplicatedUsing = ChangeColor)
+	FVector linearColor;
+
+	FLinearColor initColor;
+	UMaterialInstanceDynamic* dynamicMat;
+
+	
+
 };

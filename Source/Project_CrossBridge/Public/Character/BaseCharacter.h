@@ -286,6 +286,13 @@ public:
 	void CanonFire();
 	
 	class ACannon* mycanon;
+
+	FORCEINLINE void SetHomingItem(class AHomingItem* homing) {HomingItem = homing;}
+
+private:
+	UPROPERTY(EditDefaultsOnly, Replicated, Category="Settings|Cannon")
+	class AHomingItem* HomingItem;
+
 #pragma endregion 
 
 

@@ -52,5 +52,15 @@ void AHomingProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		UE_LOG(LogTemp,Warning,TEXT("Homing Destroy"));
 		Destroy();
 	}
+
+	if(HasAuthority())
+	{
+		AVRCore* servercore = Cast<AVRCore>(OtherActor);
+		if(servercore!=nullptr)
+		{
+			servercore->OnTakeDamage(Damage);
+			servercore->ChangeColor();
+		}
+	}
 }
 
