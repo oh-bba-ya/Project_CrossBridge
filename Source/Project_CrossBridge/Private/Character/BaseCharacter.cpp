@@ -190,6 +190,7 @@ void ABaseCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
+		UE_LOG(LogTemp,Warning,TEXT("HP : %.1f"),MaxHP);
 	}
 
 	if (APlayerController *PlayerController = Cast<APlayerController>(GetController()))
@@ -466,7 +467,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	if (IsSwordCool)
 	{
 		SwordCoolTime += DeltaTime;
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), SwordCoolTime));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), SwordCoolTime));
 		if (SwordCoolTime > SwordCoolTimeLimit)
 		{
 			IsSwordCool = false;
@@ -1001,7 +1002,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	// VRGetDamage(5);
+	VRGetDamage(5);
 	if (!IsRightA && !IsSwordCool)
 	{
 		ServerColorChange(0, FString("SwordOpacity"));
