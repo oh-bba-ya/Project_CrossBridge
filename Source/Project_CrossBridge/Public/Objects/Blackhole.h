@@ -40,9 +40,9 @@ public:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector OriginSize = FVector(0.5);
+		FVector OriginSize = FVector(0.2);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector LimitSize = FVector(1);
+		FVector LimitSize = FVector(0.4);
 
 	UFUNCTION()
 		void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

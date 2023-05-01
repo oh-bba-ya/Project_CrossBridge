@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ThrowingWeapon.generated.h"
+#include "AOEThunder.generated.h"
 
 UCLASS()
-class PROJECT_CROSSBRIDGE_API AThrowingWeapon : public AActor
+class PROJECT_CROSSBRIDGE_API AAOEThunder : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AThrowingWeapon();
+	AAOEThunder();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,15 +23,4 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UBoxComponent* BoxComp;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UStaticMeshComponent* MeshComp;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float WeaponSpeed = 800;
-
-	void BulletDestroy();
 };

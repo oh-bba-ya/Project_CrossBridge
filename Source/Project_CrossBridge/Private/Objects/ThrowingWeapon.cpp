@@ -4,6 +4,7 @@
 #include "Objects/ThrowingWeapon.h"
 #include "Components/BoxComponent.h"
 
+
 // Sets default values
 AThrowingWeapon::AThrowingWeapon()
 {
@@ -30,6 +31,8 @@ void AThrowingWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	FTimerHandle DestroyTimer;
+	GetWorldTimerManager().SetTimer(DestroyTimer, this, &AThrowingWeapon::BulletDestroy, 5.0f, false);
 }
 
 // Called every frame
@@ -40,3 +43,7 @@ void AThrowingWeapon::Tick(float DeltaTime)
 	SetActorLocation(GetActorLocation() + GetActorForwardVector() * WeaponSpeed * DeltaTime);
 }
 
+void AThrowingWeapon::BulletDestroy()
+{
+	Destroy();
+}

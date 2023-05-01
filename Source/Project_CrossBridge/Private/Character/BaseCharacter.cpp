@@ -32,6 +32,7 @@
 #include "Math/Vector.h"
 #include "Weapon/Cannon.h"
 #include "NiagaraComponent.h"
+#include "Objects/Thunder.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -886,7 +887,7 @@ void ABaseCharacter::LeftYEnd()
 {
 	if (LeftYTimer / LeftYCastTime > 1)
 	{
-		ServerSpawnGrabbableActor();
+		ServerSpawnThunder();
 	}
 	IsLeftY = false;
 	LeftYTimer = 0;
@@ -1002,7 +1003,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	VRGetDamage(5);
+	//VRGetDamage(5);
 	if (!IsRightA && !IsSwordCool)
 	{
 		ServerColorChange(0, FString("SwordOpacity"));
@@ -1275,9 +1276,11 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString &Pos
 		SwordMesh->SetVisibility(false);
 	}
 }
-void ABaseCharacter::ServerSpawnGrabbableActor_Implementation()
+void ABaseCharacter::ServerSpawnThunder_Implementation()
 {
-	ABaseGrabbableActor *GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+	//ABaseGrabbableActor *GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+	AThunder* ThunderItem = GetWorld()->SpawnActor<AThunder>(SpawnThunder, GrabbableObjectCreateEffect->GetComponentLocation(), GrabbableObjectCreateEffect->GetComponentRotation());
+	ThunderItem->AttachToComponent(LeftHand, FAttachmentTransformRules::KeepWorldTransform);
 }
 
 void ABaseCharacter::ServerVRSetting_Implementation()
@@ -1295,7 +1298,7 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	VRCamera->SetActive(true);
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("VRPlayerPreset"));
-	GetCapsuleComponent()->SetRelativeScale3D(FVector(1));
+	GetCapsuleComponent()->SetRelativeScale3D(FVector(1.3f));
 
 	GetCharacterMovement()->MaxWalkSpeed = 600;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300;

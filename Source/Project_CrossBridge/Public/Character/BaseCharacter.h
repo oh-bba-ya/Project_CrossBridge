@@ -501,6 +501,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ABaseGrabbableActor> SpawnGrabbedActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AThunder> SpawnThunder;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ABlackhole> SpawnBlackhole;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -508,6 +510,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AActor> SpawnRedDot;
+
 
 	UFUNCTION(Server, Unreliable)
 		void ServerGrabTheActor(ABaseGrabbableActor* GrabbedActor, const FString& GrabPosition);
@@ -535,7 +538,7 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastResetColorChange(const FString& Position);
 	UFUNCTION(Server, Unreliable)
-		void ServerSpawnGrabbableActor();
+		void ServerSpawnThunder();
 
 	UFUNCTION(Server, Unreliable)
 		void ServerVRSetting();
