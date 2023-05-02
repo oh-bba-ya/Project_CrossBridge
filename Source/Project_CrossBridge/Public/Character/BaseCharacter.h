@@ -409,6 +409,9 @@ public:
 	UFUNCTION()
 		void OnRightHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+		void OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	FVector RightPrevLoc;
 	FQuat RightPrevRot;
 	UPROPERTY()
@@ -457,11 +460,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float SwordActivateTime;	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float SwordActivateLimitTime = 5;
+		float SwordActivateLimitTime = 10;
 	UPROPERTY()
 		float SwordCoolTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float SwordCoolTimeLimit = 15;
+	UPROPERTY()
+		float SwordDamageCoolTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float SwordDamageCoolTimeLimit = 2;
 
 
 	bool IsVR;
@@ -484,7 +491,7 @@ public:
 
 	bool IsBlackholeCool;
 	bool IsSwordCool;
-
+	bool IsSwordDamageCool;
 	UPROPERTY()
 		TArray<FVector> LeftXTraces;
 
@@ -583,5 +590,7 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastVRGetDamage(float Rate);
+	UFUNCTION(Server, Unreliable)
+		void ServerVRAttack(const FString& Position, class ABaseCharacter* Enemy);
 	
 };

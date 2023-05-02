@@ -33,5 +33,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float WeaponSpeed = 800;
 
-	void BulletDestroy();
+	UFUNCTION(Server, Unreliable)
+		void ServerBulletDestroy();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastBulletDestroy();
+	
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

@@ -113,17 +113,23 @@ ABaseCharacter::ABaseCharacter()
 
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
 	SwordMesh->SetupAttachment(RightHand);
+	SwordMesh->SetRelativeLocation(FVector(5.1, -4, -4.8));
+	SwordMesh->SetRelativeRotation(FRotator(-75, 0, 0));
 	SwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SwordMesh->SetVisibility(false);
 
 	InvisibleSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvisibleSwordMesh"));
 	InvisibleSwordMesh->SetupAttachment(RightHand);
+	InvisibleSwordMesh->SetRelativeLocation(FVector(5.1, -4, -4.8));
+	InvisibleSwordMesh->SetRelativeRotation(FRotator(-75, 0, 0));
 	InvisibleSwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	InvisibleSwordMesh->SetVisibility(false);
 
 	SwordComp = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordComp"));
 	SwordComp->SetupAttachment(SwordMesh);
-	SwordComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SwordComp->SetCollisionProfileName(TEXT("NoCollision"));
+	SwordComp->SetRelativeLocation(FVector(3, 1, 46));
+	SwordComp->SetBoxExtent(FVector(3, 3, 38));
 
 	GrabbableObjectCreateEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("GrabbableObjectCreateEffect"));
 	GrabbableObjectCreateEffect->SetupAttachment(LeftHand);
@@ -180,6 +186,7 @@ ABaseCharacter::ABaseCharacter()
 	LeftHandBox->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnLeftHandEndOverlap);
 	RightHandBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandOverlap);
 	RightHandBox->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandEndOverlap);
+	SwordComp->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnSwordOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -264,18 +271,18 @@ void ABaseCharacter::BeginPlay()
 		RightHandMat = RightHandMesh->CreateDynamicMaterialInstance(0, RightHandBase);
 		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
 	}
-	UMaterialInterface *SwordBase = SwordMesh->GetMaterial(0);
+	UMaterialInterface *SwordBase = SwordMesh->GetMaterial(3);
 	if (SwordBase)
 	{
-		SwordMat = SwordMesh->CreateDynamicMaterialInstance(0, SwordBase);
+		SwordMat = SwordMesh->CreateDynamicMaterialInstance(3, SwordBase);
 		SwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
 	}
-	UMaterialInterface *InvisibleSwordBase = InvisibleSwordMesh->GetMaterial(0);
-	if (InvisibleSwordBase)
-	{
-		InvisibleSwordMat = InvisibleSwordMesh->CreateDynamicMaterialInstance(0, InvisibleSwordBase);
-		InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
-	}
+	//UMaterialInterface *InvisibleSwordBase = InvisibleSwordMesh->GetMaterial(3);
+	//if (InvisibleSwordBase)
+	//{
+	//	InvisibleSwordMat = InvisibleSwordMesh->CreateDynamicMaterialInstance(3, InvisibleSwordBase);
+	//	InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+	//}
 
 	ServerResetColorChange(FString("SwordDissolve"));
 }
@@ -452,6 +459,11 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsSwordSet)
 	{
+		if (SwordActivateTime == 0)
+		{
+			SwordComp->SetCollisionProfileName(TEXT("VRPlayerSwordPreset"));
+			ServerResetColorChange(FString("SwordOpacity"));
+		}
 		SwordActivateTime += DeltaTime;
 		if (SwordActivateTime > SwordActivateLimitTime)
 		{
@@ -459,9 +471,20 @@ void ABaseCharacter::Tick(float DeltaTime)
 			IsSwordCool = true;
 			SwordSetTime = 0;
 			SwordActivateTime = 0;
-			ServerResetColorChange(FString("SwordOpacity"));
+			SwordComp->SetCollisionProfileName(TEXT("NoCollision"));
 			ServerResetColorChange(FString("SwordDissolve"));
 			ServerResetColorChange(FString("Left"));
+		}
+
+	}
+	
+	if (IsSwordDamageCool)
+	{
+		SwordDamageCoolTime += DeltaTime;
+		if (SwordDamageCoolTime > SwordDamageCoolTimeLimit)
+		{
+			IsSwordDamageCool = false;
+			SwordDamageCoolTime = 0;
 		}
 	}
 
@@ -989,7 +1012,7 @@ void ABaseCharacter::RightBEnd()
 		if (RightBTimer / RightBCastTime > 1)
 		{
 			FVector StartVec = RightAim->GetComponentLocation();
-			FVector EndVec = StartVec + RightAim->GetForwardVector() * 100;
+			FVector EndVec = StartVec + RightAim->GetForwardVector() * 1;
 			// FRotator Rot = (EndVec - StartVec).Rotation();
 			FRotator Rot = RightAim->GetComponentRotation();
 			ServerSpawnThrowingWeapon(EndVec, Rot);
@@ -1017,6 +1040,12 @@ void ABaseCharacter::RightAEnd()
 	{
 		IsSwordSet = false;
 		IsSwordCool = true;
+		SwordComp->SetCollisionProfileName(TEXT("NoCollision"));
+	}
+	if (IsSwordDamageCool) 
+	{
+		IsSwordDamageCool = false;
+		SwordDamageCoolTime = 0;
 	}
 	IsRightA = false;
 	SwordSetTime = 0;
@@ -1055,6 +1084,18 @@ void ABaseCharacter::OnRightHandEndOverlap(UPrimitiveComponent *OverlappedCompon
 	if (GrabbedActorRight && GrabbedActorRight == Cast<ABaseGrabbableActor>(OtherActor))
 	{
 		GrabbedActorRight = NULL;
+	}
+}
+
+void ABaseCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
+	if (Enemy && !IsSwordDamageCool)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("IsHit"));
+		IsSwordDamageCool = true;
+		//Enemy->Server_TakeDamage(10);
+		ServerVRAttack(FString("Sword"), Enemy);
 	}
 }
 void ABaseCharacter::ServerGrabTheActor_Implementation(ABaseGrabbableActor *GrabbedActor, const FString &GrabPosition)
@@ -1216,8 +1257,9 @@ void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FStri
 	}
 	else if (Position == FString("SwordOpacity"))
 	{
-		float OpacityRate = UKismetMathLibrary::Lerp(0.3, 1, Rate);
-		InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), OpacityRate);
+		//float OpacityRate = UKismetMathLibrary::Lerp(0.3, 1, Rate);
+		//InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), OpacityRate);
+		InvisibleSwordMesh->SetVisibility(true);
 	}
 	else if (Position == FString("SwordDissolve"))
 	{
@@ -1225,7 +1267,7 @@ void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FStri
 		{
 			SwordMesh->SetVisibility(true);
 		}
-		float DissolveRate = UKismetMathLibrary::Lerp(0, 1, Rate);
+		float DissolveRate = UKismetMathLibrary::Lerp(0, 0.5f, Rate);
 		SwordMat->SetScalarParameterValue(FName("Dissolve"), DissolveRate);
 	}
 	else if (Position == FString("RightA"))
@@ -1268,7 +1310,8 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString &Pos
 	}
 	else if (Position == FString("SwordOpacity"))
 	{
-		InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+		//InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+		InvisibleSwordMesh->SetVisibility(false);
 	}
 	else if (Position == FString("SwordDissolve"))
 	{
@@ -1323,7 +1366,7 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	RightHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	VRStatusWidget->SetVisibility(true);
-	InvisibleSwordMesh->SetVisibility(true);
+	//InvisibleSwordMesh->SetVisibility(true);
 }
 
 void ABaseCharacter::ServerPCSetting_Implementation()
@@ -1476,5 +1519,13 @@ void ABaseCharacter::MulticastVRGetDamage_Implementation(float Rate)
 	{
 		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0.8, 0.8, 0), FVector(0.8, 0, 0), (Rate - 0.45) * 20 / 9);
 		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)ColorVector);
+	}
+}
+
+void ABaseCharacter::ServerVRAttack_Implementation(const FString& Position, class ABaseCharacter* Enemy)
+{
+	if (Position == FString("Sword"))
+	{
+		Enemy->Server_TakeDamage(10);
 	}
 }

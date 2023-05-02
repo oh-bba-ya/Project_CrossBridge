@@ -24,6 +24,7 @@ AThrowingWeapon::AThrowingWeapon()
 	MeshComp->SetRelativeRotation(FRotator(-90, 0, 0));
 	MeshComp->SetupAttachment(RootComponent);
 
+	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &AThrowingWeapon::OnOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -32,7 +33,7 @@ void AThrowingWeapon::BeginPlay()
 	Super::BeginPlay();
 	
 	FTimerHandle DestroyTimer;
-	GetWorldTimerManager().SetTimer(DestroyTimer, this, &AThrowingWeapon::BulletDestroy, 5.0f, false);
+	GetWorldTimerManager().SetTimer(DestroyTimer, this, &AThrowingWeapon::ServerBulletDestroy, 5.0f, false);
 }
 
 // Called every frame
@@ -43,7 +44,23 @@ void AThrowingWeapon::Tick(float DeltaTime)
 	SetActorLocation(GetActorLocation() + GetActorForwardVector() * WeaponSpeed * DeltaTime);
 }
 
-void AThrowingWeapon::BulletDestroy()
+void AThrowingWeapon::ServerBulletDestroy_Implementation()
+{
+	MulticastBulletDestroy();
+}
+
+void AThrowingWeapon::MulticastBulletDestroy_Implementation()
 {
 	Destroy();
+}
+
+void AThrowingWeapon::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	ServerBulletDestroy();
+	class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
+	if (Enemy)
+	{
+		Enemy->Server_TakeDamage(5);
+	}
+
 }
