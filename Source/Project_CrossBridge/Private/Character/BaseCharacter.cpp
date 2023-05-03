@@ -192,8 +192,9 @@ void ABaseCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
-		UE_LOG(LogTemp,Warning,TEXT("HP : %.1f"),MaxHP);
 	}
+
+	UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
 
 	if (APlayerController *PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -286,6 +287,11 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if(CurrentHP <= 0)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Die"));
+	}
+	
 	if (bJetPackActive)
 	{
 		AddMovementInput(FVector(0, 0, JetPackSpeed));
@@ -649,7 +655,8 @@ void ABaseCharacter::Server_SlidingActionReleased_Implementation()
 
 void ABaseCharacter::Multicast_SlidingActionPressed_Implementation()
 {
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	Crouch();
+	//GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	if (SlidingMontage)
 	{
 		PlayAnimMontage(SlidingMontage);
@@ -659,6 +666,7 @@ void ABaseCharacter::Multicast_SlidingActionPressed_Implementation()
 
 void ABaseCharacter::Multicast_SlidingActionReleased_Implementation()
 {
+	UnCrouch();
 	GetCapsuleComponent()->SetCapsuleHalfHeight(88.f);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
@@ -768,8 +776,11 @@ void ABaseCharacter::Fire()
 {
 	if (myWeapon != nullptr && freeze == nullptr)
 	{
-		Server_Fire();
-		myWeapon->Fire(this);
+		if(myWeapon->GetbFireDelay())
+		{
+			Server_Fire();
+			myWeapon->Fire(this);
+		}
 	}
 }
 
@@ -867,8 +878,10 @@ void ABaseCharacter::CanonFire()
 		}
 		else
 		{
-			mycanon->HomingFire(this);
-			UE_LOG(LogTemp, Warning, TEXT("Canon Fire"));
+			if(mycanon->GetFireDelay())
+			{
+				mycanon->HomingFire(this);
+			}
 		}
 	}
 

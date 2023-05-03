@@ -54,11 +54,6 @@ void ACannon::Tick(float DeltaTime)
 		core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
 	}
 
-	if(HommingAmmo > 0)
-	{
-		UE_LOG(LogTemp,Warning, TEXT("Homing ammo : %d"),HommingAmmo);
-	}
-
 }
 
 
@@ -123,12 +118,20 @@ void ACannon::HomingFire(class ABaseCharacter* p)
 
 void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
 {
-	AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
-	UE_LOG(LogTemp,Warning,TEXT("Projectile Spawn"));
-	Multicast_HomingFire(p,homing);
-	homing->SetOwner(p);
-	GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
-	SubtractHominAmmo(1);
+	if(bFireDelay)
+	{
+		bFireDelay = false;
+		FTimerHandle fireDelayHandle;
+		GetWorldTimerManager().SetTimer(fireDelayHandle, FTimerDelegate::CreateLambda([&](){bFireDelay= true;}), fireDelayTime,false);
+
+		AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
+		Multicast_HomingFire(p,homing);
+		homing->SetOwner(p);
+		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
+		SubtractHominAmmo(1);
+		
+	}
+
 	
 }
 

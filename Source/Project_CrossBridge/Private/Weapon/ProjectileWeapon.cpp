@@ -84,6 +84,7 @@ void AProjectileWeapon::Fire(ABaseCharacter* player)
 
 void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player, const FVector hitTarget)
 {
+	
 	const USkeletalMeshSocket* muzzleSocket = MeshComponent->GetSocketByName(FName("MuzzleFlash"));
 	if(muzzleSocket)
 	{
@@ -92,6 +93,9 @@ void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player, const
 		FRotator TargetRotation = ToTarget.Rotation();
 		if(projectileFactory)
 		{
+			bFireDelay = false;
+			FTimerHandle fireDelayHandle;
+			GetWorldTimerManager().SetTimer(fireDelayHandle, FTimerDelegate::CreateLambda([&](){bFireDelay= true;}), fireDelayTime,false);
 			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(projectileFactory, SocketTransform.GetLocation(),TargetRotation);
 			if(Projectile != nullptr)
 			{
@@ -243,8 +247,8 @@ void AProjectileWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AProjectileWeapon,Ammo);
-	DOREPLIFETIME(AProjectileWeapon,fireDelay);
 	DOREPLIFETIME(AProjectileWeapon,Damage);
+	DOREPLIFETIME(AProjectileWeapon,bFireDelay);
 }
 
 

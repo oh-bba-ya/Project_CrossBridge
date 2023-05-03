@@ -33,18 +33,24 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Replicated, Category="Settings|WeaponProperties")
 	int32 Ammo;
-
-	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|WeaponProperties")
-	float fireDelay;
-
+	
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|WeaponProperties")
 	float Damage;
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|WeaponProperties")
+	float fireDelayTime = 2.0f;
 	
 	bool bEquippedWeapon = false;
 
 	class ABaseCharacter* OwnerCharacter;
 	class ABaseCharacterController* Controller;
 	class AWeaponHUD* HUD;
+
+	UPROPERTY(VisibleAnywhere,Replicated, Category="Settings|WeaponProperties")
+	bool bFireDelay = true;
+
+public:
+	FORCEINLINE bool GetbFireDelay() {return bFireDelay;}
 
 public:
 	UFUNCTION()

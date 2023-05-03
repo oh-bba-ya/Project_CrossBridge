@@ -126,14 +126,6 @@ void AHomingItem::Multicast_UsingItem_Implementation(ABaseCharacter* player)
 {
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	player->SetHomingItem(nullptr);
-	if(player->GetHomingItem() != nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("NOt NUll!"), true, FVector2d(1.2f));
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("NUll!"), true, FVector2d(1.2f));
-	}
 	Ownerplayer = nullptr;
 	Destroy();
 }

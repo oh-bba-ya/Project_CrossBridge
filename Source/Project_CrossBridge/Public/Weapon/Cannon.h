@@ -46,7 +46,15 @@ private:
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
 	int32 HommingAmmo = 0;
 
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
+	bool bFireDelay = true;
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
+	float fireDelayTime = 2.0f;
+	
 public:
+	FORCEINLINE bool GetFireDelay() {return bFireDelay;}
+	
 	UFUNCTION()
 	void HomingFire(class ABaseCharacter* p);
 
