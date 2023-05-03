@@ -29,6 +29,8 @@ void AHealthItem::BeginPlay()
 	Super::BeginPlay();
 
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&AHealthItem::OnBeginOverlap);
+
+	
 	
 }
 

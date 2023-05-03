@@ -89,26 +89,42 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
 	UAnimMontage* SlidingMontage;
-protected:
+public:
 
 	void RollingActionPressed();
 
 	void RollingActionReleased();
-	
+
+protected:
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_RollingActionPressed();
 
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_RollingActionReleased();
 
+	UFUNCTION(Server, Unreliable)
+	void Server_RollingActionPressed();
+	
+	UFUNCTION(Server, Unreliable)
+	void Server_RollingActionReleased();
+	
+public:
 	void SlidingActionPressed();
+	
 	void SlidingActionRelease();
 
+protected:
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_SlidingActionPressed();
 
 	UFUNCTION(NetMulticast,Unreliable)
-	void Multicast_SlidingActionRelease();
+	void Multicast_SlidingActionReleased();
+
+	UFUNCTION(Server, Unreliable)
+	void Server_SlidingActionPressed();
+
+	UFUNCTION(Server, Unreliable)
+	void Server_SlidingActionReleased();
 	
 #pragma endregion 
 
@@ -219,19 +235,29 @@ protected:
 
 	UFUNCTION()
 	void Fire();
+
+	UFUNCTION(Server, Unreliable)
+	void Server_Fire();
 	
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_Fire();
 #pragma endregion
 
 	
-	/** Weapon Pickup , Drop */
+	/** Weapon, Item Pickup , Drop */
 #pragma region Weapon Properties
 private:
+	UPROPERTY(VisibleAnywhere,Category="Settings|Weapon")
 	class AProjectileWeapon* myWeapon;
+
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Item")
+	class AHomingItem* myHoming;
 public:
 	FORCEINLINE void SetWeapon(AProjectileWeapon* w) { myWeapon = w;}
 	FORCEINLINE AProjectileWeapon* GetOwningWeapon() {return myWeapon;}
+
+	FORCEINLINE void SetHomingItem(AHomingItem* h) {myHoming = h;}
+	FORCEINLINE AHomingItem* GetHomingItem() {return myHoming;}
 
 protected:
 	void DropWeapon();
@@ -286,13 +312,6 @@ public:
 	void CanonFire();
 	
 	class ACannon* mycanon;
-
-	FORCEINLINE void SetHomingItem(class AHomingItem* homing) {HomingItem = homing;}
-
-private:
-	UPROPERTY(EditDefaultsOnly, Replicated, Category="Settings|Cannon")
-	class AHomingItem* HomingItem;
-
 #pragma endregion 
 
 

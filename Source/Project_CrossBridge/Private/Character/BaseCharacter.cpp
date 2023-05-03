@@ -34,6 +34,8 @@
 #include "NiagaraComponent.h"
 #include "Objects/Thunder.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+#include "PickupItem/HomingItem.h"
+
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -202,8 +204,9 @@ void ABaseCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
-		UE_LOG(LogTemp,Warning,TEXT("HP : %.1f"),MaxHP);
 	}
+
+	UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
 
 	if (APlayerController *PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -298,6 +301,11 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if(CurrentHP <= 0)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Die"));
+	}
+	
 	if (bJetPackActive)
 	{
 		AddMovementInput(FVector(0, 0, JetPackSpeed));
@@ -545,9 +553,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputContextualAction, ETriggerEvent::Completed, this, &ABaseCharacter::ContextualActionReleased);
 		EnhancedInputComponent->BindAction(InputDropWeaponAction, ETriggerEvent::Started, this, &ABaseCharacter::DropWeapon);
 		EnhancedInputComponent->BindAction(InputRollingAction, ETriggerEvent::Started, this, &ABaseCharacter::RollingActionPressed);
-		EnhancedInputComponent->BindAction(InputRollingAction, ETriggerEvent::Completed, this, &ABaseCharacter::RollingActionReleased);
 		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Started, this, &ABaseCharacter::SlidingActionPressed);
-		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Completed, this, &ABaseCharacter::SlidingActionRelease);
 		EnhancedInputComponent->BindAction(InputPickupAction, ETriggerEvent::Started, this, &ABaseCharacter::CanonFire);
 
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABaseCharacter::VRMove);
@@ -626,10 +632,24 @@ void ABaseCharacter::ContextualActionReleased()
 #pragma region Sliding, Rolling Function()
 void ABaseCharacter::RollingActionPressed()
 {
-	Multicast_RollingActionPressed();
+	if(freeze == nullptr)
+	{
+		Server_RollingActionPressed();
+	}
 }
 
 void ABaseCharacter::RollingActionReleased()
+{
+	Server_RollingActionReleased();
+
+}
+
+void ABaseCharacter::Server_RollingActionPressed_Implementation()
+{
+	Multicast_RollingActionPressed();
+}
+
+void ABaseCharacter::Server_RollingActionReleased_Implementation()
 {
 	Multicast_RollingActionReleased();
 }
@@ -643,6 +663,7 @@ void ABaseCharacter::Multicast_RollingActionPressed_Implementation()
 		PlayAnimMontage(RollingMontage);
 	}
 	GetCapsuleComponent()->SetCapsuleHalfHeight(20.f);
+
 }
 
 void ABaseCharacter::Multicast_RollingActionReleased_Implementation()
@@ -651,19 +672,37 @@ void ABaseCharacter::Multicast_RollingActionReleased_Implementation()
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
+
+
 void ABaseCharacter::SlidingActionPressed()
 {
-	Multicast_SlidingActionPressed();
+	if(freeze == nullptr)
+	{
+		Server_SlidingActionPressed();
+	}
 }
 
 void ABaseCharacter::SlidingActionRelease()
 {
-	Multicast_SlidingActionRelease();
+	Server_SlidingActionReleased();
 }
+
+void ABaseCharacter::Server_SlidingActionPressed_Implementation()
+{
+	Multicast_SlidingActionPressed();
+}
+
+void ABaseCharacter::Server_SlidingActionReleased_Implementation()
+{
+	Multicast_SlidingActionReleased();
+}
+
+
 
 void ABaseCharacter::Multicast_SlidingActionPressed_Implementation()
 {
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	Crouch();
+	//GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	if (SlidingMontage)
 	{
 		PlayAnimMontage(SlidingMontage);
@@ -671,8 +710,9 @@ void ABaseCharacter::Multicast_SlidingActionPressed_Implementation()
 	GetCapsuleComponent()->SetCapsuleHalfHeight(20.f);
 }
 
-void ABaseCharacter::Multicast_SlidingActionRelease_Implementation()
+void ABaseCharacter::Multicast_SlidingActionReleased_Implementation()
 {
+	UnCrouch();
 	GetCapsuleComponent()->SetCapsuleHalfHeight(88.f);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
@@ -782,9 +822,17 @@ void ABaseCharacter::Fire()
 {
 	if (myWeapon != nullptr && freeze == nullptr)
 	{
-		Multicast_Fire();
-		myWeapon->Fire(this);
+		if(myWeapon->GetbFireDelay())
+		{
+			Server_Fire();
+			myWeapon->Fire(this);
+		}
 	}
+}
+
+void ABaseCharacter::Server_Fire_Implementation()
+{
+	Multicast_Fire();
 }
 
 void ABaseCharacter::Multicast_Fire_Implementation()
@@ -803,6 +851,11 @@ void ABaseCharacter::DropWeapon()
 	if (GetController() != nullptr && GetController()->IsLocalController() && myWeapon != nullptr)
 	{
 		myWeapon->DropWeapon(this);
+	}
+
+	if (GetController() != nullptr && GetController()->IsLocalController() && myHoming != nullptr)
+	{
+		myHoming->DropItem(this);
 	}
 }
 
@@ -857,11 +910,28 @@ void ABaseCharacter::Server_RemoveFreeze_Implementation()
 #pragma region Canon
 void ABaseCharacter::CanonFire()
 {
-	if (mycanon != nullptr)
+	if(mycanon != nullptr)
 	{
-		mycanon->HomingFire(this);
-		UE_LOG(LogTemp, Warning, TEXT("Canon Fire"));
+		if(myHoming != nullptr)
+		{
+			mycanon->Reload(myHoming);
+			
+			myHoming->UsingItem(this);
+			if(myHoming != nullptr)
+			{
+				myHoming = nullptr;
+			}
+		}
+		else
+		{
+			if(mycanon->GetFireDelay())
+			{
+				mycanon->HomingFire(this);
+			}
+		}
 	}
+
+
 }
 
 #pragma endregion
@@ -878,6 +948,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, freeze);
 	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
 	DOREPLIFETIME(ABaseCharacter, VRCurHP);
+	DOREPLIFETIME(ABaseCharacter, myHoming);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

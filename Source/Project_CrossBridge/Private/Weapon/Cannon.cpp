@@ -118,12 +118,20 @@ void ACannon::HomingFire(class ABaseCharacter* p)
 
 void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
 {
-	AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
-	UE_LOG(LogTemp,Warning,TEXT("Projectile Spawn"));
-	Multicast_HomingFire(p,homing);
-	homing->SetOwner(p);
-	GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
-	SubtractHominAmmo(1);
+	if(bFireDelay)
+	{
+		bFireDelay = false;
+		FTimerHandle fireDelayHandle;
+		GetWorldTimerManager().SetTimer(fireDelayHandle, FTimerDelegate::CreateLambda([&](){bFireDelay= true;}), fireDelayTime,false);
+
+		AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
+		Multicast_HomingFire(p,homing);
+		homing->SetOwner(p);
+		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
+		SubtractHominAmmo(1);
+		
+	}
+
 	
 }
 
@@ -156,15 +164,7 @@ void ACannon::SubtractHominAmmo(int32 v)
 	HommingAmmo = HommingAmmo >= 0 ? HommingAmmo : 0;
 }
 
-void ACannon::ReloadHoming(int32 v)
-{
-	Server_ReloadHoming(v);
-}
 
-void ACannon::Server_ReloadHoming_Implementation(int32 v)
-{
-	AddHomingAmmo(v);
-}
 
 
 
@@ -205,6 +205,20 @@ void ACannon::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		}
 	}
 	
+}
+
+void ACannon::Reload(AHomingItem* homing)
+{
+	if(homing != nullptr)
+	{
+		Server_Reload(homing);
+	}
+}
+
+
+void ACannon::Server_Reload_Implementation(AHomingItem* homing)
+{
+	HommingAmmo += 1;
 }
 
 void ACannon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

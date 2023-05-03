@@ -46,7 +46,15 @@ private:
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
 	int32 HommingAmmo = 0;
 
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
+	bool bFireDelay = true;
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
+	float fireDelayTime = 2.0f;
+	
 public:
+	FORCEINLINE bool GetFireDelay() {return bFireDelay;}
+	
 	UFUNCTION()
 	void HomingFire(class ABaseCharacter* p);
 
@@ -84,12 +92,7 @@ public:
 
 	UFUNCTION()
 	void SubtractHominAmmo(int32 v);
-
-	UFUNCTION()
-	void ReloadHoming(int32 v);
-
-	UFUNCTION(Server, Unreliable)
-	void Server_ReloadHoming(int32 v);
+	
 	
 	
 	UFUNCTION()
@@ -98,6 +101,16 @@ public:
 
 	UFUNCTION()
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
+
+
+/** Homing Item Reload */
+public:
+	UFUNCTION()
+	void Reload(class AHomingItem* homing);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_Reload(class AHomingItem* homing);
+
+
 };
 
