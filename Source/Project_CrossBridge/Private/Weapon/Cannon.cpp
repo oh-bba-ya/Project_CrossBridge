@@ -54,6 +54,11 @@ void ACannon::Tick(float DeltaTime)
 		core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
 	}
 
+	if(HommingAmmo > 0)
+	{
+		UE_LOG(LogTemp,Warning, TEXT("Homing ammo : %d"),HommingAmmo);
+	}
+
 }
 
 
@@ -156,15 +161,7 @@ void ACannon::SubtractHominAmmo(int32 v)
 	HommingAmmo = HommingAmmo >= 0 ? HommingAmmo : 0;
 }
 
-void ACannon::ReloadHoming(int32 v)
-{
-	Server_ReloadHoming(v);
-}
 
-void ACannon::Server_ReloadHoming_Implementation(int32 v)
-{
-	AddHomingAmmo(v);
-}
 
 
 
@@ -205,6 +202,20 @@ void ACannon::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		}
 	}
 	
+}
+
+void ACannon::Reload(AHomingItem* homing)
+{
+	if(homing != nullptr)
+	{
+		Server_Reload(homing);
+	}
+}
+
+
+void ACannon::Server_Reload_Implementation(AHomingItem* homing)
+{
+	HommingAmmo += 1;
 }
 
 void ACannon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

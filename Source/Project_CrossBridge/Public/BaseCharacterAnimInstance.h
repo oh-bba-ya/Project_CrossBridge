@@ -34,9 +34,17 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Anim")
 	float pitch;
+
+	UFUNCTION()
+	void AnimNotify_RollingActionRelease();
+
+	UFUNCTION()
+	void AnimNotify_SlidingActionRelease();
 	
 private:
 	class ABaseCharacter* baseCharacter;
+
+	
 	
 	
 };

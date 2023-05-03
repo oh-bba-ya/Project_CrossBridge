@@ -36,3 +36,13 @@ void UBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 }
+
+void UBaseCharacterAnimInstance::AnimNotify_RollingActionRelease()
+{
+	baseCharacter->RollingActionReleased();
+}
+
+void UBaseCharacterAnimInstance::AnimNotify_SlidingActionRelease()
+{
+	baseCharacter->SlidingActionRelease();
+}

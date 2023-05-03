@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "HomingProjectile.generated.h"
 
+
+
 UCLASS()
 class PROJECT_CROSSBRIDGE_API AHomingProjectile : public AActor
 {

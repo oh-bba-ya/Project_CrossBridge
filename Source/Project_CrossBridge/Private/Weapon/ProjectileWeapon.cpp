@@ -59,14 +59,13 @@ void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* Overlapp
 	{
 		ABaseCharacter* player = Cast<ABaseCharacter>(OtherActor);
 
-		if(player != nullptr && player->GetOwningWeapon() == nullptr)
+		if(player != nullptr && player->GetOwningWeapon() == nullptr && player->GetHomingItem() == nullptr)
 		{
 			if(OwnerCharacter != nullptr)
 			{
 				OwnerCharacter->SetWeapon(nullptr);	
 			}
 			PickUp(player);
-			UE_LOG(LogTemp,Warning,TEXT("Collision Weapon"));
 		}
 	}
 }
