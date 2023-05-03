@@ -33,6 +33,7 @@
 #include "Weapon/Cannon.h"
 #include "NiagaraComponent.h"
 #include "Objects/Thunder.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -135,6 +136,9 @@ ABaseCharacter::ABaseCharacter()
 	GrabbableObjectCreateEffect->SetupAttachment(LeftHand);
 	GrabbableObjectCreateEffect->SetRelativeLocation(FVector(3, 4, -6));
 	GrabbableObjectCreateEffect->SetVisibility(false);
+
+	BlackholeTraceComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BlackholeTraceComp"));
+	BlackholeTraceComp->SetupAttachment(RootComponent);
 
 	VRStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("VRStatus"));
 	VRStatusWidget->SetupAttachment(LeftHand);
@@ -248,13 +252,15 @@ void ABaseCharacter::BeginPlay()
 		RedDot = GetWorld()->SpawnActor<AActor>(SpawnRedDot, GetActorLocation(), GetActorRotation());
 		RedDot->SetActorHiddenInGame(true);
 		RedDot->SetActorEnableCollision(false);
+		VRController = UGameplayStatics::GetPlayerController(this, 0);
 	}
 	else
 	{
 		ServerPCSetting();
 	}
 
-	Cast<UVRStatusWidget>(VRStatusWidget->GetWidget())->SetHPBar(0);
+	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
+	VRStatus->SetHPBar(0);
 	UMaterialInterface *HeadBase = HeadMesh->GetMaterial(0);
 	if (HeadBase)
 	{
@@ -389,6 +395,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		if (BlackholeTimer == 0)
 		{
+			BlackholeTraceComp->SetVisibility(false);
 			Blackhole->IsBlackholeActive = true;
 		}
 		BlackholeTimer += DeltaTime;
@@ -408,10 +415,17 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsBlackholeCool)
 	{
+		if (BlackholeCoolTime == 0)
+		{
+			VRStatus->SetImageColor(FString("Blackhole"), true);
+		}
 		BlackholeCoolTime += DeltaTime;
+		VRStatus->SetCooltimeText(FString("Blackhole"), BlackholeCoolTimeLimit - BlackholeCoolTime);
 		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), BlackholeCoolTime));
 		if (BlackholeCoolTime > BlackholeCoolTimeLimit)
 		{
+			VRStatus->SetCooltimeText(FString("Blackhole"), 0);
+			VRStatus->SetImageColor(FString("Blackhole"), false);
 			IsBlackholeCool = false;
 			BlackholeCoolTime = 0;
 		}
@@ -465,6 +479,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 			ServerResetColorChange(FString("SwordOpacity"));
 		}
 		SwordActivateTime += DeltaTime;
+	
 		if (SwordActivateTime > SwordActivateLimitTime)
 		{
 			IsSwordSet = false;
@@ -490,10 +505,17 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsSwordCool)
 	{
+		if (SwordCoolTime == 0)
+		{
+			VRStatus->SetImageColor(FString("Sword"), true);
+		}
 		SwordCoolTime += DeltaTime;
+		VRStatus->SetCooltimeText(FString("Sword"), SwordCoolTimeLimit - SwordCoolTime);
 		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), SwordCoolTime));
 		if (SwordCoolTime > SwordCoolTimeLimit)
 		{
+			VRStatus->SetCooltimeText(FString("Sword"), 0);
+			VRStatus->SetImageColor(FString("Sword"), false);
 			IsSwordCool = false;
 			SwordCoolTime = 0;
 		}
@@ -501,9 +523,9 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	// FVector StartPos = LeftGrip->GetComponentLocation() + LeftAim->GetForwardVector() * 10;
 	// FVector EndPos = StartPos + LeftGrip->GetRightVector() * 1000;
-	// FVector StartPos = LeftHand->GetComponentLocation();
-	// FVector EndPos = StartPos + LeftHand->GetRightVector() * 1000;
-	// DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
+	//FVector StartPos = LeftHand->GetComponentLocation();
+	//FVector EndPos = StartPos + LeftHand->GetUpVector() * 1000;
+	//DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
 }
 
 // Called to bind functionality to input
@@ -999,6 +1021,8 @@ void ABaseCharacter::RightB()
 	IsRightB = true;
 	if (!IsRightA && !IsRedDotSet)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("READY"));
+		VRController->PlayHapticEffect(BulletCastHaptic, EControllerHand::Right);
 		IsRedDotSet = true;
 		RedDot->SetActorHiddenInGame(false);
 	}
@@ -1016,6 +1040,11 @@ void ABaseCharacter::RightBEnd()
 			// FRotator Rot = (EndVec - StartVec).Rotation();
 			FRotator Rot = RightAim->GetComponentRotation();
 			ServerSpawnThrowingWeapon(EndVec, Rot);
+			VRController->PlayHapticEffect(BulletFireHaptic, EControllerHand::Right);
+		}
+		else
+		{
+			VRController->StopHapticEffect(EControllerHand::Right);
 		}
 		IsRedDotSet = false;
 		RightBTimer = 0;
@@ -1176,8 +1205,8 @@ FVector ABaseCharacter::BlackHoleTrace()
 {
 	LeftXTraces.RemoveAt(0, LeftXTraces.Num());
 
-	FVector CurPos = LeftHand->GetComponentLocation();
-	FVector Dir = LeftHand->GetRightVector() * BlackHoleForwardPower;
+	FVector CurPos = LeftHand->GetComponentLocation() + LeftHand->GetUpVector()* -10 + LeftHand->GetForwardVector() * 5;
+	FVector Dir = (LeftHandMesh->GetRightVector() - LeftHandMesh->GetUpVector() + LeftHandMesh->GetForwardVector()).GetSafeNormal() * BlackHoleForwardPower;
 
 	LeftXTraces.Add(CurPos);
 
@@ -1201,6 +1230,8 @@ FVector ABaseCharacter::BlackHoleTrace()
 			break;
 		}
 	}
+	BlackholeTraceComp->SetVisibility(true);
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(BlackholeTraceComp, FName(TEXT("User.PointArray")), LeftXTraces);
 	if (IsHit)
 	{
 		return LeftXTraces[LeftXTraces.Num() - 1];

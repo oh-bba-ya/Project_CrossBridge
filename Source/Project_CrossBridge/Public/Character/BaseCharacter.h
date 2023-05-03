@@ -365,6 +365,8 @@ public:
 		class UBoxComponent* SwordComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UNiagaraComponent* GrabbableObjectCreateEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* BlackholeTraceComp;
 
 	UPROPERTY()
 		class UMaterialInstanceDynamic* HeadMat;
@@ -427,7 +429,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float BlackHoleForwardPower = 2000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Gravity = -4000;
+		float Gravity = -2000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float UnitTime = 0.2;
 
@@ -494,7 +496,8 @@ public:
 	bool IsSwordDamageCool;
 	UPROPERTY()
 		TArray<FVector> LeftXTraces;
-
+	UPROPERTY()
+		class UVRStatusWidget* VRStatus;
 	UPROPERTY()
 		class ABaseGrabbableActor* GrabbedActorLeft;
 	UPROPERTY()
@@ -517,6 +520,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AActor> SpawnRedDot;
+	UPROPERTY()
+		class APlayerController* VRController;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UHapticFeedbackEffect_Base* BulletCastHaptic;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UHapticFeedbackEffect_Base* BulletFireHaptic;
+
 
 
 	UFUNCTION(Server, Unreliable)
@@ -592,5 +602,7 @@ public:
 		void MulticastVRGetDamage(float Rate);
 	UFUNCTION(Server, Unreliable)
 		void ServerVRAttack(const FString& Position, class ABaseCharacter* Enemy);
+
+
 	
 };
