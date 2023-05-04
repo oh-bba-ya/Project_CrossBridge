@@ -537,6 +537,7 @@ public:
 	bool IsRightA;
 	bool IsRedDotSet;
 	bool IsSwordSet;
+	bool IsHeal;
 
 	bool IsLeftGrab;
 	bool IsRightGrab;
@@ -555,6 +556,8 @@ public:
 
 	UPROPERTY()
 		class ABlackhole* Blackhole;
+	UPROPERTY()
+		class ATrashSpawningPool* TrashSpawningPool;
 	UPROPERTY()
 		class AActor* RedDot;
 
@@ -576,6 +579,14 @@ public:
 		class UHapticFeedbackEffect_Base* BulletCastHaptic;	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UHapticFeedbackEffect_Base* BulletFireHaptic;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UHapticFeedbackEffect_Base* SwordCastHaptic;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UHapticFeedbackEffect_Base* ClickedHaptic;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UHapticFeedbackEffect_Base* HealHaptic;
+
+
 
 
 
