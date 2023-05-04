@@ -934,6 +934,58 @@ void ABaseCharacter::CanonFire()
 
 }
 
+void ABaseCharacter::SpeedUp()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 300;
+	GetCharacterMovement()->MaxWalkSpeedCrouched = 100;
+
+	bIsSpeedUp = true;
+	
+	FTimerHandle SpeedUpDelayHandle;
+	GetWorld()->GetTimerManager().SetTimer(SpeedUpDelayHandle,this, &ABaseCharacter::ComeBackSpeed,DuringSpeedTime);
+
+}
+
+void ABaseCharacter::ComeBackSpeed()
+{
+	if(!bIsSpeedUp)
+	{
+		return;
+	}
+
+	SpeedCurrentTime = 0.f;
+
+	UE_LOG(LogTemp,Warning,TEXT("ComeBackSpeed"));
+
+	GetWorld()->GetTimerManager().SetTimer(SpeedHandle,
+		FTimerDelegate::CreateLambda([this]()->void
+		{
+			SpeedCurrentTime += GetWorld()->DeltaTimeSeconds;
+
+			float curWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+			float curCrouchSpeed = GetCharacterMovement()->MaxWalkSpeedCrouched;
+
+			float walkspeed = 100.f;
+			float crouchSpeed = 50.f;
+
+			curWalkSpeed = FMath::Lerp<float>(curWalkSpeed, walkspeed, SpeedCurrentTime/ReturnSpeedTime);
+			curCrouchSpeed = FMath::Lerp<float>(curCrouchSpeed, crouchSpeed, SpeedCurrentTime/ReturnSpeedTime);
+
+			GetCharacterMovement()->MaxWalkSpeed = curWalkSpeed;
+			GetCharacterMovement()->MaxWalkSpeedCrouched = curCrouchSpeed;
+
+			if(SpeedCurrentTime >= ReturnSpeedTime)
+			{
+				GetCharacterMovement()->MaxWalkSpeed = walkspeed;
+				GetCharacterMovement()->MaxWalkSpeedCrouched = crouchSpeed;
+				bIsSpeedUp = false;
+				GetWorld()->GetTimerManager().ClearTimer(SpeedHandle);
+				UE_LOG(LogTemp,Warning,TEXT("Lamda"));
+			}
+		})
+		,0.02f,true);
+}
+
 #pragma endregion
 
 // 서버에 복제 등록하기 위한 함수
