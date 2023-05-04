@@ -315,6 +315,37 @@ public:
 #pragma endregion 
 
 
+	/** Speed Up and Down*/
+#pragma region SpeedAccelerator
+public:
+	UFUNCTION()
+	void SpeedUp();
+
+	FORCEINLINE bool GetIsSpeedUp() {return bIsSpeedUp;}
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Speed")
+	float ReturnSpeedTime = 2.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Speed")
+	float DuringSpeedTime = 2.0f;
+
+	UPROPERTY()
+	FTimerHandle SpeedHandle;
+
+	float SpeedCurrentTime = 0.f;
+
+	UPROPERTY()
+	bool bIsSpeedUp = false;
+	
+	UFUNCTION()
+	void ComeBackSpeed();
+
+
+
+
+#pragma endregion 
+
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
