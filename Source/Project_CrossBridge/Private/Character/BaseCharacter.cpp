@@ -35,6 +35,7 @@
 #include "Objects/Thunder.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "PickupItem/HomingItem.h"
+#include "Objects/TrashSpawningPool.h"
 
 
 // Sets default values
@@ -294,6 +295,7 @@ void ABaseCharacter::BeginPlay()
 	//}
 
 	ServerResetColorChange(FString("SwordDissolve"));
+
 }
 
 // Called every frame
@@ -339,14 +341,37 @@ void ABaseCharacter::Tick(float DeltaTime)
 				}
 				else
 				{
+					if (!IsHeal)
+					{
+						IsHeal = true;
+						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Right, 1, true);
+						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Left, 1, true);
+					}
 					VRGetDamage(-0.5 * DeltaTime);
+				}
+			}
+			else
+			{
+				if (IsHeal)
+				{
+					IsHeal = false;
+					VRController->StopHapticEffect(EControllerHand::Right);
+					VRController->StopHapticEffect(EControllerHand::Left);
+					VRHealTime = 0;
+					ServerResetColorChange("Right");
 				}
 			}
 		}
 		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9) && VRHealTime > 0)
 		{
 			VRHealTime = 0;
-			ServerResetColorChange("Right");
+			if (IsHeal)
+			{
+				IsHeal = false;
+				VRController->StopHapticEffect(EControllerHand::Right);
+				VRController->StopHapticEffect(EControllerHand::Left);
+				ServerResetColorChange("Right");
+			}
 		}
 
 		float StatusWidgetDotProduct = FVector::DotProduct(LeftHand->GetRightVector(), -VRCamera->GetForwardVector());
@@ -449,13 +474,18 @@ void ABaseCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if (IsRightA && !IsSwordCool)
+	if (IsRightA && !IsSwordCool && !IsSwordSet)
 	{
 
 		float AimDotProduct = FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector());
 		float GripDotProduct = FVector::DotProduct(RightGrip->GetRightVector(), -LeftGrip->GetRightVector());
 		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9)
 		{
+			if (SwordSetTime == 0)
+			{
+				VRController->PlayHapticEffect(SwordCastHaptic, EControllerHand::Right, 1, true);
+				VRController->PlayHapticEffect(SwordCastHaptic, EControllerHand::Left, 1, true);
+			}
 			SwordSetTime += DeltaTime;
 			if (SwordSetTime / SwordCompleteTime <= 1)
 			{
@@ -464,6 +494,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 			}
 			else
 			{
+				VRController->StopHapticEffect(EControllerHand::Right);
+				VRController->StopHapticEffect(EControllerHand::Left);
+
+				VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
+				VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left);
+
 				IsSwordSet = true;
 			}
 		}
@@ -471,8 +507,10 @@ void ABaseCharacter::Tick(float DeltaTime)
 		{
 			if (!IsSwordSet && SwordSetTime != 0)
 			{
+				VRController->StopHapticEffect(EControllerHand::Right);
+				VRController->StopHapticEffect(EControllerHand::Left);
 				SwordSetTime = 0;
-				ServerResetColorChange(FString("SwordOpacity"));
+				//ServerResetColorChange(FString("SwordOpacity"));
 				ServerResetColorChange(FString("SwordDissolve"));
 				ServerResetColorChange(FString("Left"));
 			}
@@ -1126,9 +1164,10 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	//VRGetDamage(5);
+	VRGetDamage(5);
 	if (!IsRightA && !IsSwordCool)
 	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 		ServerColorChange(0, FString("SwordOpacity"));
 	}
 	IsRightA = true;
