@@ -3,7 +3,7 @@
 
 #include "Objects/ThrowingWeapon.h"
 #include "Components/BoxComponent.h"
-
+#include "Character/BaseCharacter.h"
 
 // Sets default values
 AThrowingWeapon::AThrowingWeapon()

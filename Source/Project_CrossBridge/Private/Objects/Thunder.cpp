@@ -4,6 +4,7 @@
 #include "Objects/Thunder.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Objects/AOEThunder.h"
 
 // Sets default values
 AThunder::AThunder()
