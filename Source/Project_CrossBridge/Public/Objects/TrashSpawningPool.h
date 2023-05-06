@@ -38,19 +38,26 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 		void ServerSpawnTrash();
+	UFUNCTION(Server, Unreliable)
+		void ServerDeactivate();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector TrashSpawningPoolSize = FVector(200, 200, 20);
 
 	UPROPERTY()
-		int32 ArrSize = 10;
+		int32 ArrSize = 20;
 	UPROPERTY()
 		int32 ArrIndex = 0;
 
 	UPROPERTY()
 		float SpawningTimer;
 	UPROPERTY()
-		float SpawningDelayTime = 2;
+		float SpawningDelayTime = 1;
 
 	UPROPERTY()
 		bool IsActivate;
+	
+
 
 
 };

@@ -4,7 +4,7 @@
 #include "Objects/TrashSpawningPool.h"
 #include "Components/BoxComponent.h"
 #include "Objects/Trash.h"
-
+#include "Kismet/KismetMathLibrary.h"
 #include "Math/Vector.h"
 
 // Sets default values
@@ -18,6 +18,8 @@ ATrashSpawningPool::ATrashSpawningPool()
 	SetReplicates(true);
 
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+	BoxComp->SetBoxExtent(TrashSpawningPoolSize);
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetRootComponent(BoxComp);
 }
 
@@ -68,7 +70,9 @@ void ATrashSpawningPool::TrashSkillActivate()
 		if (!TrashArr[ArrIndex]->IsActivate)
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%s"), *GetActorLocation().ToString()));
-			TrashArr[ArrIndex]->ServerActivate(GetActorLocation());
+			float RangeX = UKismetMathLibrary::RandomFloatInRange(GetActorLocation().X + (TrashSpawningPoolSize.X / 2), GetActorLocation().X - (TrashSpawningPoolSize.X / 2));
+			float RangeY = UKismetMathLibrary::RandomFloatInRange(GetActorLocation().Y + (TrashSpawningPoolSize.Y / 2), GetActorLocation().Y - (TrashSpawningPoolSize.Y / 2));
+			TrashArr[ArrIndex]->ServerActivate(FVector(RangeX, RangeY, GetActorLocation().Z));
 			ArrIndex = ++ArrIndex % ArrSize;
 			break;
 		}
@@ -80,4 +84,10 @@ void ATrashSpawningPool::ServerSpawnTrash_Implementation()
 {
 	class ATrash* Trash = GetWorld()->SpawnActor<ATrash>(SpawnTrash, GetActorLocation(), GetActorRotation());
 	TrashArr.Add(Trash);
+}
+
+void ATrashSpawningPool::ServerDeactivate_Implementation()
+{
+	IsActivate = false;
+	SetActorLocation(FVector(0, 0, -1000));
 }

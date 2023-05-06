@@ -2,6 +2,7 @@
 
 
 #include "Objects/Trash.h"
+#include "Character/BaseCharacter.h"
 
 // Sets default values
 ATrash::ATrash()
@@ -59,6 +60,8 @@ void ATrash::ServerDeactivate_Implementation()
 	MeshComp->SetSimulatePhysics(false);
 	IsActivate = false;
 	SetActorHiddenInGame(true);
+
+	IsOverlap = false;
 }
 
 void ATrash::ServerPhysicsSet_Implementation()
@@ -70,7 +73,16 @@ void ATrash::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherAc
 {
 	if (IsActivate)
 	{
-		//Deactivate();
+		if (!IsOverlap)
+		{
+			IsOverlap = true;
+			class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
+			if (Enemy)
+			{
+				Enemy->Server_TakeDamage(10);
+			}
+		}
+		ServerDeactivate();
 	}
 
 

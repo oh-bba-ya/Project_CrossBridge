@@ -29,6 +29,7 @@ public:
 	class UStaticMeshComponent* MeshComp;
 
 	bool IsActivate;
+	bool IsOverlap;
 
 	bool GetActivate();
 

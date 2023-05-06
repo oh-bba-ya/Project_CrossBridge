@@ -487,6 +487,10 @@ public:
 		float LeftYTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float LeftYCastTime = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float TrashSpawningPoolTime;
+	UPROPERTY()
+		float TrashSpawningPoolTimeLimit = 15;
 	UPROPERTY()
 		float LeftXTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -497,6 +501,10 @@ public:
 		float BlackholeCoolTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float BlackholeCoolTimeLimit = 10;
+	UPROPERTY()
+		float TrashSpawningPoolCoolTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float TrashSpawningPoolCoolTimeLimit = 10;
 	UPROPERTY()
 		float RightBTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -531,6 +539,7 @@ public:
 	bool IsLeftX;
 	UPROPERTY(Replicated)
 	bool IsBlackholeSet;
+	bool IsTrashSpawningPoolSet;
 	bool IsRightIndexCurl;
 	bool IsRightGrasp;
 	bool IsRightB;
@@ -545,6 +554,7 @@ public:
 	bool IsBlackholeCool;
 	bool IsSwordCool;
 	bool IsSwordDamageCool;
+	bool IsTrashSpawningPoolCool;
 	UPROPERTY()
 		TArray<FVector> LeftXTraces;
 	UPROPERTY()
@@ -573,6 +583,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AActor> SpawnRedDot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class ATrashSpawningPool> SpawnTrashSpawningPool;
 	UPROPERTY()
 		class APlayerController* VRController;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -636,6 +648,10 @@ public:
 		void ServerBlackholeReset();
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastBlackholeReset();
+	UFUNCTION(Server, Unreliable)
+		void ServerTrashSpawningPoolSet(FVector Loc);
+	UFUNCTION(Server, Unreliable)
+		void ServerTrashSpawningPoolReset();
 
 		UFUNCTION(Server, Unreliable)
 		void ServerVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
@@ -643,6 +659,8 @@ public:
 		void MulticastVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);
 	UFUNCTION(Server, Unreliable)
 		void ServerBlackholeActivate(bool IsActivate);
+	UFUNCTION(Server, Unreliable)
+		void ServerTrashSpawningPoolActivate();
 
 	UFUNCTION(Server, Unreliable)
 		void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);

@@ -395,12 +395,49 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsLeftY)
 	{
+		if (!TrashSpawningPool)
+		{
+			TrashSpawningPool = Cast<ATrashSpawningPool>(UGameplayStatics::GetActorOfClass(GetWorld(), ATrashSpawningPool::StaticClass()));
+		}
 		LeftYTimer += DeltaTime;
 		if (LeftYTimer / LeftYCastTime <= 1)
 		{
 
 			// ColorChange(LeftYTimer / 5, FString("Left"));
 			ServerColorChange(LeftYTimer / LeftYCastTime, FString("LeftY"));
+		}
+		else
+		{
+			FVector Loc = LeftHand->GetComponentLocation() + LeftAim->GetForwardVector() * 500;
+			ServerTrashSpawningPoolSet(FVector(Loc.X, Loc.Y, 200));
+		}
+	}
+	if (IsTrashSpawningPoolSet)
+	{
+		TrashSpawningPoolTime += DeltaTime;
+		if (TrashSpawningPoolTime > TrashSpawningPoolTimeLimit)
+		{
+			TrashSpawningPoolTime = 0;
+			ServerTrashSpawningPoolReset();
+			IsTrashSpawningPoolSet = false;
+			IsTrashSpawningPoolCool = true;
+		}
+	}
+
+	if (IsTrashSpawningPoolCool)
+	{
+		if (TrashSpawningPoolCoolTime == 0)
+		{
+			VRStatus->SetImageColor(FString("Trash"), true);
+		}
+		TrashSpawningPoolCoolTime += DeltaTime;
+		VRStatus->SetCooltimeText(FString("Trash"), TrashSpawningPoolCoolTimeLimit - TrashSpawningPoolCoolTime);
+		if (TrashSpawningPoolCoolTime > TrashSpawningPoolCoolTimeLimit)
+		{
+			VRStatus->SetCooltimeText(FString("Trash"), 0);
+			VRStatus->SetImageColor(FString("Trash"), false);
+			IsTrashSpawningPoolCool = false;
+			TrashSpawningPoolCoolTime = 0;
 		}
 	}
 
@@ -1093,7 +1130,10 @@ void ABaseCharacter::LeftYEnd()
 {
 	if (LeftYTimer / LeftYCastTime > 1)
 	{
-		ServerSpawnThunder();
+		//ServerSpawnThunder();
+		//TrashSpawningPool->SetActorLocation(GetActorLocation() + GetActorUpVector()*200);
+		ServerTrashSpawningPoolActivate();
+		IsTrashSpawningPoolSet = true;
 	}
 	IsLeftY = false;
 	LeftYTimer = 0;
@@ -1523,6 +1563,7 @@ void ABaseCharacter::ServerVRSetting_Implementation()
 {
 	VRCurHP = VRMaxHP;
 	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	MulticastVRSetting();
 }
 
@@ -1630,6 +1671,15 @@ void ABaseCharacter::MulticastBlackholeReset_Implementation()
 	Blackhole->SetActorLocation(FVector(0, 0, -10000));
 }
 
+void ABaseCharacter::ServerTrashSpawningPoolSet_Implementation(FVector Loc)
+{
+	TrashSpawningPool->SetActorLocation(Loc);
+}
+void ABaseCharacter::ServerTrashSpawningPoolReset_Implementation()
+{
+	TrashSpawningPool->ServerDeactivate();
+}
+
 void ABaseCharacter::ServerVRTransform_Implementation(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform)
 {
 	VRCamera->SetRelativeTransform(HeadTransform);
@@ -1655,6 +1705,11 @@ void ABaseCharacter::ServerBlackholeActivate_Implementation(bool IsActive)
 	{
 		Blackhole->BlackholeDeactivate();
 	}
+}
+
+void ABaseCharacter::ServerTrashSpawningPoolActivate_Implementation()
+{
+	TrashSpawningPool->IsActivate = true;
 }
 
 void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, FRotator SpawnRot)

@@ -26,7 +26,7 @@ public:
 		class UTextBlock* BlackholeCool;
 
 		UPROPERTY(meta = (BindWidget))
-		class UTextBlock* ThunderCool;
+		class UTextBlock* TrashCool;
 
 		UPROPERTY(meta = (BindWidget))
 		class UTextBlock* SwordCool;
@@ -35,7 +35,7 @@ public:
 		class UImage* BlackholeImage;
 
 		UPROPERTY(meta = (BindWidget))
-		class UImage* ThunderImage;
+		class UImage* TrashImage;
 
 		UPROPERTY(meta = (BindWidget))
 		class UImage* SwordImage;

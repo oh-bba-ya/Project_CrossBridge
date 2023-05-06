@@ -28,15 +28,15 @@ void UVRStatusWidget::SetCooltimeText(FString Weapon, float Time)
 			BlackholeCool->SetText(UKismetTextLibrary::Conv_IntToText(Time));
 		}
 	}
-	else if (Weapon == "Thunder")
+	else if (Weapon == "Trash")
 	{
 		if (Time == 0)
 		{
-			ThunderCool->SetText(FText::FromString(TEXT("")));
+			TrashCool->SetText(FText::FromString(TEXT("")));
 		}
 		else
 		{
-			ThunderCool->SetText(UKismetTextLibrary::Conv_IntToText(Time));
+			TrashCool->SetText(UKismetTextLibrary::Conv_IntToText(Time));
 		}
 	}
 	else if (Weapon == "Sword")
@@ -65,15 +65,15 @@ void UVRStatusWidget::SetImageColor(FString Weapon, bool IsCoolTime)
 			BlackholeImage->SetBrushTintColor(AvailableColor);
 		}
 	}
-	else if (Weapon == "Thunder")
+	else if (Weapon == "Trash")
 	{
 		if (IsCoolTime)
 		{
-			ThunderImage->SetBrushTintColor(UnavailableColor);
+			TrashImage->SetBrushTintColor(UnavailableColor);
 		}
 		else
 		{
-			ThunderImage->SetBrushTintColor(AvailableColor);
+			TrashImage->SetBrushTintColor(AvailableColor);
 		}
 	}
 	else if (Weapon == "Sword")
