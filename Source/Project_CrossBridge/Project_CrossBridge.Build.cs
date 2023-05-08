@@ -8,7 +8,7 @@ public class Project_CrossBridge : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] {"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","UMG","AnimGraphRuntime", "HeadMountedDisplay", "MultiplayerSessions","Niagara","OnlineSubsystem","OnlineSubsystemSteam"});
+		PublicDependencyModuleNames.AddRange(new string[] {"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","UMG","AnimGraphRuntime", "HeadMountedDisplay", "MultiplayerSessions","Niagara"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
