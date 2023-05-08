@@ -39,6 +39,14 @@
 				"Win64",
 				"Android"
 			]
+		},
+		{
+			"Name": "OnlineSubsystemEOS",
+			"Enabled": true
+		},
+		{
+			"Name": "OnlineServicesEOS",
+			"Enabled": true
 		}
 	]
 }

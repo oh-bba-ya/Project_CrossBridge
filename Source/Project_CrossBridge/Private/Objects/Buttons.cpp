@@ -48,7 +48,7 @@ void AButtons::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Cast<UMenu>(JoinWidgetComp->GetWidget())->MenuSetup(4, FString("FreeForAll"), FString("/Game/Maps/Bridge"));
+	Cast<UMenu>(JoinWidgetComp->GetWidget())->MenuSetup(10, FString("FreeForAll"), FString("/Game/Maps/Bridge"));
 }
 
 // Called every frame
