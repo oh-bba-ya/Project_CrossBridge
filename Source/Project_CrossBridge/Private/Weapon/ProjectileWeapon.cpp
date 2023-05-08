@@ -44,12 +44,14 @@ void AProjectileWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 
+	/*
 	if(bEquippedWeapon && OwnerCharacter != nullptr &&OwnerCharacter->IsLocallyControlled())
 	{
 		TraceUnderCosshairs(HitResult);
 	}
+	*/
 
-	SetHUDCrosshairs(DeltaTime);
+	//SetHUDCrosshairs(DeltaTime);
 }
 
 void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -73,11 +75,11 @@ void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* Overlapp
 
 
 
-void AProjectileWeapon::Fire(ABaseCharacter* player)
+void AProjectileWeapon::Fire(ABaseCharacter* player, const FVector hitTarget)
 {
 	if(player != nullptr)
 	{
-		Server_Fire(player,HitTarget);
+		Server_Fire(player,hitTarget);
 	}
 }
 
@@ -164,82 +166,7 @@ void AProjectileWeapon::Server_PickupWeapon_Implementation(ABaseCharacter* playe
 #pragma endregion
 
 
-/** Trace Crosshair */
-#pragma region Trace Crosshair
-void AProjectileWeapon::TraceUnderCosshairs(FHitResult& TraceHitResult)
-{
-	FVector2D ViewportSize;
-	if(GEngine && GEngine->GameViewport)
-	{
-		GEngine->GameViewport->GetViewportSize(ViewportSize);
-	}
 
-	FVector2D CrosshairLocation = ViewportSize * 0.5f;
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
-
-	// 2D 스크린 좌표를 3D 월드 좌표로 변환
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0),
-		CrosshairLocation,
-		CrosshairWorldPosition,
-		CrosshairWorldDirection
-		);
-
-	// 변환 작업 성공
-	if(bScreenToWorld)
-	{
-		FVector Start = CrosshairWorldPosition;
-
-		FVector End = CrosshairWorldDirection * TraceLength;
-
-		// 자기자신은 충돌에서 제외
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
-		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECC_Visibility);
-
-		// LineTrace 범위안에 감지되는 액터가 존재하지 않을시..
-		if(!TraceHitResult.bBlockingHit)
-		{
-			TraceHitResult.ImpactPoint = End;
-			HitTarget = End;
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
-		}
-		else  // 범위안에 감지되는 액터가 존재한다면..
-		{
-			HitTarget = TraceHitResult.ImpactPoint;
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
-		}
-	}
-	
-}
-
-void AProjectileWeapon::SetHUDCrosshairs(float DeletaTime)
-{
-	if(OwnerCharacter == nullptr || OwnerCharacter->Controller == nullptr)
-	{
-		return ;
-	}
-
-	Controller = Controller == nullptr ? Cast<ABaseCharacterController>(OwnerCharacter->Controller) : Controller;
-
-	if(Controller)
-	{
-		HUD = HUD == nullptr ? Cast<AWeaponHUD>(Controller->GetHUD()) : HUD;
-
-		if(HUD)
-		{
-			FHUDStruct HudStruct;
-			HudStruct.CrosshairCenter = CrosshairsCenter;
-			HudStruct.CrosshairRight = CrosshairsRight;
-			HudStruct.CrosshairLeft = CrosshairsLeft;
-			HudStruct.CrosshairBottom = CrosshairsBottom;
-			HudStruct.CrosshairTop = CrosshairsTop;
-			HUD->SetHUDStruct(HudStruct);
-			bDisplayCrosshair = true;
-		}
-	}
-}
-#pragma endregion 
 
 // 서버에 복제 등록하기 위한 함수
 void AProjectileWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

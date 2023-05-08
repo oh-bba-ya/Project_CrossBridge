@@ -66,6 +66,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
 	class UInputAction* InputPickupAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputTrashCanFireAction;
 	
 	
 	
@@ -228,7 +231,7 @@ private:
 
 
 	/** Fire */
-#pragma region Weapon Fire
+#pragma region Weapon, TrashCan Fire
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
 	UAnimMontage* fireMontage;
@@ -241,23 +244,33 @@ protected:
 	
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_Fire();
+
+	UFUNCTION()
+	void TrashCanFire();
 #pragma endregion
 
 	
 	/** Weapon, Item Pickup , Drop */
 #pragma region Weapon Properties
 private:
-	UPROPERTY(VisibleAnywhere,Category="Settings|Weapon")
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
 	class AProjectileWeapon* myWeapon;
 
 	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Item")
 	class AHomingItem* myHoming;
+
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
+	class ATrashCan* myTrashCan;
+	
 public:
 	FORCEINLINE void SetWeapon(AProjectileWeapon* w) { myWeapon = w;}
 	FORCEINLINE AProjectileWeapon* GetOwningWeapon() {return myWeapon;}
 
 	FORCEINLINE void SetHomingItem(AHomingItem* h) {myHoming = h;}
 	FORCEINLINE AHomingItem* GetHomingItem() {return myHoming;}
+
+	FORCEINLINE void SetTrashCan(ATrashCan* t) {myTrashCan = t;}
+	FORCEINLINE ATrashCan* GetTrashCan() {return myTrashCan;}
 
 protected:
 	void DropWeapon();
@@ -324,10 +337,10 @@ public:
 	FORCEINLINE bool GetIsSpeedUp() {return bIsSpeedUp;}
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Speed")
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Speed")
 	float ReturnSpeedTime = 2.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Speed")
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Speed")
 	float DuringSpeedTime = 2.0f;
 
 	UPROPERTY()
@@ -341,11 +354,54 @@ private:
 	UFUNCTION()
 	void ComeBackSpeed();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MultiCast_CombackSpeed();
 
+
+
+#pragma endregion
+
+
+	/** Trace CrossHair */
+#pragma region Trace Crosshair
+public:
+	void SetHUDCrosshairs(float DeletaTime);
+	
+protected:
+	void TraceUnderCosshairs(FHitResult& TraceHitResult);
+	
+private:
+	class AWeaponHUD* HUD;
+
+	class ABaseCharacterController* PCController;
+	
+	FHitResult HitResult;
+
+	FVector HitTarget;
+
+	float TraceLength = 80000.f;
+
+	bool bDisplayCrosshair = false;
+	
+	/** Textures for the Weapon crosshairs */
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsTop;
+
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsBottom;
 
 
 #pragma endregion 
-
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

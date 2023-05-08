@@ -36,6 +36,7 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "PickupItem/HomingItem.h"
 #include "Objects/TrashSpawningPool.h"
+#include "Weapon/TrashCan.h"
 
 
 // Sets default values
@@ -321,6 +322,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 	if (freeze != nullptr)
 	{
 		freeze->SetActorLocation(GetActorLocation());
+	}
+
+	if(!IsVR)
+	{
+		TraceUnderCosshairs(HitResult);
+		SetHUDCrosshairs(DeltaTime);
 	}
 
 	if (IsVR)
@@ -630,6 +637,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputRollingAction, ETriggerEvent::Started, this, &ABaseCharacter::RollingActionPressed);
 		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Started, this, &ABaseCharacter::SlidingActionPressed);
 		EnhancedInputComponent->BindAction(InputPickupAction, ETriggerEvent::Started, this, &ABaseCharacter::CanonFire);
+		EnhancedInputComponent->BindAction(InputTrashCanFireAction, ETriggerEvent::Started, this, &ABaseCharacter::TrashCanFire);
 
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABaseCharacter::VRMove);
 		EnhancedInputComponent->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &ABaseCharacter::Turn);
@@ -893,6 +901,18 @@ void ABaseCharacter::SubTractHealth(int32 value)
 /** Fire */
 #pragma region Fire()
 
+void ABaseCharacter::TrashCanFire()
+{
+	if(myTrashCan != nullptr && freeze == nullptr)
+	{
+		if(myTrashCan->GetbFireDelay())
+		{
+			UE_LOG(LogTemp,Warning,TEXT("TrashFire"));
+			myTrashCan->Fire(this,HitTarget);
+		}
+	}
+}
+
 void ABaseCharacter::Fire()
 {
 	if (myWeapon != nullptr && freeze == nullptr)
@@ -900,10 +920,11 @@ void ABaseCharacter::Fire()
 		if(myWeapon->GetbFireDelay())
 		{
 			Server_Fire();
-			myWeapon->Fire(this);
+			myWeapon->Fire(this,HitTarget);
 		}
 	}
 }
+
 
 void ABaseCharacter::Server_Fire_Implementation()
 {
@@ -1009,6 +1030,9 @@ void ABaseCharacter::CanonFire()
 
 }
 
+#pragma endregion
+
+#pragma region SpeedUp
 void ABaseCharacter::SpeedUp()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 300;
@@ -1022,6 +1046,12 @@ void ABaseCharacter::SpeedUp()
 }
 
 void ABaseCharacter::ComeBackSpeed()
+{
+	MultiCast_CombackSpeed();
+}
+
+
+void ABaseCharacter::MultiCast_CombackSpeed_Implementation()
 {
 	if(!bIsSpeedUp)
 	{
@@ -1055,13 +1085,102 @@ void ABaseCharacter::ComeBackSpeed()
 				GetCharacterMovement()->MaxWalkSpeedCrouched = crouchSpeed;
 				bIsSpeedUp = false;
 				GetWorld()->GetTimerManager().ClearTimer(SpeedHandle);
-				UE_LOG(LogTemp,Warning,TEXT("Lamda"));
+				UE_LOG(LogTemp,Warning,TEXT("End Speed UP"));
 			}
 		})
 		,0.02f,true);
 }
 
 #pragma endregion
+
+
+void ABaseCharacter::SetHUDCrosshairs(float DeletaTime)
+{
+
+	if(myWeapon == nullptr && myTrashCan == nullptr)
+	{
+		bDisplayCrosshair = false;
+	}
+	else
+	{
+		bDisplayCrosshair = true;
+	}
+
+	PCController = PCController == nullptr ? Cast<ABaseCharacterController>(GetController()) : PCController;
+	
+	if(PCController)
+	{
+		HUD = HUD == nullptr ? Cast<AWeaponHUD>(PCController->GetHUD()) : HUD;
+
+		if(HUD)
+		{
+			FHUDStruct HudStruct;
+			if(bDisplayCrosshair)
+			{
+				HudStruct.CrosshairCenter = CrosshairsCenter;
+				HudStruct.CrosshairRight = CrosshairsRight;
+				HudStruct.CrosshairLeft = CrosshairsLeft;
+				HudStruct.CrosshairBottom = CrosshairsBottom;
+				HudStruct.CrosshairTop = CrosshairsTop;
+			}
+			else
+			{
+				HudStruct.CrosshairCenter = nullptr;
+				HudStruct.CrosshairRight = nullptr;
+				HudStruct.CrosshairLeft = nullptr;
+				HudStruct.CrosshairBottom = nullptr;
+				HudStruct.CrosshairTop = nullptr;
+			}
+			HUD->SetHUDStruct(HudStruct);
+		}
+	}
+}
+
+void ABaseCharacter::TraceUnderCosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;
+	if(GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation = ViewportSize * 0.5f;
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	// 2D 스크린 좌표를 3D 월드 좌표로 변환
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+		);
+
+	// 변환 작업 성공
+	if(bScreenToWorld)
+	{
+		FVector Start = CrosshairWorldPosition;
+
+		FVector End = CrosshairWorldDirection * TraceLength;
+
+		// 자기자신은 충돌에서 제외
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECC_Visibility);
+
+		// LineTrace 범위안에 감지되는 액터가 존재하지 않을시..
+		if(!TraceHitResult.bBlockingHit)
+		{
+			TraceHitResult.ImpactPoint = End;
+			HitTarget = End;
+			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
+		}
+		else  // 범위안에 감지되는 액터가 존재한다면..
+			{
+			HitTarget = TraceHitResult.ImpactPoint;
+			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
+			}
+	}
+}
 
 // 서버에 복제 등록하기 위한 함수
 void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
@@ -1076,6 +1195,8 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
 	DOREPLIFETIME(ABaseCharacter, VRCurHP);
 	DOREPLIFETIME(ABaseCharacter, myHoming);
+	DOREPLIFETIME(ABaseCharacter, ReturnSpeedTime);
+	DOREPLIFETIME(ABaseCharacter, DuringSpeedTime);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
