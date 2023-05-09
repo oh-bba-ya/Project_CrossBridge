@@ -568,7 +568,7 @@ public:
 	UPROPERTY()
 		class ABaseGrabbableActor* GrabbedActorRight;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		class ABlackhole* Blackhole;
 	UPROPERTY()
 		class ATrashSpawningPool* TrashSpawningPool;
@@ -689,4 +689,6 @@ public:
 
 	UFUNCTION()
 		void VRRevive();
+	UFUNCTION()
+		bool VRSkillCheck(FString Position);
 };

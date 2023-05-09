@@ -330,7 +330,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		float AimDotProduct = FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector());
 		float GripDotProduct = FVector::DotProduct(RightGrip->GetRightVector(), LeftGrip->GetRightVector());
 
-		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9)
+		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9 && VRSkillCheck(FString("Hands")))
 		{
 			VRHealTime += DeltaTime;
 			if (VRCurHP < VRMaxHP)
@@ -362,7 +362,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 				}
 			}
 		}
-		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9) && VRHealTime > 0)
+		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9 || !VRSkillCheck(FString("Hands"))) && VRHealTime > 0)
 		{
 			VRHealTime = 0;
 			if (IsHeal)
@@ -1089,6 +1089,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
 	DOREPLIFETIME(ABaseCharacter, VRCurHP);
 	DOREPLIFETIME(ABaseCharacter, myHoming);
+	DOREPLIFETIME(ABaseCharacter, Blackhole);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1232,9 +1233,9 @@ void ABaseCharacter::RightGraspEnd()
 
 void ABaseCharacter::RightB()
 {
-	IsRightB = true;
-	if (!IsRightA && !IsRedDotSet)
+	if (!IsRightA && !IsRedDotSet && VRSkillCheck(FString("Right")))
 	{
+		IsRightB = true;
 		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("READY"));
 		VRController->PlayHapticEffect(BulletCastHaptic, EControllerHand::Right);
 		IsRedDotSet = true;
@@ -1269,13 +1270,13 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	VRGetDamage(5);
-	if (!IsRightA && !IsSwordCool)
+	//VRGetDamage(5);
+	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 		ServerColorChange(0, FString("SwordOpacity"));
+		IsRightA = true;
 	}
-	IsRightA = true;
 }
 
 void ABaseCharacter::RightAEnd()
@@ -1561,7 +1562,11 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString &Pos
 	}
 	else if (Position == FString("SwordDissolve"))
 	{
+		if (SwordMat)
+		{
 		SwordMat->SetScalarParameterValue(FName("Dissolve"), 0);
+
+		}
 		SwordMesh->SetVisibility(false);
 	}
 }
@@ -1686,6 +1691,10 @@ void ABaseCharacter::MulticastBlackholeReset_Implementation()
 
 void ABaseCharacter::ServerTrashSpawningPoolSet_Implementation(FVector Loc)
 {
+	if (GrabbableObjectCreateEffect->IsVisible())
+	{
+		GrabbableObjectCreateEffect->SetVisibility(false);
+	}
 	TrashSpawningPool->SetActorLocation(Loc);
 }
 void ABaseCharacter::ServerTrashSpawningPoolReset_Implementation()
@@ -1799,4 +1808,45 @@ void ABaseCharacter::VRRevive()
 	EnableInput(VRController);
 	VRGetDamage(-VRMaxHP);
 	VRCamera->PostProcessSettings.ColorSaturation = FVector4(1, 1, 1, 1);
+}
+
+bool ABaseCharacter::VRSkillCheck(FString Position)
+{
+	if (Position == FString("Left"))
+	{
+		if (!IsLeftY && !IsLeftX && !IsLeftGrab)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (Position == FString("Right"))
+	{
+		if (!IsRightA && !IsRightB && !IsRightGrab)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (Position == FString("Hands"))
+	{
+		if (!IsLeftY && !IsLeftX && !IsLeftGrab && !IsRightA && !IsRightB && !IsRightGrab)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
 }
