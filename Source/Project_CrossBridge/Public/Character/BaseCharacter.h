@@ -530,8 +530,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float SwordDamageCoolTimeLimit = 2;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float VRReviveLimitTime = 3;
+
 
 	bool IsVR;
+	bool IsVRDead;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
@@ -683,5 +687,6 @@ public:
 		void ServerVRAttack(const FString& Position, class ABaseCharacter* Enemy);
 
 
-	
+	UFUNCTION()
+		void VRRevive();
 };

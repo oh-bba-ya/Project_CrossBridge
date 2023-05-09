@@ -389,6 +389,19 @@ void ABaseCharacter::Tick(float DeltaTime)
 				VRStatusWidget->SetVisibility(false);
 			}
 		}
+
+		if (VRCurHP <= 0 && !IsVRDead)
+		{
+			IsVRDead = true;
+			VRCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
+			DisableInput(VRController);
+			FTimerHandle VRReviveTimer;
+			GetWorld()->GetTimerManager().SetTimer(VRReviveTimer, this, &ABaseCharacter::VRRevive, VRReviveLimitTime, false);
+			if (IsRightA)
+			{
+				RightAEnd();
+			}
+		}
 	}
 
 	SetGrabInfo();
@@ -1749,6 +1762,8 @@ void ABaseCharacter::VRGetDamage(float Damage)
 void ABaseCharacter::ServerVRGetDamage_Implementation(float Damage)
 {
 	VRCurHP -= Damage;
+	VRCurHP = VRCurHP < 0 ? 0 : VRCurHP;
+	VRCurHP = VRCurHP > VRMaxHP ? VRMaxHP : VRCurHP;
 	float Rate = 1 - (VRCurHP / VRMaxHP);
 	MulticastVRGetDamage(Rate);
 }
@@ -1776,4 +1791,12 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString& Position, clas
 	{
 		Enemy->Server_TakeDamage(10);
 	}
+}
+
+void ABaseCharacter::VRRevive()
+{
+	IsVRDead = false;
+	EnableInput(VRController);
+	VRGetDamage(-VRMaxHP);
+	VRCamera->PostProcessSettings.ColorSaturation = FVector4(1, 1, 1, 1);
 }
