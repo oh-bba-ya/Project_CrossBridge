@@ -34,7 +34,6 @@ void ATrash::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
 }
 
 bool ATrash::GetActivate()
@@ -61,7 +60,6 @@ void ATrash::ServerDeactivate_Implementation()
 	IsActivate = false;
 	SetActorHiddenInGame(true);
 
-	IsOverlap = false;
 }
 
 void ATrash::ServerPhysicsSet_Implementation()
@@ -73,15 +71,13 @@ void ATrash::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherAc
 {
 	if (IsActivate)
 	{
-		if (!IsOverlap)
-		{
-			IsOverlap = true;
-			class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
-			if (Enemy)
-			{
-				Enemy->Server_TakeDamage(10);
-			}
+		
+		class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
+		if (Enemy)
+		{	
+			Enemy->Server_TakeDamage(10);
 		}
+
 		ServerDeactivate();
 	}
 

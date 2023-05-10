@@ -1155,6 +1155,7 @@ void ABaseCharacter::LeftIndexCurl()
 	if (GrabbedActorLeft && IsLeftGrasp && !IsLeftGrab)
 	{
 		ServerGrabTheActor(GrabbedActorLeft, FString("Left"));
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left);
 	}
 }
 
@@ -1164,6 +1165,7 @@ void ABaseCharacter::LeftGrasp()
 	if (GrabbedActorLeft && IsLeftIndexCurl && !IsLeftGrab)
 	{
 		ServerGrabTheActor(GrabbedActorLeft, FString("Left"));
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left);
 	}
 }
 
@@ -1228,6 +1230,7 @@ void ABaseCharacter::RightIndexCurl()
 	IsRightIndexCurl = true;
 	if (GrabbedActorRight && IsRightGrasp && !IsRightGrab)
 	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 		ServerGrabTheActor(GrabbedActorRight, FString("Right"));
 		RightPrevLoc = RightHand->GetComponentLocation();
 		RightPrevRot = RightHand->GetComponentQuat();
@@ -1239,6 +1242,7 @@ void ABaseCharacter::RightGrasp()
 	IsRightGrasp = true;
 	if (GrabbedActorRight && IsRightIndexCurl && !IsRightGrab)
 	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 		ServerGrabTheActor(GrabbedActorRight, FString("Right"));
 		RightPrevLoc = RightHand->GetComponentLocation();
 		RightPrevRot = RightHand->GetComponentQuat();
@@ -1249,6 +1253,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 	IsLeftIndexCurl = false;
 	if (IsLeftGrab)
 	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left);
 		ServerUnGrabTheActor(GrabbedActorLeft, FString("Left"), RightThrowDir, RightThrowRot);
 	}
 }
@@ -1258,6 +1263,7 @@ void ABaseCharacter::LeftGraspEnd()
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left);
 		ServerUnGrabTheActor(GrabbedActorLeft, FString("Left"), RightThrowDir, RightThrowRot);
 	}
 }
@@ -1267,6 +1273,7 @@ void ABaseCharacter::RightIndexCurlEnd()
 	IsRightIndexCurl = false;
 	if (IsRightGrab)
 	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 		ServerUnGrabTheActor(GrabbedActorRight, FString("Right"), RightThrowDir, RightThrowRot);
 	}
 }
@@ -1276,6 +1283,7 @@ void ABaseCharacter::RightGraspEnd()
 	IsRightGrasp = false;
 	if (IsRightGrab)
 	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 		ServerUnGrabTheActor(GrabbedActorRight, FString("Right"), RightThrowDir, RightThrowRot);
 	}
 }

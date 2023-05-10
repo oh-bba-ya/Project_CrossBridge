@@ -28,8 +28,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UStaticMeshComponent* MeshComp;
 
+
 	bool IsActivate;
-	bool IsOverlap;
+
 
 	bool GetActivate();
 
