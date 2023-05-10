@@ -48,17 +48,23 @@ ABaseCharacter::ABaseCharacter()
 	SetReplicateMovement(true);
 	SetReplicates(true);
 
+	GetMesh()->SetIsReplicated(true);
+	GetCapsuleComponent()->SetIsReplicated(true);
+
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
 	springArmComp->SetRelativeLocation(FVector(0, 70, 90));
 	springArmComp->TargetArmLength = 400;
 	springArmComp->bUsePawnControlRotation = true;
+	springArmComp->SetIsReplicated(true);
 
 	camComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CamComp"));
 	camComp->SetupAttachment(springArmComp);
+	camComp->SetIsReplicated(true);
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+	OverheadWidget->SetIsReplicated(true);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,51 +75,67 @@ ABaseCharacter::ABaseCharacter()
 	VRCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("VRCamera"));
 	VRCamera->SetupAttachment(RootComponent);
 	VRCamera->bUsePawnControlRotation = true;
+	VRCamera->SetIsReplicated(true);
 
 	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HeadMesh"));
 	HeadMesh->SetupAttachment(VRCamera);
+	HeadMesh->SetIsReplicated(true);
 
 	HeadComp = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadComp"));
 	HeadComp->SetupAttachment(HeadMesh);
 	HeadComp->SetRelativeLocation(FVector(0, 0, 170));
 	HeadComp->SetBoxExtent(FVector(10, 10, 12));
+	HeadComp->SetIsReplicated(true);
 
 	LeftHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftHand"));
 	LeftHand->SetupAttachment(RootComponent);
 	LeftHand->SetTrackingMotionSource(FName("Left"));
+	LeftHand->SetIsReplicated(true);
 
 	RightHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightHand"));
 	RightHand->SetupAttachment(RootComponent);
 	RightHand->SetTrackingMotionSource(FName("Right"));
+	RightHand->SetIsReplicated(true);
 
 	LeftGrip = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftGrip"));
 	LeftGrip->SetupAttachment(RootComponent);
 	LeftGrip->SetTrackingMotionSource(FName("LeftGrip"));
+	LeftGrip->SetIsReplicated(true);
 
 	RightGrip = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightGrip"));
 	RightGrip->SetupAttachment(RootComponent);
 	RightGrip->SetTrackingMotionSource(FName("RightGrip"));
+	RightGrip->SetIsReplicated(true);
 
 	LeftAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftAim"));
 	LeftAim->SetupAttachment(RootComponent);
 	LeftAim->SetTrackingMotionSource(FName("LeftAim"));
+	LeftAim->SetIsReplicated(true);
 
 	RightAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightAim"));
 	RightAim->SetupAttachment(RootComponent);
 	RightAim->SetTrackingMotionSource(FName("RightAim"));
+	RightAim->SetIsReplicated(true);
 
 	LeftHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftHandBox"));
 	LeftHandBox->SetupAttachment(LeftHand);
 	LeftHandBox->SetRelativeLocation(FVector(3, 1, -4));
 	LeftHandBox->SetBoxExtent(FVector(5));
+	LeftHandBox->SetIsReplicated(true);
 
 	RightHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightHandBox"));
 	RightHandBox->SetupAttachment(RightHand);
 	RightHandBox->SetRelativeLocation(FVector(3, -1, -4));
 	RightHandBox->SetBoxExtent(FVector(5));
+	RightHandBox->SetIsReplicated(true);
 
 	LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftHandMesh"));
 	LeftHandMesh->SetupAttachment(LeftHand);
+	LeftHandMesh->SetIsReplicated(true);
+
+	RightHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightHandMesh"));
+	RightHandMesh->SetupAttachment(RightHand);
+	RightHandMesh->SetIsReplicated(true);
 
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
 	SwordMesh->SetupAttachment(RightHand);
@@ -121,6 +143,7 @@ ABaseCharacter::ABaseCharacter()
 	SwordMesh->SetRelativeRotation(FRotator(-75, 0, 0));
 	SwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SwordMesh->SetVisibility(false);
+	SwordMesh->SetIsReplicated(true);
 
 	InvisibleSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvisibleSwordMesh"));
 	InvisibleSwordMesh->SetupAttachment(RightHand);
@@ -128,20 +151,24 @@ ABaseCharacter::ABaseCharacter()
 	InvisibleSwordMesh->SetRelativeRotation(FRotator(-75, 0, 0));
 	InvisibleSwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	InvisibleSwordMesh->SetVisibility(false);
+	InvisibleSwordMesh->SetIsReplicated(true);
 
 	SwordComp = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordComp"));
 	SwordComp->SetupAttachment(SwordMesh);
 	SwordComp->SetCollisionProfileName(TEXT("NoCollision"));
 	SwordComp->SetRelativeLocation(FVector(3, 1, 46));
 	SwordComp->SetBoxExtent(FVector(3, 3, 38));
+	SwordComp->SetIsReplicated(true);
 
 	GrabbableObjectCreateEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("GrabbableObjectCreateEffect"));
 	GrabbableObjectCreateEffect->SetupAttachment(LeftHand);
 	GrabbableObjectCreateEffect->SetRelativeLocation(FVector(3, 4, -6));
 	GrabbableObjectCreateEffect->SetVisibility(false);
+	GrabbableObjectCreateEffect->SetIsReplicated(true);
 
 	BlackholeTraceComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BlackholeTraceComp"));
 	BlackholeTraceComp->SetupAttachment(RootComponent);
+	BlackholeTraceComp->SetIsReplicated(true);
 
 	VRStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("VRStatus"));
 	VRStatusWidget->SetupAttachment(LeftHand);
@@ -149,6 +176,7 @@ ABaseCharacter::ABaseCharacter()
 	VRStatusWidget->SetRelativeRotation(FRotator(8, 92, -70));
 	VRStatusWidget->SetRelativeScale3D(FVector(0.025));
 	VRStatusWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VRStatusWidget->SetIsReplicated(true);
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> VRHeadMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/VR_Head.VR_Head'"));
 	if (VRHeadMesh.Succeeded())
@@ -166,8 +194,6 @@ ABaseCharacter::ABaseCharacter()
 		LeftHandMesh->SetRelativeRotation(FRotator(-25, -180, 90));
 	}
 
-	RightHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightHandMesh"));
-	RightHandMesh->SetupAttachment(RightHand);
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> RightMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_right.SKM_MannyXR_right'"));
 	if (RightMesh.Succeeded())
 	{
@@ -252,15 +278,13 @@ void ABaseCharacter::BeginPlay()
 		UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
 
 		ServerVRSetting();
+		camComp->SetActive(false);
+		VRCamera->SetActive(true);
 
 		RedDot = GetWorld()->SpawnActor<AActor>(SpawnRedDot, GetActorLocation(), GetActorRotation());
 		RedDot->SetActorHiddenInGame(true);
 		RedDot->SetActorEnableCollision(false);
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
-	}
-	else
-	{
-		ServerPCSetting();
 	}
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
@@ -406,21 +430,30 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	SetGrabInfo();
 
-	if (IsLeftY)
+	if (IsLeftY && !IsTrashSpawningPoolCool && !IsTrashSpawningPoolSet)
 	{
-		if (!TrashSpawningPool)
+		//if (!TrashSpawningPool)
+		//{
+		//	TrashSpawningPool = Cast<ATrashSpawningPool>(UGameplayStatics::GetActorOfClass(GetWorld(), ATrashSpawningPool::StaticClass()));
+		//}
+		if (LeftYTimer == 0)
 		{
-			TrashSpawningPool = Cast<ATrashSpawningPool>(UGameplayStatics::GetActorOfClass(GetWorld(), ATrashSpawningPool::StaticClass()));
+			VRController->PlayHapticEffect(TrashCastHaptic, EControllerHand::Left, 1, true);
+			IsTrashSpawningPoolCast = true;
 		}
 		LeftYTimer += DeltaTime;
 		if (LeftYTimer / LeftYCastTime <= 1)
 		{
-
 			// ColorChange(LeftYTimer / 5, FString("Left"));
 			ServerColorChange(LeftYTimer / LeftYCastTime, FString("LeftY"));
 		}
 		else
 		{
+			if (IsTrashSpawningPoolCast)
+			{
+				VRController->StopHapticEffect(EControllerHand::Left);
+				IsTrashSpawningPoolCast = false;
+			}
 			FVector Loc = LeftHand->GetComponentLocation() + LeftAim->GetForwardVector() * 500;
 			ServerTrashSpawningPoolSet(FVector(Loc.X, Loc.Y, 200));
 		}
@@ -454,12 +487,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if (IsLeftX && !IsBlackholeCool)
+	if (IsLeftX && !IsBlackholeCool && !IsBlackholeSet)
 	{
-		if (!Blackhole)
-		{
-			Blackhole = Cast<ABlackhole>(UGameplayStatics::GetActorOfClass(GetWorld(), ABlackhole::StaticClass()));
-		}
+		//if (!Blackhole)
+		//{
+		//	Blackhole = Cast<ABlackhole>(UGameplayStatics::GetActorOfClass(GetWorld(), ABlackhole::StaticClass()));
+		//}
 		FVector BlackHoleLoc = BlackHoleTrace();
 		LeftXTimer += DeltaTime;
 		if (LeftXTimer / LeftXCastTime <= 1)
@@ -1090,6 +1123,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, VRCurHP);
 	DOREPLIFETIME(ABaseCharacter, myHoming);
 	DOREPLIFETIME(ABaseCharacter, Blackhole);
+	DOREPLIFETIME(ABaseCharacter, TrashSpawningPool);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1148,6 +1182,12 @@ void ABaseCharacter::LeftYEnd()
 		//TrashSpawningPool->SetActorLocation(GetActorLocation() + GetActorUpVector()*200);
 		ServerTrashSpawningPoolActivate();
 		IsTrashSpawningPoolSet = true;
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left, 1, false);
+	}
+	if (IsTrashSpawningPoolCast)
+	{
+		IsTrashSpawningPoolCast = false;
+		VRController->StopHapticEffect(EControllerHand::Left);
 	}
 	IsLeftY = false;
 	LeftYTimer = 0;
@@ -1157,14 +1197,23 @@ void ABaseCharacter::LeftYEnd()
 
 void ABaseCharacter::LeftX()
 {
-	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY && !IsBlackholeSet)
+	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY && !IsBlackholeSet &&!IsLeftX && !IsBlackholeCool && BlackholeTimer == 0)
 	{
 		IsLeftX = true;
+		VRController->PlayHapticEffect(BlackholeCastHaptic, EControllerHand::Left, 1, false);
 	}
 }
 
 void ABaseCharacter::LeftXEnd()
 {
+	if (IsLeftX && LeftXTimer < LeftXCastTime)
+	{
+		VRController->StopHapticEffect(EControllerHand::Left);
+	}
+	if (IsLeftX)
+	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left, 1, false);
+	}
 	IsLeftX = false;
 	if (!IsBlackholeCool)
 	{
@@ -1270,7 +1319,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	//VRGetDamage(5);
+	VRGetDamage(1);
 	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
@@ -1579,18 +1628,9 @@ void ABaseCharacter::ServerSpawnThunder_Implementation()
 
 void ABaseCharacter::ServerVRSetting_Implementation()
 {
-	VRCurHP = VRMaxHP;
-	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
-	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
-	MulticastVRSetting();
-}
-
-void ABaseCharacter::MulticastVRSetting_Implementation()
-{
 	GetMesh()->SetVisibility(false);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	camComp->SetActive(false);
-	VRCamera->SetActive(true);
+	OverheadWidget->SetVisibility(false);
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("VRPlayerPreset"));
 	GetCapsuleComponent()->SetRelativeScale3D(FVector(1.3f));
@@ -1600,69 +1640,20 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	GetCharacterMovement()->MaxFlySpeed = 600;
 
 	HeadMesh->SetVisibility(true);
-	HeadComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
-	LeftHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	RightHand->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	HeadComp->SetCollisionProfileName(TEXT("VRPlayerHeadPreset"));
 
 	LeftHandMesh->SetVisibility(true);
-	LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
 	RightHandMesh->SetVisibility(true);
-	RightHandMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-	LeftGrip->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	RightAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	LeftAim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	LeftHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	RightHandBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	LeftHandBox->SetCollisionProfileName(TEXT("PlayerHandPreset"));
+	RightHandBox->SetCollisionProfileName(TEXT("PlayerHandPreset"));
 
 	VRStatusWidget->SetVisibility(true);
-	//InvisibleSwordMesh->SetVisibility(true);
+
+	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
 }
 
-void ABaseCharacter::ServerPCSetting_Implementation()
-{
-	MulticastPCSetting();
-}
-
-void ABaseCharacter::MulticastPCSetting_Implementation()
-{
-	HeadMesh->SetVisibility(false);
-	HeadComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	LeftHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	RightHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	LeftHandMesh->SetVisibility(false);
-	LeftHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	RightHandMesh->SetVisibility(false);
-	RightHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	LeftGrip->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	RightAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	LeftAim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	LeftHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	RightHandBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	VRStatusWidget->SetVisibility(false);
-	SwordMesh->SetVisibility(false);
-	InvisibleSwordMesh->SetVisibility(false);
-
-	camComp->SetActive(true);
-	VRCamera->SetActive(false);
-
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerPreset"));
-	GetCapsuleComponent()->SetRelativeScale3D(FVector(0.2));
-
-	springArmComp->TargetArmLength = 100;
-	GetCharacterMovement()->MaxWalkSpeed = 100;
-	GetCharacterMovement()->MaxWalkSpeedCrouched = 50;
-	GetCharacterMovement()->MaxFlySpeed = 100;
-
-	GetMesh()->SetVisibility(true);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
 
 void ABaseCharacter::ServerBlackholeSet_Implementation(float Rate, FVector Loc)
 {
