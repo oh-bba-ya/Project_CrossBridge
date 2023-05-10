@@ -406,21 +406,30 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	SetGrabInfo();
 
-	if (IsLeftY)
+	if (IsLeftY && !IsTrashSpawningPoolCool && !IsTrashSpawningPoolSet)
 	{
 		if (!TrashSpawningPool)
 		{
 			TrashSpawningPool = Cast<ATrashSpawningPool>(UGameplayStatics::GetActorOfClass(GetWorld(), ATrashSpawningPool::StaticClass()));
 		}
+		if (LeftYTimer == 0)
+		{
+			VRController->PlayHapticEffect(TrashCastHaptic, EControllerHand::Left, 1, true);
+			IsTrashSpawningPoolCast = true;
+		}
 		LeftYTimer += DeltaTime;
 		if (LeftYTimer / LeftYCastTime <= 1)
 		{
-
 			// ColorChange(LeftYTimer / 5, FString("Left"));
 			ServerColorChange(LeftYTimer / LeftYCastTime, FString("LeftY"));
 		}
 		else
 		{
+			if (IsTrashSpawningPoolCast)
+			{
+				VRController->StopHapticEffect(EControllerHand::Left);
+				IsTrashSpawningPoolCast = false;
+			}
 			FVector Loc = LeftHand->GetComponentLocation() + LeftAim->GetForwardVector() * 500;
 			ServerTrashSpawningPoolSet(FVector(Loc.X, Loc.Y, 200));
 		}
@@ -454,7 +463,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if (IsLeftX && !IsBlackholeCool)
+	if (IsLeftX && !IsBlackholeCool && !IsBlackholeSet)
 	{
 		if (!Blackhole)
 		{
@@ -1148,6 +1157,12 @@ void ABaseCharacter::LeftYEnd()
 		//TrashSpawningPool->SetActorLocation(GetActorLocation() + GetActorUpVector()*200);
 		ServerTrashSpawningPoolActivate();
 		IsTrashSpawningPoolSet = true;
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left, 1, false);
+	}
+	if (IsTrashSpawningPoolCast)
+	{
+		IsTrashSpawningPoolCast = false;
+		VRController->StopHapticEffect(EControllerHand::Left);
 	}
 	IsLeftY = false;
 	LeftYTimer = 0;
@@ -1157,14 +1172,23 @@ void ABaseCharacter::LeftYEnd()
 
 void ABaseCharacter::LeftX()
 {
-	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY && !IsBlackholeSet)
+	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY && !IsBlackholeSet &&!IsLeftX && !IsBlackholeCool && BlackholeTimer == 0)
 	{
 		IsLeftX = true;
+		VRController->PlayHapticEffect(BlackholeCastHaptic, EControllerHand::Left, 1, false);
 	}
 }
 
 void ABaseCharacter::LeftXEnd()
 {
+	if (IsLeftX && LeftXTimer < LeftXCastTime)
+	{
+		VRController->StopHapticEffect(EControllerHand::Left);
+	}
+	if (IsLeftX)
+	{
+		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left, 1, false);
+	}
 	IsLeftX = false;
 	if (!IsBlackholeCool)
 	{
@@ -1270,7 +1294,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	//VRGetDamage(5);
+	VRGetDamage(1);
 	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
@@ -1579,7 +1603,6 @@ void ABaseCharacter::ServerSpawnThunder_Implementation()
 
 void ABaseCharacter::ServerVRSetting_Implementation()
 {
-	VRCurHP = VRMaxHP;
 	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	MulticastVRSetting();

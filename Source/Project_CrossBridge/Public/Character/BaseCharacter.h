@@ -543,6 +543,7 @@ public:
 	bool IsLeftX;
 	UPROPERTY(Replicated)
 	bool IsBlackholeSet;
+	bool IsTrashSpawningPoolCast;
 	bool IsTrashSpawningPoolSet;
 	bool IsRightIndexCurl;
 	bool IsRightGrasp;
@@ -601,6 +602,10 @@ public:
 		class UHapticFeedbackEffect_Base* ClickedHaptic;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UHapticFeedbackEffect_Base* HealHaptic;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UHapticFeedbackEffect_Base* TrashCastHaptic;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UHapticFeedbackEffect_Base* BlackholeCastHaptic;
 
 
 
@@ -670,10 +675,10 @@ public:
 		void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
 
 public:
-	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite)
-		float VRCurHP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float VRMaxHP = 100;
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite)
+		float VRCurHP = VRMaxHP;
 
 	UFUNCTION(BlueprintCallable)
 		void VRGetDamage(float Damage);
