@@ -76,32 +76,6 @@ void ATrashCan::PickUpTrashCan(ABaseCharacter* player)
 	}
 }
 
-void ATrashCan::DrawTrajectory()
-{
-	// LinePoins 초기화
-	LinePoints.RemoveAt(0, LinePoints.Num());
-	
-	FVector Pos = GetActorLocation();
-	FVector Dir = GetActorUpVector();
-
-	LinePoints.Add(Pos);
-
-	for(int i=0;i<LineSmooth;i++)
-	{
-		FVector LastPos = Pos;
-
-		Dir += FVector::UpVector * Gravity * SimulateTime;
-
-		Pos += Dir * SimulateTime;
-
-		LinePoints.Add(Pos);
-	}
-
-	for(int i=0;i<LinePoints.Num()-1;i++)
-	{
-		DrawDebugLine(GetWorld(),LinePoints[i],LinePoints[i+1],FColor::Red,false,-1,0,1);
-	}
-}
 
 void ATrashCan::Fire(ABaseCharacter* player,const FVector hitTarget)
 {
@@ -121,15 +95,11 @@ void ATrashCan::Server_Fire_Implementation(ABaseCharacter* player, const FVector
 		GetWorldTimerManager().SetTimer(fireDelayHandle,FTimerDelegate::CreateLambda([&]{bFireDelay=true;}),FireDelayTime,false);
 		
 		ATrashCanProjectile* Projectile  = GetWorld()->SpawnActor<ATrashCanProjectile>(projectileFactory,GetActorLocation(),ArrowComponent->GetRelativeRotation());
-		FVector ToTarget = GetActorLocation() - Projectile->GetActorLocation();
-		ToTarget.GetSafeNormal();
-		
-		ToTarget = ToTarget*800.f;
 		
 		if(Projectile != nullptr)
 		{
-			Projectile->BoxComponent->SetPhysicsLinearVelocity(ToTarget);
-			Projectile->SetOwner(player);
+			Projectile->SetOwner(OwnerPlayer);
+			Projectile->Fire(hitTarget);
 		}
 	}
 }

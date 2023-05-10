@@ -79,7 +79,10 @@ void ATrash::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherAc
 			class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
 			if (Enemy)
 			{
-				Enemy->Server_TakeDamage(10);
+				if(!(Enemy->IsVR))
+				{
+					Enemy->OnTakeDamage(10);
+				}
 			}
 		}
 		ServerDeactivate();

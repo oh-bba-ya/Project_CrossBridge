@@ -60,7 +60,10 @@ void AThrowingWeapon::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
 	if (Enemy)
 	{
-		Enemy->Server_TakeDamage(5);
+		if(!(Enemy->IsVR))
+		{
+			Enemy->OnTakeDamage(5);
+		}
 	}
 
 }

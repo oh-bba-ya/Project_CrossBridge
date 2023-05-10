@@ -65,7 +65,7 @@ protected:
 	class UInputAction* InputQuitAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-	class UInputAction* InputPickupAction;
+	class UInputAction* InputInterAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
 	class UInputAction* InputTrashCanFireAction;
@@ -201,29 +201,30 @@ public:
 	FORCEINLINE float GetMaxHP() const {return MaxHP;}
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 
-	UFUNCTION(BlueprintCallable,Server, Unreliable)
-	void Server_TakeDamage(float value);
+	UFUNCTION(Category="Settings|Status Health")
+	void SetCurrentHealth(float value);
 
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|Status Health")
+	void OnTakeDamage(float d);
+	
 	UFUNCTION(BlueprintCallable,Server, Unreliable)
 	void Server_RecoveryHP(float value);
 	
 
 protected:
 	/** 현재 체력 세터. 값을 0과 MaxHealth 사이로 범위제한하고 OnHealthUpdate를 호출합니다. 서버에서만 호출되어야 합니다.*/
-	UFUNCTION(BlueprintCallable, Category="Health")
-	void SetCurrentHealth(float healthValue);
+	UFUNCTION()
+	void OnRep_CurrentHealth();
+
+	void OnHealthUpdate();
+
 
 private:
-	UFUNCTION()
-	void PlusHealth(int32 value);
-
-	UFUNCTION()
-	void SubTractHealth(int32 value);
-	
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Status Health")
 	float MaxHP;
 
-	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Status Health")
+	UPROPERTY(EditDefaultsOnly,ReplicatedUsing = OnRep_CurrentHealth, Category="Settings|Status Health")
 	float CurrentHP;
 
 
@@ -272,6 +273,7 @@ public:
 	FORCEINLINE void SetTrashCan(ATrashCan* t) {myTrashCan = t;}
 	FORCEINLINE ATrashCan* GetTrashCan() {return myTrashCan;}
 
+
 protected:
 	void DropWeapon();
 
@@ -313,6 +315,8 @@ protected:
 
 	UFUNCTION(Server,Unreliable)
 	void Server_RemoveFreeze();
+public:
+	FORCEINLINE AFreeze* GetFreeze() {return freeze;}
 
 
 #pragma endregion 
@@ -378,8 +382,9 @@ private:
 	FHitResult HitResult;
 
 	FVector HitTarget;
-
-	float TraceLength = 80000.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category= "Settings|Crosshair")
+	float TraceLength = 1000.f;
 
 	bool bDisplayCrosshair = false;
 	
@@ -400,6 +405,22 @@ private:
 	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
 	class UTexture2D* CrosshairsBottom;
 
+
+#pragma endregion
+
+	/** Converter */
+#pragma region Converter
+private:
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
+	class AMaterialConverter* myConverter;
+
+public:
+	FORCEINLINE void SetConverter(AMaterialConverter* w) { myConverter = w;}
+	FORCEINLINE AMaterialConverter* GetConverter() {return myConverter;}
+
+protected:
+	UFUNCTION()
+	void UsingConverter();
 
 #pragma endregion 
 	
@@ -587,7 +608,7 @@ public:
 		float SwordDamageCoolTimeLimit = 2;
 
 
-	bool IsVR;
+	bool IsVR = false;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;

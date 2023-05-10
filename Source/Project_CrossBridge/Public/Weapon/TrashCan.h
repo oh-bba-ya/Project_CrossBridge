@@ -37,7 +37,9 @@ public:
 	void Multicast_PickUpTrashCan(class ABaseCharacter* player);
 
 	FORCEINLINE bool GetbFireDelay() {return bFireDelay;}
-	
+
+	FORCEINLINE float GetCount() const {return Count;}
+	FORCEINLINE void SetCount(float v) {Count += v;} 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UBoxComponent* BoxComponent;
@@ -63,28 +65,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
 	bool bFireDelay = true;
-	
-
-	/** Trajectory */
-private:
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Trajectory")
-	float ThrowPower = 1500.f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Trajectory")
-	float Gravity = -5000.f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Trajectory")
-	float SimulateTime = 0.02f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Trajectory")
-	int32 LineSmooth = 40.f;
-
-	UPROPERTY()
-	TArray<FVector> LinePoints;
-	
-	UFUNCTION()
-	void DrawTrajectory();
-
 
 public:
 	UFUNCTION()
