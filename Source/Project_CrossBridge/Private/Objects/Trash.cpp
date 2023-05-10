@@ -1,13 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Objects/Trash.h"
 #include "Character/BaseCharacter.h"
 
 // Sets default values
 ATrash::ATrash()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	bReplicates = true;
@@ -26,15 +25,12 @@ ATrash::ATrash()
 void ATrash::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void ATrash::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
 }
 
 bool ATrash::GetActivate()
@@ -53,15 +49,12 @@ void ATrash::ServerActivate_Implementation(FVector SpawnLoc)
 	GetWorldTimerManager().SetTimer(DeactivateTimer, this, &ATrash::ServerDeactivate, 3, false);
 }
 
-
 void ATrash::ServerDeactivate_Implementation()
 {
 	SetActorLocation(FVector(0, 0, -1000));
 	MeshComp->SetSimulatePhysics(false);
 	IsActivate = false;
 	SetActorHiddenInGame(true);
-
-	IsOverlap = false;
 }
 
 void ATrash::ServerPhysicsSet_Implementation()
@@ -69,24 +62,18 @@ void ATrash::ServerPhysicsSet_Implementation()
 	MeshComp->SetSimulatePhysics(true);
 }
 
-void ATrash::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ATrash::OnOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
 	if (IsActivate)
 	{
-		if (!IsOverlap)
+		class ABaseCharacter *Enemy = Cast<ABaseCharacter>(OtherActor);
+		if (Enemy)
 		{
-			IsOverlap = true;
-			class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
-			if (Enemy)
+			if (!(Enemy->IsVR))
 			{
-				if(!(Enemy->IsVR))
-				{
-					Enemy->OnTakeDamage(10);
-				}
+				Enemy->OnTakeDamage(10);
 			}
 		}
-		ServerDeactivate();
 	}
-
-
+	ServerDeactivate();
 }
