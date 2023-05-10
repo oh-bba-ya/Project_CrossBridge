@@ -48,11 +48,7 @@ ABaseCharacter::ABaseCharacter()
 
 	bReplicates = true;
 	SetReplicateMovement(true);
-	SetReplicates(true);
-
-	GetMesh()->SetIsReplicated(true);
-	GetCapsuleComponent()->SetIsReplicated(true);
-
+	
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
 	springArmComp->SetRelativeLocation(FVector(0, 70, 90));
