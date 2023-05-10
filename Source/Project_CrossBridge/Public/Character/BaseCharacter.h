@@ -571,7 +571,7 @@ public:
 
 	UPROPERTY(Replicated)
 		class ABlackhole* Blackhole;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		class ATrashSpawningPool* TrashSpawningPool;
 	UPROPERTY()
 		class AActor* RedDot;
@@ -641,13 +641,6 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 		void ServerVRSetting();
-	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastVRSetting();
-
-	UFUNCTION(Server, Unreliable)
-		void ServerPCSetting();
-	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastPCSetting();
 
 	UFUNCTION(Server, Unreliable)
 		void ServerBlackholeSet(float Rate, FVector Loc);
