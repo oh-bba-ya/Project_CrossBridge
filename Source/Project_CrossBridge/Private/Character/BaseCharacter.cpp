@@ -34,8 +34,10 @@
 #include "NiagaraComponent.h"
 #include "Objects/Thunder.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+#include "Objects/MaterialConverter.h"
 #include "PickupItem/HomingItem.h"
 #include "Objects/TrashSpawningPool.h"
+#include "Weapon/TrashCan.h"
 
 
 // Sets default values
@@ -54,7 +56,7 @@ ABaseCharacter::ABaseCharacter()
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
 	springArmComp->SetRelativeLocation(FVector(0, 70, 90));
-	springArmComp->TargetArmLength = 400;
+	springArmComp->TargetArmLength = 100.f;
 	springArmComp->bUsePawnControlRotation = true;
 	springArmComp->SetIsReplicated(true);
 
@@ -66,6 +68,20 @@ ABaseCharacter::ABaseCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 	OverheadWidget->SetIsReplicated(true);
 
+	MaxHP = 100.f;
+	CurrentHP = MaxHP;
+	
+	/** PC 캐릭터 디폴트 세팅 */
+	GetCharacterMovement()->Crouch(true);
+	GetCharacterMovement()->MaxWalkSpeed = 100;
+	GetCharacterMovement()->MaxWalkSpeedCrouched = 50;
+	GetCharacterMovement()->MaxFlySpeed = 100.f;
+	GetCapsuleComponent()->SetWorldScale3D(FVector(0.2f));
+	
+	
+
+	
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +92,7 @@ ABaseCharacter::ABaseCharacter()
 	VRCamera->SetupAttachment(RootComponent);
 	VRCamera->bUsePawnControlRotation = true;
 	VRCamera->SetIsReplicated(true);
+	VRCamera->SetActive(false);
 
 	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HeadMesh"));
 	HeadMesh->SetupAttachment(VRCamera);
@@ -220,6 +237,29 @@ ABaseCharacter::ABaseCharacter()
 	RightHandBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandOverlap);
 	RightHandBox->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandEndOverlap);
 	SwordComp->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnSwordOverlap);
+
+	/** PC 디폴트 설정*/
+	HeadMesh->SetVisibility(false);
+	HeadComp->SetCollisionProfileName(FName("NoCollision"));
+
+	LeftHand->SetCollisionProfileName(FName("NoCollision"));
+	RightHand->SetCollisionProfileName(FName("NoCollision"));
+
+	LeftHandMesh->SetVisibility(false);
+	LeftHandMesh->SetCollisionProfileName(FName("NoCollision"));
+
+	RightHandMesh->SetVisibility(false);
+	RightHandMesh->SetCollisionProfileName(FName("NoCollision"));
+
+	LeftGrip->SetCollisionProfileName(FName("NoCollision"));
+	RightAim->SetCollisionProfileName(FName("NoCollision"));
+	LeftAim->SetCollisionProfileName(FName("NoCollision"));
+	LeftHandBox->SetCollisionProfileName(FName("NoCollision"));
+	RightHandBox->SetCollisionProfileName(FName("NoCollision"));
+	
+	VRStatusWidget->SetVisibility(false);
+
+
 }
 
 // Called when the game starts or when spawned
@@ -345,6 +385,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 	if (freeze != nullptr)
 	{
 		freeze->SetActorLocation(GetActorLocation());
+	}
+
+	if(!IsVR)
+	{
+		TraceUnderCosshairs(HitResult);
+		SetHUDCrosshairs(DeltaTime);
 	}
 
 	if (IsVR)
@@ -675,7 +721,9 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputDropWeaponAction, ETriggerEvent::Started, this, &ABaseCharacter::DropWeapon);
 		EnhancedInputComponent->BindAction(InputRollingAction, ETriggerEvent::Started, this, &ABaseCharacter::RollingActionPressed);
 		EnhancedInputComponent->BindAction(InputSlidingAction, ETriggerEvent::Started, this, &ABaseCharacter::SlidingActionPressed);
-		EnhancedInputComponent->BindAction(InputPickupAction, ETriggerEvent::Started, this, &ABaseCharacter::CanonFire);
+		EnhancedInputComponent->BindAction(InputInterAction, ETriggerEvent::Started, this, &ABaseCharacter::CanonFire);
+		EnhancedInputComponent->BindAction(InputInterAction, ETriggerEvent::Started, this, &ABaseCharacter::UsingConverter);
+		EnhancedInputComponent->BindAction(InputTrashCanFireAction, ETriggerEvent::Started, this, &ABaseCharacter::TrashCanFire);
 
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABaseCharacter::VRMove);
 		EnhancedInputComponent->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &ABaseCharacter::Turn);
@@ -900,44 +948,80 @@ void ABaseCharacter::Server_DeActivateJetPack_Implementation()
 
 /** Health() */
 #pragma region Health()
-void ABaseCharacter::Server_TakeDamage_Implementation(float value)
-{
-	if (CurrentHP > 0)
-	{
-		SubTractHealth(value);
-	}
-}
+
 
 void ABaseCharacter::Server_RecoveryHP_Implementation(float value)
 {
-	if (CurrentHP < 100)
+	float hp = CurrentHP + value;
+	SetCurrentHealth(hp);
+}
+
+
+void ABaseCharacter::SetCurrentHealth(float value)
+{
+	if(GetLocalRole() ==  ROLE_Authority)
 	{
-		PlusHealth(value);
+		CurrentHP = FMath::Clamp(value,0.f,MaxHP);
+		OnHealthUpdate();
 	}
 }
 
-void ABaseCharacter::SetCurrentHealth(float healthValue)
+
+void ABaseCharacter::OnTakeDamage(float d)
 {
+	float hp = CurrentHP - d;
+	SetCurrentHealth(hp);
+}
+
+void ABaseCharacter::OnRep_CurrentHealth()
+{
+	OnHealthUpdate();
+}
+
+void ABaseCharacter::OnHealthUpdate()
+{
+	//클라이언트 전용 함수 기능
+	if (IsLocallyControlled())
+	{
+		FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHP);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+
+		if (CurrentHP <= 0)
+		{
+			FString deathMessage = FString::Printf(TEXT("You have been killed."));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+		}
+	}
+
+	//서버 전용 함수 기능
 	if (GetLocalRole() == ROLE_Authority)
 	{
-		CurrentHP = FMath::Clamp(healthValue, 0.f, MaxHP);
+		FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHP);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 	}
+
+	//모든 머신에서 실행되는 함수 
+	/*  
+		여기에 대미지 또는 사망의 결과로 발생하는 특별 함수 기능 배치 
+	*/
 }
 
-void ABaseCharacter::PlusHealth(int32 value)
-{
-	CurrentHP = FMath::Clamp(CurrentHP + value, 0.f, MaxHP);
-}
-
-void ABaseCharacter::SubTractHealth(int32 value)
-{
-	CurrentHP = FMath::Clamp(CurrentHP - value, 0.f, MaxHP);
-}
 
 #pragma endregion
 
 /** Fire */
 #pragma region Fire()
+
+void ABaseCharacter::TrashCanFire()
+{
+	if(myTrashCan != nullptr && freeze == nullptr)
+	{
+		if(myTrashCan->GetbFireDelay())
+		{
+			myTrashCan->Fire(this,HitTarget);
+		}
+	}
+}
 
 void ABaseCharacter::Fire()
 {
@@ -946,10 +1030,11 @@ void ABaseCharacter::Fire()
 		if(myWeapon->GetbFireDelay())
 		{
 			Server_Fire();
-			myWeapon->Fire(this);
+			myWeapon->Fire(this,HitTarget);
 		}
 	}
 }
+
 
 void ABaseCharacter::Server_Fire_Implementation()
 {
@@ -1055,6 +1140,9 @@ void ABaseCharacter::CanonFire()
 
 }
 
+#pragma endregion
+
+#pragma region SpeedUp
 void ABaseCharacter::SpeedUp()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 300;
@@ -1068,6 +1156,12 @@ void ABaseCharacter::SpeedUp()
 }
 
 void ABaseCharacter::ComeBackSpeed()
+{
+	MultiCast_CombackSpeed();
+}
+
+
+void ABaseCharacter::MultiCast_CombackSpeed_Implementation()
 {
 	if(!bIsSpeedUp)
 	{
@@ -1101,13 +1195,133 @@ void ABaseCharacter::ComeBackSpeed()
 				GetCharacterMovement()->MaxWalkSpeedCrouched = crouchSpeed;
 				bIsSpeedUp = false;
 				GetWorld()->GetTimerManager().ClearTimer(SpeedHandle);
-				UE_LOG(LogTemp,Warning,TEXT("Lamda"));
+				UE_LOG(LogTemp,Warning,TEXT("End Speed UP"));
 			}
 		})
 		,0.02f,true);
 }
 
 #pragma endregion
+
+
+void ABaseCharacter::SetHUDCrosshairs(float DeletaTime)
+{
+
+	if(myWeapon == nullptr && myTrashCan == nullptr)
+	{
+		bDisplayCrosshair = false;
+	}
+	else
+	{
+		bDisplayCrosshair = true;
+	}
+
+	PCController = PCController == nullptr ? Cast<ABaseCharacterController>(GetController()) : PCController;
+	
+	if(PCController)
+	{
+		HUD = HUD == nullptr ? Cast<AWeaponHUD>(PCController->GetHUD()) : HUD;
+
+		if(HUD)
+		{
+			FHUDStruct HudStruct;
+			if(bDisplayCrosshair)
+			{
+				HudStruct.CrosshairCenter = CrosshairsCenter;
+				HudStruct.CrosshairRight = CrosshairsRight;
+				HudStruct.CrosshairLeft = CrosshairsLeft;
+				HudStruct.CrosshairBottom = CrosshairsBottom;
+				HudStruct.CrosshairTop = CrosshairsTop;
+			}
+			else
+			{
+				HudStruct.CrosshairCenter = nullptr;
+				HudStruct.CrosshairRight = nullptr;
+				HudStruct.CrosshairLeft = nullptr;
+				HudStruct.CrosshairBottom = nullptr;
+				HudStruct.CrosshairTop = nullptr;
+			}
+			HUD->SetHUDStruct(HudStruct);
+		}
+	}
+}
+
+void ABaseCharacter::TraceUnderCosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;
+	if(GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation = ViewportSize * 0.5f;
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	// 2D 스크린 좌표를 3D 월드 좌표로 변환
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+		);
+
+	// 변환 작업 성공
+	if(bScreenToWorld)
+	{
+		FVector Start = CrosshairWorldPosition;
+
+		FVector End = CrosshairWorldDirection * TraceLength;
+
+		// 자기자신은 충돌에서 제외
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECC_Visibility);
+
+		// LineTrace 범위안에 감지되는 액터가 존재하지 않을시..
+		if(!TraceHitResult.bBlockingHit)
+		{
+			TraceHitResult.ImpactPoint = End;
+			HitTarget = End;
+			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
+		}
+		else  // 범위안에 감지되는 액터가 존재한다면..
+			{
+			HitTarget = TraceHitResult.ImpactPoint;
+			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
+			}
+	}
+}
+
+void ABaseCharacter::UsingConverter()
+{
+	if(myConverter != nullptr)
+	{
+		// 만약 쓰레기통을 들고 있다면..
+		if(myTrashCan != nullptr)
+		{
+			// 쓰레기통속에 모아둔 쓰레기가 존재한다면..
+			if(myTrashCan->GetCount() > 0)
+			{
+				UE_LOG(LogTemp,Warning,TEXT("쓰레기 저장"));
+				// 변환기에 쓰레기통에 존재하는 모든 쓰레기부터 저장한다..
+				myConverter->SaveGarbage(myTrashCan->GetCount());
+				
+				// 쓰레기통에 존재하던 쓰레기 개수를 0으로 초기화한다.
+				myTrashCan->SetCount(-1 * myTrashCan->GetCount());
+			}
+			else // 만약 존재하지 않는다면 바로 HomingItem을 소환한다.
+			{
+				UE_LOG(LogTemp,Warning,TEXT("아이템 소환"));
+				myConverter->MakingHoming();
+			}
+		}
+		else // 만약 쓰레기통을 들고 있지 않다면..
+		{
+			// 바로 HomingItem을 소환한다.
+			myConverter->MakingHoming();
+		}
+	}
+}
 
 // 서버에 복제 등록하기 위한 함수
 void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
@@ -1124,6 +1338,9 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, myHoming);
 	DOREPLIFETIME(ABaseCharacter, Blackhole);
 	DOREPLIFETIME(ABaseCharacter, TrashSpawningPool);
+	DOREPLIFETIME(ABaseCharacter, myConverter);
+	DOREPLIFETIME(ABaseCharacter, ReturnSpeedTime);
+	DOREPLIFETIME(ABaseCharacter, DuringSpeedTime);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1789,7 +2006,7 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString& Position, clas
 {
 	if (Position == FString("Sword"))
 	{
-		Enemy->Server_TakeDamage(10);
+		//Enemy->Server_TakeDamage(10);
 	}
 }
 

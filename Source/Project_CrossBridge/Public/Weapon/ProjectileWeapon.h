@@ -44,7 +44,6 @@ private:
 
 	class ABaseCharacter* OwnerCharacter;
 	class ABaseCharacterController* Controller;
-	class AWeaponHUD* HUD;
 
 	UPROPERTY(VisibleAnywhere,Replicated, Category="Settings|WeaponProperties")
 	bool bFireDelay = true;
@@ -78,7 +77,7 @@ public:
 
 public:
 	UFUNCTION()
-	void Fire(class ABaseCharacter* player);
+	void Fire(class ABaseCharacter* player, const FVector hitTarget);
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Projectile")
 	TSubclassOf<class AProjectile> projectileFactory;
@@ -88,43 +87,7 @@ private:
 	void Server_Fire(class ABaseCharacter* player, const FVector hitTarget);
 	
 
-
-	/** Trace Crosshair */
-#pragma region Trace Crosshair
-public:
-	void SetHUDCrosshairs(float DeletaTime);
 	
-protected:
-	void TraceUnderCosshairs(FHitResult& TraceHitResult);
-
-private:
-	FHitResult HitResult;
-
-	FVector HitTarget;
-
-	float TraceLength = 80000.f;
-
-	bool bDisplayCrosshair = false;
-	
-/** Textures for the Weapon crosshairs */
-	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
-	class UTexture2D* CrosshairsCenter;
-
-	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
-	class UTexture2D* CrosshairsLeft;
-
-	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
-	class UTexture2D* CrosshairsRight;
-
-	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
-	class UTexture2D* CrosshairsTop;
-
-
-	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
-	class UTexture2D* CrosshairsBottom;
-
-
-#pragma endregion 
 	
 
 };

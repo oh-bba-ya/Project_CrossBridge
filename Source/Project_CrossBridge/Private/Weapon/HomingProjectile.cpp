@@ -24,6 +24,7 @@ AHomingProjectile::AHomingProjectile()
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComponent"));
 
 	MovementComponent->bRotationFollowsVelocity =true;
+	MovementComponent->bIsHomingProjectile = true;
 }
 
 // Called when the game starts or when spawned

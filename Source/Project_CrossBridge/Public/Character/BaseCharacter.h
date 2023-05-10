@@ -65,7 +65,10 @@ protected:
 	class UInputAction* InputQuitAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
-	class UInputAction* InputPickupAction;
+	class UInputAction* InputInterAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input Settings")
+	class UInputAction* InputTrashCanFireAction;
 	
 	
 	
@@ -198,29 +201,30 @@ public:
 	FORCEINLINE float GetMaxHP() const {return MaxHP;}
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 
-	UFUNCTION(BlueprintCallable,Server, Unreliable)
-	void Server_TakeDamage(float value);
+	UFUNCTION(Category="Settings|Status Health")
+	void SetCurrentHealth(float value);
 
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|Status Health")
+	void OnTakeDamage(float d);
+	
 	UFUNCTION(BlueprintCallable,Server, Unreliable)
 	void Server_RecoveryHP(float value);
 	
 
 protected:
 	/** 현재 체력 세터. 값을 0과 MaxHealth 사이로 범위제한하고 OnHealthUpdate를 호출합니다. 서버에서만 호출되어야 합니다.*/
-	UFUNCTION(BlueprintCallable, Category="Health")
-	void SetCurrentHealth(float healthValue);
+	UFUNCTION()
+	void OnRep_CurrentHealth();
+
+	void OnHealthUpdate();
+
 
 private:
-	UFUNCTION()
-	void PlusHealth(int32 value);
-
-	UFUNCTION()
-	void SubTractHealth(int32 value);
-	
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Status Health")
 	float MaxHP;
 
-	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Status Health")
+	UPROPERTY(EditDefaultsOnly,ReplicatedUsing = OnRep_CurrentHealth, Category="Settings|Status Health")
 	float CurrentHP;
 
 
@@ -228,7 +232,7 @@ private:
 
 
 	/** Fire */
-#pragma region Weapon Fire
+#pragma region Weapon, TrashCan Fire
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
 	UAnimMontage* fireMontage;
@@ -241,23 +245,34 @@ protected:
 	
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_Fire();
+
+	UFUNCTION()
+	void TrashCanFire();
 #pragma endregion
 
 	
 	/** Weapon, Item Pickup , Drop */
 #pragma region Weapon Properties
 private:
-	UPROPERTY(VisibleAnywhere,Category="Settings|Weapon")
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
 	class AProjectileWeapon* myWeapon;
 
 	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Item")
 	class AHomingItem* myHoming;
+
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
+	class ATrashCan* myTrashCan;
+	
 public:
 	FORCEINLINE void SetWeapon(AProjectileWeapon* w) { myWeapon = w;}
 	FORCEINLINE AProjectileWeapon* GetOwningWeapon() {return myWeapon;}
 
 	FORCEINLINE void SetHomingItem(AHomingItem* h) {myHoming = h;}
 	FORCEINLINE AHomingItem* GetHomingItem() {return myHoming;}
+
+	FORCEINLINE void SetTrashCan(ATrashCan* t) {myTrashCan = t;}
+	FORCEINLINE ATrashCan* GetTrashCan() {return myTrashCan;}
+
 
 protected:
 	void DropWeapon();
@@ -300,6 +315,8 @@ protected:
 
 	UFUNCTION(Server,Unreliable)
 	void Server_RemoveFreeze();
+public:
+	FORCEINLINE AFreeze* GetFreeze() {return freeze;}
 
 
 #pragma endregion 
@@ -324,10 +341,10 @@ public:
 	FORCEINLINE bool GetIsSpeedUp() {return bIsSpeedUp;}
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Speed")
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Speed")
 	float ReturnSpeedTime = 2.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Speed")
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Speed")
 	float DuringSpeedTime = 2.0f;
 
 	UPROPERTY()
@@ -341,11 +358,71 @@ private:
 	UFUNCTION()
 	void ComeBackSpeed();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MultiCast_CombackSpeed();
 
 
+
+#pragma endregion
+
+
+	/** Trace CrossHair */
+#pragma region Trace Crosshair
+public:
+	void SetHUDCrosshairs(float DeletaTime);
+	
+protected:
+	void TraceUnderCosshairs(FHitResult& TraceHitResult);
+	
+private:
+	class AWeaponHUD* HUD;
+
+	class ABaseCharacterController* PCController;
+	
+	FHitResult HitResult;
+
+	FVector HitTarget;
+	
+	UPROPERTY(EditDefaultsOnly, Category= "Settings|Crosshair")
+	float TraceLength = 1000.f;
+
+	bool bDisplayCrosshair = false;
+	
+	/** Textures for the Weapon crosshairs */
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsTop;
+
+
+	UPROPERTY(EditAnywhere, Category= "Settings|Crosshair")
+	class UTexture2D* CrosshairsBottom;
+
+
+#pragma endregion
+
+	/** Converter */
+#pragma region Converter
+private:
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
+	class AMaterialConverter* myConverter;
+
+public:
+	FORCEINLINE void SetConverter(AMaterialConverter* w) { myConverter = w;}
+	FORCEINLINE AMaterialConverter* GetConverter() {return myConverter;}
+
+protected:
+	UFUNCTION()
+	void UsingConverter();
 
 #pragma endregion 
-
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -534,7 +611,7 @@ public:
 		float VRReviveLimitTime = 3;
 
 
-	bool IsVR;
+	bool IsVR = false;
 	bool IsVRDead;
 
 	bool IsLeftIndexCurl;
