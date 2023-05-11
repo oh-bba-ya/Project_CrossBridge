@@ -1841,6 +1841,13 @@ void ABaseCharacter::ServerSpawnThunder_Implementation()
 
 void ABaseCharacter::ServerVRSetting_Implementation()
 {
+	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	MulticastVRSetting();
+}
+
+void ABaseCharacter::MulticastVRSetting_Implementation()
+{
 	GetMesh()->SetVisibility(false);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	OverheadWidget->SetVisibility(false);
@@ -1862,9 +1869,6 @@ void ABaseCharacter::ServerVRSetting_Implementation()
 	RightHandBox->SetCollisionProfileName(TEXT("PlayerHandPreset"));
 
 	VRStatusWidget->SetVisibility(true);
-
-	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
-	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
 }
 
 

@@ -112,31 +112,87 @@ void ABlackhole::BeginPlay()
 void ABlackhole::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (Target)
+	
+	if (IsBlackholeActive)
 	{
-		if (IsBlackholeActive)
+		if (IsTarget1)
 		{
-			ServerBlackholeActive();
+			//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Overlapped1111"));
+			ServerBlackholeActive(1);
+		}
+		if (IsTarget2)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Overlapped2222"));
+			ServerBlackholeActive(2);
 		}
 	}
-
 }
 
 void ABlackhole::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Target = Cast<ABaseCharacter>(OtherActor);
+	//Target = Cast<ABaseCharacter>(OtherActor);
+	if (HasAuthority())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Overlapped"));
+		if (!Target1)
+		{
+			Target1 = Cast<ABaseCharacter>(OtherActor);
+		}
+		else if (!Target2)
+		{
+			Target2 = Cast<ABaseCharacter>(OtherActor);
+		}
+		if (Target1 == Cast<ABaseCharacter>(OtherActor))
+		{
+			IsTarget1 = true;
+		}
+		else if (Target2 == Cast<ABaseCharacter>(OtherActor))
+		{
+			IsTarget2 = true;
+		}
+	}
+	
 
 }
 void ABlackhole::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	Target = NULL;
+	if (HasAuthority())
+	{
+		if (Target1 == Cast<ABaseCharacter>(OtherActor))
+		{
+			IsTarget1 = false;
+		}
+		else if (Target2 == Cast<ABaseCharacter>(OtherActor))
+		{
+			IsTarget2 = false;
+		}
+	}
 }
 
-void ABlackhole::ServerBlackholeActive_Implementation()
+void ABlackhole::ServerBlackholeActive_Implementation(int32 Num)
 {
-	FVector Dir = (GetActorLocation() - Target->GetActorLocation()).GetSafeNormal();
-	float Dist = GetDistanceTo(Target);
-	Target->AddMovementInput(Power * Dir / Dist);
+	if (Num == 1)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("111111"));
+		FVector Dir = (GetActorLocation() - Target1->GetActorLocation()).GetSafeNormal();
+		float Dist = GetDistanceTo(Target1);
+		//Target1->AddMovementInput(Power * Dir / Dist);
+		MulticastBlackholeActive(Target1, Power * Dir / Dist);
+		
+	}
+	else if (Num == 2)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("22222"));
+		FVector Dir = (GetActorLocation() - Target2->GetActorLocation()).GetSafeNormal();
+		float Dist = GetDistanceTo(Target2);
+		//Target2->AddMovementInput(Power * Dir / Dist);
+		MulticastBlackholeActive(Target2, Power * Dir / Dist);
+	}
+
+}
+void ABlackhole::MulticastBlackholeActive_Implementation(class ABaseCharacter* Target, FVector Input)
+{
+	Target->AddMovementInput(Input);
 }
 
 void ABlackhole::BlackholeActiveSetting()

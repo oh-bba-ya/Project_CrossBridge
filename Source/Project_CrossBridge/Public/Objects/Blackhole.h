@@ -51,15 +51,23 @@ public:
 
 
 	UPROPERTY()
-		class ABaseCharacter* Target;
+		class ABaseCharacter* Target1;
+	UPROPERTY()
+		class ABaseCharacter* Target2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Power = 50;
 	UPROPERTY()
 	bool IsBlackholeActive = false;
-
+	UPROPERTY()
+		bool IsTarget1;
+	UPROPERTY()
+		bool IsTarget2;
 	UFUNCTION(Server, Unreliable)
-		void ServerBlackholeActive();
+		void ServerBlackholeActive(int32 Num);
+
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastBlackholeActive(class ABaseCharacter* Target, FVector Input);
 	
 	void BlackholeActiveSetting();
 	void BlackholeDeactivate();
