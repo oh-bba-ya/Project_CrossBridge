@@ -64,6 +64,18 @@ ABaseCharacter::ABaseCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 	OverheadWidget->SetIsReplicated(true);
 
+	DashEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashEffectComponent"));
+	DashEffectComponent->SetAutoActivate(false);
+
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> dashEffect(TEXT("/Script/Niagara.NiagaraSystem'/Game/Assets/effects/Niagara/NG_DashEffect.NG_DashEffect'"));
+
+	if(dashEffect.Succeeded())
+	{
+		DashEffectComponent->SetAsset(dashEffect.Object);
+	}
+	
+	DashEffectComponent->SetupAttachment(GetMesh());
+	
 	MaxHP = 100.f;
 	CurrentHP = MaxHP;
 	
@@ -1141,6 +1153,7 @@ void ABaseCharacter::CanonFire()
 #pragma region SpeedUp
 void ABaseCharacter::SpeedUp()
 {
+	DashEffectComponent->SetActive(true); // 아이템먹으면 Effect 활성화
 	GetCharacterMovement()->MaxWalkSpeed = 300;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 100;
 
@@ -1153,6 +1166,7 @@ void ABaseCharacter::SpeedUp()
 
 void ABaseCharacter::ComeBackSpeed()
 {
+	DashEffectComponent->SetActive(false); // 아이템먹으면 Effect 비활성화
 	MultiCast_CombackSpeed();
 }
 
