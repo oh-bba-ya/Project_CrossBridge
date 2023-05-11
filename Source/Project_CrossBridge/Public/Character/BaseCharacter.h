@@ -718,6 +718,8 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 		void ServerVRSetting();
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastVRSetting();
 
 	UFUNCTION(Server, Unreliable)
 		void ServerBlackholeSet(float Rate, FVector Loc);
