@@ -335,6 +335,9 @@ public:
 	/** Speed Up and Down*/
 #pragma region SpeedAccelerator
 public:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Speed")
+	class UNiagaraComponent* DashEffectComponent;
+	
 	UFUNCTION()
 	void SpeedUp();
 
