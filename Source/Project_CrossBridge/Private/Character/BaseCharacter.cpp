@@ -50,6 +50,8 @@ ABaseCharacter::ABaseCharacter()
 
 	GetMesh()->SetIsReplicated(true);
 	GetCapsuleComponent()->SetIsReplicated(true);
+	GetCapsuleComponent()->SetRelativeScale3D(FVector(0.2));
+
 
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
