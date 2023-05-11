@@ -38,6 +38,7 @@
 #include "PickupItem/HomingItem.h"
 #include "Objects/TrashSpawningPool.h"
 #include "Weapon/TrashCan.h"
+#include "Components/WidgetInteractionComponent.h"
 
 
 // Sets default values
@@ -170,6 +171,25 @@ ABaseCharacter::ABaseCharacter()
 	VRStatusWidget->SetRelativeScale3D(FVector(0.025));
 	VRStatusWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	LeftWidgetInteraction = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftWidgetInteraction"));
+	LeftWidgetInteraction->SetupAttachment(LeftHand);
+	LeftWidgetInteraction->SetRelativeLocation(FVector(9.8f, 4.1f, -13.1f));
+	LeftWidgetInteraction->SetBoxExtent(FVector(1));
+	LeftWidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("LeftWidgetInteractionComp"));
+	LeftWidgetInteractionComp->SetupAttachment(LeftAim);
+	LeftWidgetInteractionComp->PointerIndex = 0;
+	LeftWidgetInteractionComp->InteractionDistance = 15;
+
+	RightWidgetInteraction = CreateDefaultSubobject<UBoxComponent>(TEXT("RightWidgetInteraction"));
+	RightWidgetInteraction->SetupAttachment(RightHand);
+	RightWidgetInteraction->SetRelativeLocation(FVector(9.8f, -4.1f, -13.1f));
+	RightWidgetInteraction->SetBoxExtent(FVector(1));
+	RightWidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("RightWidgetInteractionComp"));
+	RightWidgetInteractionComp->SetupAttachment(RightAim);
+	RightWidgetInteractionComp->PointerIndex =1;
+	RightWidgetInteractionComp->InteractionDistance = 15;
+
+
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> VRHeadMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/VR_Head.VR_Head'"));
 	if (VRHeadMesh.Succeeded())
 	{
@@ -212,6 +232,11 @@ ABaseCharacter::ABaseCharacter()
 	RightHandBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandOverlap);
 	RightHandBox->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnRightHandEndOverlap);
 	SwordComp->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnSwordOverlap);
+	LeftWidgetInteraction->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnWidgetLeftOverlap);
+	LeftWidgetInteraction->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnWidgetLeftEndOverlap);
+	RightWidgetInteraction->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnWidgetRightOverlap);
+	RightWidgetInteraction->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnWidgetRightEndOverlap);
+
 
 	/** PC 디폴트 설정*/
 	HeadMesh->SetVisibility(false);
@@ -1592,6 +1617,26 @@ void ABaseCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		ServerVRAttack(FString("Sword"), Enemy);
 	}
 }
+
+void ABaseCharacter::OnWidgetLeftOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	LeftWidgetInteractionComp->PressPointerKey(FKey(TEXT("LeftMouseButton")));
+}
+
+void ABaseCharacter::OnWidgetLeftEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	LeftWidgetInteractionComp->ReleasePointerKey(FKey(TEXT("LeftMouseButton")));
+}
+void ABaseCharacter::OnWidgetRightOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	RightWidgetInteractionComp->PressPointerKey(FKey(TEXT("LeftMouseButton")));
+}
+
+void ABaseCharacter::OnWidgetRightEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	RightWidgetInteractionComp->ReleasePointerKey(FKey(TEXT("LeftMouseButton")));
+}
+
 void ABaseCharacter::ServerGrabTheActor_Implementation(ABaseGrabbableActor *GrabbedActor, const FString &GrabPosition)
 {
 	// GrabbedActor->MeshComp->SetSimulatePhysics(false);
