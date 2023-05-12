@@ -27,6 +27,8 @@ void UBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		bIsFlying = baseCharacter->IsFlying();
 
+		isEquip = baseCharacter->GetIsEquip();
+
 		FRotator viewRot = baseCharacter->GetBaseAimRotation();
 		FRotator baseRot = baseCharacter->GetActorRotation();
 		FRotator deltaRot = baseRot-viewRot;

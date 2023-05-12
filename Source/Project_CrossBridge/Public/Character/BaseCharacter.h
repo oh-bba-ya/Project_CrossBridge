@@ -251,9 +251,12 @@ protected:
 #pragma endregion
 
 	
-	/** Weapon, Item Pickup , Drop */
+	/** Equip  Weapon, Item Pickup , Drop */
 #pragma region Weapon Properties
 private:
+	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Equip")
+	bool bisEquip = false;
+	
 	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
 	class AProjectileWeapon* myWeapon;
 
@@ -264,6 +267,9 @@ private:
 	class ATrashCan* myTrashCan;
 	
 public:
+	FORCEINLINE void SetEquip(bool b) { bisEquip = b;}
+	FORCEINLINE bool GetIsEquip() {return bisEquip;}
+	
 	FORCEINLINE void SetWeapon(AProjectileWeapon* w) { myWeapon = w;}
 	FORCEINLINE AProjectileWeapon* GetOwningWeapon() {return myWeapon;}
 
@@ -272,6 +278,8 @@ public:
 
 	FORCEINLINE void SetTrashCan(ATrashCan* t) {myTrashCan = t;}
 	FORCEINLINE ATrashCan* GetTrashCan() {return myTrashCan;}
+
+	
 
 
 protected:

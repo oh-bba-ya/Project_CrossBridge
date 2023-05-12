@@ -64,6 +64,10 @@ ABaseCharacter::ABaseCharacter()
 	DashEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashEffectComponent"));
 	DashEffectComponent->SetAutoActivate(false);
 
+	// 현재 Bridge 맵의 지역의 위치가 이상하다. 좌표는 0,0,0 인데 , 지역은 다른곳에 있다. 아무래도 중심좌표를 정확히 맞추지 않아서 그런것 같다.
+	// 그래서 TraceLength를 굉장히 높게 설정해야 정확히 조준된다.
+	TraceLength = 500,000.f;
+
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> dashEffect(TEXT("/Script/Niagara.NiagaraSystem'/Game/Assets/effects/Niagara/NG_DashEffect.NG_DashEffect'"));
 
 	if(dashEffect.Succeeded())
@@ -811,7 +815,7 @@ void ABaseCharacter::Server_RollingActionReleased_Implementation()
 
 void ABaseCharacter::Multicast_RollingActionPressed_Implementation()
 {
-
+	
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	if (RollingMontage)
 	{
@@ -1011,7 +1015,7 @@ void ABaseCharacter::TrashCanFire()
 
 void ABaseCharacter::Fire()
 {
-	if (myWeapon != nullptr && freeze == nullptr)
+	if (myWeapon != nullptr && freeze == nullptr && bisEquip)
 	{
 		if(myWeapon->GetbFireDelay())
 		{
@@ -1329,6 +1333,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, myConverter);
 	DOREPLIFETIME(ABaseCharacter, ReturnSpeedTime);
 	DOREPLIFETIME(ABaseCharacter, DuringSpeedTime);
+	DOREPLIFETIME(ABaseCharacter, bisEquip);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
