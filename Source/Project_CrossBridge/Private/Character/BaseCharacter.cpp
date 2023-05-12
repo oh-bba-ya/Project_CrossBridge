@@ -1621,6 +1621,7 @@ void ABaseCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AA
 void ABaseCharacter::OnWidgetLeftOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	LeftWidgetInteractionComp->PressPointerKey(FKey(TEXT("LeftMouseButton")));
+	VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left);
 }
 
 void ABaseCharacter::OnWidgetLeftEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -1630,6 +1631,7 @@ void ABaseCharacter::OnWidgetLeftEndOverlap(UPrimitiveComponent* OverlappedCompo
 void ABaseCharacter::OnWidgetRightOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	RightWidgetInteractionComp->PressPointerKey(FKey(TEXT("LeftMouseButton")));
+	VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 }
 
 void ABaseCharacter::OnWidgetRightEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
