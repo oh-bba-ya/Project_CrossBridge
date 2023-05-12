@@ -5,6 +5,7 @@
 
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Objects/VRCore.h"
 
 // Sets default values
@@ -25,6 +26,7 @@ AHomingProjectile::AHomingProjectile()
 
 	MovementComponent->bRotationFollowsVelocity =true;
 	MovementComponent->bIsHomingProjectile = true;
+	
 }
 
 // Called when the game starts or when spawned
@@ -34,6 +36,12 @@ void AHomingProjectile::BeginPlay()
 
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&AHomingProjectile::OnOverlap);
 	
+}
+
+void AHomingProjectile::Destroyed()
+{
+	FVector SapwnLoc = GetActorLocation();
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),ExplosionEffect,SapwnLoc,FRotator::ZeroRotator);
 }
 
 // Called every frame

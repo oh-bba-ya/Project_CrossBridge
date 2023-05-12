@@ -130,6 +130,7 @@ void AProjectileWeapon::MultiCast_DropWeapon_Implementation(ABaseCharacter* play
 	player->SetWeapon(nullptr);
 	OwnerCharacter = nullptr;
 	bEquippedWeapon = false;
+	player->SetEquip(false);
 }
 #pragma endregion
 
@@ -154,6 +155,7 @@ void AProjectileWeapon::Multicast_PickupWeapon_Implementation(ABaseCharacter* pl
 		BoxComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 		OwnerCharacter = player;
 		bEquippedWeapon = true;
+		player->SetEquip(true);
 	}
 }
 

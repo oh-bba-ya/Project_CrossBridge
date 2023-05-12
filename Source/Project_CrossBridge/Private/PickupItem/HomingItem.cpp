@@ -81,6 +81,7 @@ void AHomingItem::Multicast_PickUp_Implementation(ABaseCharacter* player)
 		AttachToComponent(player->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("WeaponSocket"));
 		BoxComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 		Ownerplayer = player;
+		player->SetEquip(true);
 	}
 }
 
@@ -105,6 +106,7 @@ void AHomingItem::MultiCast_DropItem_Implementation(ABaseCharacter* player)
 	BoxComponent->SetSimulatePhysics(true);
 	player->SetHomingItem(nullptr);
 	Ownerplayer = nullptr;
+	player->SetEquip(false);
 }
 
 void AHomingItem::Server_DropItem_Implementation(ABaseCharacter* player)

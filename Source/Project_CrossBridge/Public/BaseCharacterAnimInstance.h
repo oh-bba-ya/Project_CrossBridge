@@ -35,6 +35,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Anim")
 	float pitch;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Anim")
+	bool isEquip;
+	
 	UFUNCTION()
 	void AnimNotify_RollingActionRelease();
 
