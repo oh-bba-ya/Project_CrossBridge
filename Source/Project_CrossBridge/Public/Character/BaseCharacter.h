@@ -687,6 +687,8 @@ public:
 		TSubclassOf<class AActor> SpawnRedDot;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ATrashSpawningPool> SpawnTrashSpawningPool;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AActor> BreakDoor;
 	UPROPERTY()
 		class APlayerController* VRController;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
