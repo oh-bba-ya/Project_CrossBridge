@@ -511,6 +511,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetComponent* VRStatusWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* LeftWidgetInteraction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* RightWidgetInteraction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetInteractionComponent* LeftWidgetInteractionComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetInteractionComponent* RightWidgetInteractionComp;
 
 
 	void VRMove(const FInputActionValue& Values);
@@ -544,6 +552,15 @@ public:
 	UFUNCTION()
 		void OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+		UFUNCTION()
+		void OnWidgetLeftOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnWidgetLeftEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+		void OnWidgetRightOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnWidgetRightEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	FVector RightPrevLoc;
 	FQuat RightPrevRot;
 	UPROPERTY()
