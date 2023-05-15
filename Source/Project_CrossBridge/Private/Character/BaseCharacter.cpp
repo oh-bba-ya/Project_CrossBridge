@@ -1598,6 +1598,10 @@ void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent *OverlappedComponent,
 	{
 		GrabbedActorLeft = Cast<ABaseGrabbableActor>(OtherActor);
 	}
+	if (OtherComp->GetCollisionObjectType() == ECC_Destructible)
+	{
+		GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+	}
 }
 
 void ABaseCharacter::OnLeftHandEndOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
