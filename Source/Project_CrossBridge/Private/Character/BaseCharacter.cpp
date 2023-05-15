@@ -190,6 +190,8 @@ ABaseCharacter::ABaseCharacter()
 	LeftWidgetInteraction->SetupAttachment(LeftHand);
 	LeftWidgetInteraction->SetRelativeLocation(FVector(9.8f, 4.1f, -13.1f));
 	LeftWidgetInteraction->SetBoxExtent(FVector(1));
+	LeftWidgetInteraction->SetIsReplicated(true);
+	LeftWidgetInteraction->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	LeftWidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("LeftWidgetInteractionComp"));
 	LeftWidgetInteractionComp->SetupAttachment(LeftAim);
 	LeftWidgetInteractionComp->PointerIndex = 0;
@@ -199,11 +201,12 @@ ABaseCharacter::ABaseCharacter()
 	RightWidgetInteraction->SetupAttachment(RightHand);
 	RightWidgetInteraction->SetRelativeLocation(FVector(9.8f, -4.1f, -13.1f));
 	RightWidgetInteraction->SetBoxExtent(FVector(1));
+	RightWidgetInteraction->SetIsReplicated(true);
+	RightWidgetInteraction->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RightWidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("RightWidgetInteractionComp"));
 	RightWidgetInteractionComp->SetupAttachment(RightAim);
 	RightWidgetInteractionComp->PointerIndex =1;
 	RightWidgetInteractionComp->InteractionDistance = 15;
-
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> VRHeadMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/VR_Head.VR_Head'"));
 	if (VRHeadMesh.Succeeded())
@@ -1600,7 +1603,8 @@ void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent *OverlappedComponent,
 	}
 	if (OtherComp->GetCollisionObjectType() == ECC_Destructible)
 	{
-		GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+		ServerVRDoorBreak(FString("Left"), OtherComp);
+		//GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
 	}
 }
 
@@ -1617,6 +1621,10 @@ void ABaseCharacter::OnRightHandOverlap(UPrimitiveComponent *OverlappedComponent
 	if (!GrabbedActorRight)
 	{
 		GrabbedActorRight = Cast<ABaseGrabbableActor>(OtherActor);
+	}
+	if (OtherComp->GetCollisionObjectType() == ECC_Destructible)
+	{
+		ServerVRDoorBreak(FString("Right"), OtherComp);
 	}
 }
 
@@ -1925,6 +1933,9 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	RightHandBox->SetCollisionProfileName(TEXT("PlayerHandPreset"));
 
 	VRStatusWidget->SetVisibility(true);
+
+	LeftWidgetInteraction->SetCollisionProfileName(TEXT("VRPlayerWidgetInteractionPreset"));
+	RightWidgetInteraction->SetCollisionProfileName(TEXT("VRPlayerWidgetInteractionPreset"));
 }
 
 
@@ -2112,5 +2123,44 @@ bool ABaseCharacter::VRSkillCheck(FString Position)
 	else
 	{
 		return false;
+	}
+}
+
+void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString& Position, UPrimitiveComponent* OtherComp)
+{
+	if (Position == FString("Left"))
+	{
+		GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+		LeftWidgetInteraction->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		OtherComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		BreakableDoor = OtherComp->GetOwner();
+		FTimerHandle DoorDestroyTimer;
+		GetWorld()->GetTimerManager().SetTimer(DoorDestroyTimer,
+			FTimerDelegate::CreateLambda([this]()->void
+				{
+					if (BreakableDoor)
+					{
+						BreakableDoor->Destroy();
+					}
+				}), 5, false);
+		
+	}
+	else if (Position == FString("Right"))
+	{
+		GetWorld()->SpawnActor<AActor>(BreakDoor, RightHand->GetComponentLocation(), RightHand->GetComponentRotation());
+		RightWidgetInteraction->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		OtherComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		BreakableDoor = OtherComp->GetOwner();
+		FTimerHandle DoorDestroyTimer;
+		GetWorld()->GetTimerManager().SetTimer(DoorDestroyTimer,
+			FTimerDelegate::CreateLambda([this]()->void
+				{
+					if (BreakableDoor)
+					{
+						BreakableDoor->Destroy();
+					}
+				}), 5, false);
 	}
 }
