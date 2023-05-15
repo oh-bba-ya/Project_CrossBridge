@@ -571,15 +571,16 @@ public:
 		void OnWidgetRightEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	FVector RightPrevLoc;
 	FQuat RightPrevRot;
+
 	UPROPERTY()
 	FVector RightThrowDir;
 	UPROPERTY()
 	FQuat RightThrowRot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float ThrowPower = 5000000;
+		float ThrowPower = 500000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float ToquePower = 100.0;
+		float ToquePower = 50.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float BlackHoleForwardPower = 2000;
@@ -665,6 +666,7 @@ public:
 	bool IsSwordCool;
 	bool IsSwordDamageCool;
 	bool IsTrashSpawningPoolCool;
+	bool IsGrabbableActorSpawnCool;
 	UPROPERTY()
 		TArray<FVector> LeftXTraces;
 	UPROPERTY()
@@ -744,7 +746,7 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastResetColorChange(const FString& Position);
 	UFUNCTION(Server, Unreliable)
-		void ServerSpawnThunder();
+		void ServerSpawnGrabbableActor(AActor* OtherActor);
 
 	UFUNCTION(Server, Unreliable)
 		void ServerVRSetting();
@@ -763,6 +765,10 @@ public:
 		void ServerTrashSpawningPoolSet(FVector Loc);
 	UFUNCTION(Server, Unreliable)
 		void ServerTrashSpawningPoolReset();
+	UFUNCTION(Server, Unreliable)
+		void ServerLeftHandActivate(bool IsActivate);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastLeftHandActivate(bool IsActivate);
 
 		UFUNCTION(Server, Unreliable)
 		void ServerVRTransform(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform);

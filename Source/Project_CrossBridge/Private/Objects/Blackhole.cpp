@@ -133,7 +133,7 @@ void ABlackhole::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	//Target = Cast<ABaseCharacter>(OtherActor);
 	if (HasAuthority())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Overlapped"));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Overlapped"));
 		if (!Target1)
 		{
 			Target1 = Cast<ABaseCharacter>(OtherActor);

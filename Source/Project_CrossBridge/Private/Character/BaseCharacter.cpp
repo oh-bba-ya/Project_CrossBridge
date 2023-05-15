@@ -291,7 +291,7 @@ void ABaseCharacter::BeginPlay()
 		SetCurrentHealth(MaxHP);
 	}
 
-	UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
+	//UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
 
 	if (APlayerController *PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -343,6 +343,7 @@ void ABaseCharacter::BeginPlay()
 		RedDot->SetActorHiddenInGame(true);
 		RedDot->SetActorEnableCollision(false);
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
+
 	}
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
@@ -387,7 +388,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if(CurrentHP <= 0)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("Die"));
+		//UE_LOG(LogTemp,Warning,TEXT("Die"));
 	}
 	
 	if (bJetPackActive)
@@ -799,19 +800,19 @@ void ABaseCharacter::Jump()
 
 void ABaseCharacter::Attack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Base Attack"));
+	//UE_LOG(LogTemp, Warning, TEXT("Base Attack"));
 	Fire();
 }
 
 void ABaseCharacter::ContextualActionPressed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Pressed"));
 	FreezeSpawn();
 }
 
 void ABaseCharacter::ContextualActionReleased()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Released"));
+	//UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Released"));
 	RemoveFreeze();
 }
 
@@ -1002,12 +1003,12 @@ void ABaseCharacter::OnHealthUpdate()
 	if (IsLocallyControlled())
 	{
 		FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHP);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 
 		if (CurrentHP <= 0)
 		{
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
 	}
 
@@ -1015,7 +1016,7 @@ void ABaseCharacter::OnHealthUpdate()
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHP);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 	}
 
 	//모든 머신에서 실행되는 함수 
@@ -1063,7 +1064,7 @@ void ABaseCharacter::Multicast_Fire_Implementation()
 {
 	if (fireMontage != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Fire Montage"));
+		//UE_LOG(LogTemp, Warning, TEXT("Fire Montage"));
 		PlayAnimMontage(fireMontage);
 	}
 }
@@ -1190,7 +1191,7 @@ void ABaseCharacter::MultiCast_CombackSpeed_Implementation()
 
 	SpeedCurrentTime = 0.f;
 
-	UE_LOG(LogTemp,Warning,TEXT("ComeBackSpeed"));
+	//UE_LOG(LogTemp,Warning,TEXT("ComeBackSpeed"));
 
 	GetWorld()->GetTimerManager().SetTimer(SpeedHandle,
 		FTimerDelegate::CreateLambda([this]()->void
@@ -1215,7 +1216,7 @@ void ABaseCharacter::MultiCast_CombackSpeed_Implementation()
 				GetCharacterMovement()->MaxWalkSpeedCrouched = crouchSpeed;
 				bIsSpeedUp = false;
 				GetWorld()->GetTimerManager().ClearTimer(SpeedHandle);
-				UE_LOG(LogTemp,Warning,TEXT("End Speed UP"));
+				//UE_LOG(LogTemp,Warning,TEXT("End Speed UP"));
 			}
 		})
 		,0.02f,true);
@@ -1302,12 +1303,12 @@ void ABaseCharacter::TraceUnderCosshairs(FHitResult& TraceHitResult)
 		{
 			TraceHitResult.ImpactPoint = End;
 			HitTarget = End;
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
+			//DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
 		}
 		else  // 범위안에 감지되는 액터가 존재한다면..
 			{
 			HitTarget = TraceHitResult.ImpactPoint;
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
+			//DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
 			}
 	}
 }
@@ -1322,7 +1323,7 @@ void ABaseCharacter::UsingConverter()
 			// 쓰레기통속에 모아둔 쓰레기가 존재한다면..
 			if(myTrashCan->GetCount() > 0)
 			{
-				UE_LOG(LogTemp,Warning,TEXT("쓰레기 저장"));
+				//UE_LOG(LogTemp,Warning,TEXT("쓰레기 저장"));
 				// 변환기에 쓰레기통에 존재하는 모든 쓰레기부터 저장한다..
 				myConverter->SaveGarbage(myTrashCan->GetCount());
 				
@@ -1331,7 +1332,7 @@ void ABaseCharacter::UsingConverter()
 			}
 			else // 만약 존재하지 않는다면 바로 HomingItem을 소환한다.
 			{
-				UE_LOG(LogTemp,Warning,TEXT("아이템 소환"));
+				//UE_LOG(LogTemp,Warning,TEXT("아이템 소환"));
 				myConverter->MakingHoming();
 			}
 		}
@@ -1531,7 +1532,7 @@ void ABaseCharacter::RightB()
 	if (!IsRightA && !IsRedDotSet && VRSkillCheck(FString("Right")))
 	{
 		IsRightB = true;
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("READY"));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("READY"));
 		VRController->PlayHapticEffect(BulletCastHaptic, EControllerHand::Right);
 		IsRedDotSet = true;
 		RedDot->SetActorHiddenInGame(false);
@@ -1601,10 +1602,36 @@ void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent *OverlappedComponent,
 	{
 		GrabbedActorLeft = Cast<ABaseGrabbableActor>(OtherActor);
 	}
+	if (VRSkillCheck(FString("Left")) && OtherComp->GetCollisionObjectType() == ECC_GameTraceChannel10)
+	{
+		ServerSpawnGrabbableActor(OtherComp->GetOwner());
+		ServerLeftHandActivate(false);
+		FTimerHandle SpawnGrabbableActorCoolTimer;
+		GetWorld()->GetTimerManager().SetTimer(SpawnGrabbableActorCoolTimer,
+			FTimerDelegate::CreateLambda([this]()->void
+				{
+					ServerLeftHandActivate(true);
+				}), 20, false);
+	}
 	if (OtherComp->GetCollisionObjectType() == ECC_Destructible)
 	{
 		ServerVRDoorBreak(FString("Left"), OtherComp);
 		//GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+	}
+}
+void ABaseCharacter::ServerLeftHandActivate_Implementation(bool IsActivate)
+{
+	MulticastLeftHandActivate(IsActivate);
+}
+void ABaseCharacter::MulticastLeftHandActivate_Implementation(bool IsActivate)
+{
+	if (IsActivate)
+	{
+		LeftHandBox->SetCollisionProfileName(TEXT("PlayerHandPreset"));
+	}
+	else
+	{
+		LeftHandBox->SetCollisionProfileName(TEXT("NoCollision"));
 	}
 }
 
@@ -1641,7 +1668,7 @@ void ABaseCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
 	if (Enemy && !IsSwordDamageCool)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("IsHit"));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("IsHit"));
 		IsSwordDamageCool = true;
 		//Enemy->Server_TakeDamage(10);
 		ServerVRAttack(FString("Sword"), Enemy);
@@ -1896,11 +1923,10 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString &Pos
 		SwordMesh->SetVisibility(false);
 	}
 }
-void ABaseCharacter::ServerSpawnThunder_Implementation()
+void ABaseCharacter::ServerSpawnGrabbableActor_Implementation(AActor* OtherActor)
 {
-	//ABaseGrabbableActor *GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
-	AThunder* ThunderItem = GetWorld()->SpawnActor<AThunder>(SpawnThunder, GrabbableObjectCreateEffect->GetComponentLocation(), GrabbableObjectCreateEffect->GetComponentRotation());
-	ThunderItem->AttachToComponent(LeftHand, FAttachmentTransformRules::KeepWorldTransform);
+	ABaseGrabbableActor *GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+	OtherActor->Destroy();
 }
 
 void ABaseCharacter::ServerVRSetting_Implementation()
@@ -1972,6 +1998,7 @@ void ABaseCharacter::ServerTrashSpawningPoolSet_Implementation(FVector Loc)
 	}
 	TrashSpawningPool->SetActorLocation(Loc);
 }
+
 void ABaseCharacter::ServerTrashSpawningPoolReset_Implementation()
 {
 	TrashSpawningPool->ServerDeactivate();
