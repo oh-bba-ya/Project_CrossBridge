@@ -1160,6 +1160,14 @@ void ABaseCharacter::CanonFire()
 #pragma region SpeedUp
 void ABaseCharacter::SpeedUp()
 {
+	if(!bIsSpeedUp)
+	{
+		MultiCast_SpeedUP();
+	}
+}
+
+void ABaseCharacter::MultiCast_SpeedUP_Implementation()
+{
 	DashEffectComponent->SetActive(true); // 아이템먹으면 Effect 활성화
 	GetCharacterMovement()->MaxWalkSpeed = 300;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 100;

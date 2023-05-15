@@ -35,9 +35,13 @@ void ABasePickupItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&ABasePickupItem::OnBeginOverlap);
+	if(HasAuthority())
+	{
+		GetWorld()->GetTimerManager().SetTimer(BindOverlapTimeHandle,this,&ABasePickupItem::BindOverlap,BindOverlapTime,false);
+	}
 	
 }
+
 
 // Called every frame
 void ABasePickupItem::Tick(float DeltaTime)
@@ -55,5 +59,10 @@ void ABasePickupItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 	{
 		
 	}
+}
+
+void ABasePickupItem::BindOverlap()
+{
+	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&ABasePickupItem::OnBeginOverlap);
 }
 

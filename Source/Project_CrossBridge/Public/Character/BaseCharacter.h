@@ -365,11 +365,14 @@ private:
 
 	UPROPERTY()
 	bool bIsSpeedUp = false;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCast_SpeedUP();
 	
 	UFUNCTION()
 	void ComeBackSpeed();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MultiCast_CombackSpeed();
 
 

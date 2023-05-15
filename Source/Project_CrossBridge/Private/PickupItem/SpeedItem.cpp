@@ -24,6 +24,8 @@ void ASpeedItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 
 void ASpeedItem::Destroyed()
 {
+	Super::Destroyed();
+	UE_LOG(LogTemp,Warning,TEXT("Destyroy"));
 	if(NiagaraSystem)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),NiagaraSystem,GetActorLocation());
