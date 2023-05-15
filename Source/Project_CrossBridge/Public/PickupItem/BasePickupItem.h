@@ -19,7 +19,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -39,6 +38,14 @@ protected:
 
 	UFUNCTION()
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	float BindOverlapTime = 0.25f;
+
+	FTimerHandle BindOverlapTimeHandle;
+	void BindOverlap();
+
 	
 
 };
