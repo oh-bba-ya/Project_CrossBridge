@@ -801,4 +801,9 @@ public:
 		void VRRevive();
 	UFUNCTION()
 		bool VRSkillCheck(FString Position);
+	UFUNCTION(Server, Unreliable)
+		void ServerVRDoorBreak(const FString& Position,  UPrimitiveComponent* OtherComp);
+
+	UPROPERTY()
+		class AActor* BreakableDoor;
 };
