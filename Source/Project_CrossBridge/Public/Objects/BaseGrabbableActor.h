@@ -35,11 +35,8 @@ public:
 	UFUNCTION()
 	void OnGrabbableActorOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
-	UFUNCTION()
-		void OnGrabbableActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
-
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsThrow;
 	
 
