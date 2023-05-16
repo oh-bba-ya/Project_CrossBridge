@@ -77,10 +77,22 @@ void ABaseGrabbableActor::FindOwner()
 
 void ABaseGrabbableActor::OnGrabbableActorOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	PCPlayer = Cast<ABaseCharacter>(OtherActor);
-}
-
-void ABaseGrabbableActor::OnGrabbableActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
-{
-	PCPlayer = NULL;
+	if (IsThrow)
+	{
+		PCPlayer = Cast<ABaseCharacter>(OtherActor);
+		if (PCPlayer)
+		{
+			PCPlayer->OnTakeDamage(10);
+			Destroy();
+		}
+		else
+		{
+			FTimerHandle GrabbableActorDestroyTimer;
+			GetWorld()->GetTimerManager().SetTimer(GrabbableActorDestroyTimer,
+				FTimerDelegate::CreateLambda([this]()->void
+					{
+						Destroy();
+					}), 5, false);
+		}
+	}
 }

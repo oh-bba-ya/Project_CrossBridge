@@ -505,6 +505,9 @@ public:
 		class UNiagaraComponent* GrabbableObjectCreateEffect;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UNiagaraComponent* BlackholeTraceComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* BulletAimTraceComp;
+		
 
 	UPROPERTY()
 		class UMaterialInstanceDynamic* HeadMat;

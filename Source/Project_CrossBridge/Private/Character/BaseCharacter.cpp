@@ -175,9 +175,13 @@ ABaseCharacter::ABaseCharacter()
 	GrabbableObjectCreateEffect->SetupAttachment(LeftHand);
 	GrabbableObjectCreateEffect->SetRelativeLocation(FVector(3, 4, -6));
 	GrabbableObjectCreateEffect->SetVisibility(false);
+	GrabbableObjectCreateEffect->SetIsReplicated(true);
 	
 	BlackholeTraceComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BlackholeTraceComp"));
 	BlackholeTraceComp->SetupAttachment(RootComponent);
+
+	BulletAimTraceComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BulletAimTraceComp"));
+	BulletAimTraceComp->SetupAttachment(RootComponent);
 	
 	VRStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("VRStatus"));
 	VRStatusWidget->SetupAttachment(LeftHand);
@@ -519,8 +523,8 @@ void ABaseCharacter::Tick(float DeltaTime)
 				VRController->StopHapticEffect(EControllerHand::Left);
 				IsTrashSpawningPoolCast = false;
 			}
-			FVector Loc = LeftHand->GetComponentLocation() + LeftAim->GetForwardVector() * 500;
-			ServerTrashSpawningPoolSet(FVector(Loc.X, Loc.Y, 200));
+			FVector Loc = LeftHand->GetComponentLocation() + LeftAim->GetForwardVector() * 1000;
+			ServerTrashSpawningPoolSet(FVector(Loc.X, Loc.Y, 800));
 		}
 	}
 	if (IsTrashSpawningPoolSet)
@@ -1562,11 +1566,12 @@ void ABaseCharacter::RightBEnd()
 		RedDot->SetActorHiddenInGame(true);
 		ServerResetColorChange(FString("Right"));
 	}
+	BulletAimTraceComp->SetVisibility(false);
 }
 
 void ABaseCharacter::RightA()
 {
-	VRGetDamage(1);
+	//VRGetDamage(1);
 	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
@@ -2053,16 +2058,24 @@ void ABaseCharacter::SetRedDot()
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitInfo, DotStart, DotEnd, ECC_Visibility, Param);
 	if (IsHit)
 	{
-		RedDot->SetActorLocation(HitInfo.Location);
+		DotEnd = HitInfo.Location;
+		RedDot->SetActorLocation(DotEnd);
 		Distance = HitInfo.Distance;
+		
 	}
 	else
 	{
 		RedDot->SetActorLocation(DotEnd);
 		Distance = (DotEnd - DotStart).Size();
 	}
+	TArray<FVector> BulletTraces;
+	BulletTraces.Add(DotStart);
+	BulletTraces.Add(DotEnd);
+	BulletAimTraceComp->SetVisibility(true);
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(BulletAimTraceComp, FName(TEXT("User.PointArray")), BulletTraces);
 	RedDot->SetActorScale3D(FVector(Distance / 500));
 	RedDot->SetActorRotation((-RedDot->GetActorLocation() + VRCamera->GetComponentLocation()).Rotation());
+	
 }
 
 void ABaseCharacter::VRGetDamage(float Damage)
