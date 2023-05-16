@@ -1,90 +1,79 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Menu.h"
-#include "Components/Button.h"
+#include "VRMenu.h"
 #include "MultiplayerSessionsSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
+#include "Components/Button.h"
 #include "Components/EditableText.h"
-#include "Components/WidgetSwitcher.h"
+#include "Components/TextBlock.h"
 
-
-void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
+void UVRMenu::VRMenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
-	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
+	PathToLobby = FString::Printf(TEXT("%s?listen"),*LobbyPath);
 	NumPublicConnections = NumberOfPublicConnections;
 	MatchType = TypeOfMatch;
-	AddToViewport();
-	SetVisibility(ESlateVisibility::Visible);
-	bIsFocusable = true;
-
-	UWorld* World = GetWorld();
-	if (World) {
-		APlayerController* PlayerController = World->GetFirstPlayerController();
-		if (PlayerController) {
-
-			FInputModeUIOnly InputModeData;
-			InputModeData.SetWidgetToFocus(TakeWidget());
-			
-			// DoNotLock : 뷰포트 속에 마우스를 가두지 않는다.
-			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-			PlayerController->SetInputMode(InputModeData);
-			PlayerController->SetShowMouseCursor(true);
-		}
-	}
 
 	UGameInstance* GameInstance = GetGameInstance();
-	if (GameInstance) {
+	if(GameInstance)
+	{
 		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
 	}
 
-	if (MultiplayerSessionsSubsystem) {
+	if(MultiplayerSessionsSubsystem)
+	{
 		MultiplayerSessionsSubsystem->MultiplayerOnCreateSessionComplete.AddDynamic(this, &ThisClass::OnCreateSession);
 		MultiplayerSessionsSubsystem->MultiplayerOnFindSessionsComplete.AddUObject(this, &ThisClass::OnFindSessions);
 		MultiplayerSessionsSubsystem->MultiplayerOnJoinSessionComplete.AddUObject(this, &ThisClass::OnJoinSession);
 		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
 		MultiplayerSessionsSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);
 
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("MenuSetup")));
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("VRMenuSetup")));
 	}
-
 }
 
-void UMenu::NativeConstruct()
+void UVRMenu::ClickStart()
 {
-	editText_id->SetText(FText::FromString(""));
-
-	btn_Start->OnClicked.AddDynamic(this, &UMenu::ClickStart);
+	// 만일, ID가 빈칸이 아니라면 0번-> 1번 캔버스로 변경
+	if(!editText_id->GetText().IsEmpty())
+	{
+		if(MultiplayerSessionsSubsystem != nullptr)
+		{
+			MultiplayerSessionsSubsystem->SessionID = FName(*editText_id->GetText().ToString());
+			JoinButtonClicked();
+		}
+	}
 }
 
-bool UMenu::Initialize()
+void UVRMenu::NativeConstruct()
+{
+	editText_id->SetText(FText::FromString("VR"));
+}
+
+bool UVRMenu::Initialize()
 {
 	if (!Super::Initialize()) {
 		return false;
 	}
 
-	if (HostButton) {
-		HostButton->OnClicked.AddDynamic(this, &ThisClass::HostButtonClicked);
-	}
-
 	if (JoinButton) {
-		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
+		JoinButton->OnClicked.AddDynamic(this, &ThisClass::ClickStart);
 	}
 
 	return true;
 }
 
-void UMenu::NativeDestruct()
+void UVRMenu::NativeDestruct()
 {
 	MenuTearDown();
 	Super::NativeDestruct();
 }
 
-void UMenu::OnCreateSession(bool bWasSuccessful)
+void UVRMenu::OnCreateSession(bool bWasSuccessful)
 {
+	/* VR은 현재 Host를 만들 수 없기 때문에 주석처리..
 	if (bWasSuccessful) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("Session created Successfully!")));
@@ -101,9 +90,10 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 		}
 		HostButton->SetIsEnabled(true);
 	}
+	*/
 }
 
-void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResult, bool bWasSuccessful)
+void UVRMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResult, bool bWasSuccessful)
 {
 	if (MultiplayerSessionsSubsystem == nullptr) {
 		return;
@@ -117,13 +107,14 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 			return;
 		}
 	}
+	
 
 	if (!bWasSuccessful || SessionResult.Num() == 0) {
 		JoinButton->SetIsEnabled(true);
 	}
 }
 
-void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
+void UVRMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 	if (Subsystem) {
@@ -145,26 +136,15 @@ void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 	}
 }
 
-void UMenu::OnDestroySession(bool bWasSuccessful)
+void UVRMenu::OnDestroySession(bool bWasSuccessful)
 {
-	
 }
 
-void UMenu::OnStartSession(bool bWasSuccessful)
+void UVRMenu::OnStartSession(bool bWasSuccessful)
 {
-	
 }
 
-void UMenu::HostButtonClicked()
-{
-	HostButton->SetIsEnabled(false);
-	if (MultiplayerSessionsSubsystem) {
-		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
-	}
-
-}
-
-void UMenu::JoinButtonClicked()
+void UVRMenu::JoinButtonClicked()
 {
 	JoinButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem) {
@@ -173,8 +153,7 @@ void UMenu::JoinButtonClicked()
 	}
 }
 
-
-void UMenu::MenuTearDown()
+void UVRMenu::MenuTearDown()
 {
 	RemoveFromParent();
 	UWorld* World = GetWorld();
@@ -187,17 +166,6 @@ void UMenu::MenuTearDown()
 
 		}
 	}
-
 }
 
 
-
-void UMenu::ClickStart()
-{
-	// 만일, ID가 빈칸이 아니라면 0번-> 1번 캔버스로 변경
-	if(!editText_id->GetText().IsEmpty())
-	{
-		widgetSwitcher->SetActiveWidgetIndex(1);
-		MultiplayerSessionsSubsystem->SessionID = FName(*editText_id->GetText().ToString());
-	}
-}

@@ -64,7 +64,7 @@ void AButtons::Tick(float DeltaTime)
 	else if (IsPressed && Timer >1)
 	{
 		IsPressed = false;
-		Cast<UMenu>(JoinWidgetComp->GetWidget())->ClickJoinButton();
+		Cast<UMenu>(JoinWidgetComp->GetWidget())->JoinButtonClicked();
 	}
 	
 }
