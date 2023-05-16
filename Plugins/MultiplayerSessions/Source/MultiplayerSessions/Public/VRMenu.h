@@ -5,23 +5,26 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Interfaces/OnlineSessionInterface.h"
-#include "Menu.generated.h"
+#include "VRMenu.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERSESSIONS_API UMenu : public UUserWidget
+class MULTIPLAYERSESSIONS_API UVRMenu : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup(int32 NumberOfPublicConnections = 10, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/Maps/Bridge")));
+	void VRMenuSetup(int32 NumberOfPublicConnections = 10, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/Maps/Bridge")));
 
-	UFUNCTION(BlueprintCallable)
-	void JoinButtonClicked();
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* editText_id;
+	
+	UFUNCTION()
+	void ClickStart();
+	
 protected:
 	void NativeConstruct() override;
 	bool Initialize() override;
@@ -39,45 +42,21 @@ protected:
 	void OnDestroySession(bool bWasSuccessful);
 	UFUNCTION()
 	void OnStartSession(bool bWasSuccessful);
-
-
+	
 private:
 	UPROPERTY(meta = (BindWidget))
-	class UButton* HostButton;
-
-	UPROPERTY(meta = (BindWidget))
 	class UButton* JoinButton;
-	
 
-	UFUNCTION()
-	void HostButtonClicked();
+	UFUNCTION(BlueprintCallable)
+	void JoinButtonClicked();
 
 	void MenuTearDown();
 
 	// The Subsystem designed to handle all online session functionality
 	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
-
+	
 	int32 NumPublicConnections{ 4 };
 	FString MatchType{ TEXT("FreeForAll") };
 	FString PathToLobby{ TEXT("") };
 	
-	
-
-	/** Login Properties*/
-#pragma region Login Properties
-
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	class UEditableText* editText_id;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	class UButton* btn_Start;
-	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
-	class UWidgetSwitcher* widgetSwitcher;
-
-protected:
-	UFUNCTION()
-	void ClickStart();
-#pragma endregion 
 };
