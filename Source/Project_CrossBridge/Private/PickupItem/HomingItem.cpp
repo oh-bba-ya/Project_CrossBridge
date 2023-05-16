@@ -129,6 +129,7 @@ void AHomingItem::Multicast_UsingItem_Implementation(ABaseCharacter* player)
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	player->SetHomingItem(nullptr);
 	Ownerplayer = nullptr;
+	player->SetEquip(false);
 	Destroy();
 }
 
