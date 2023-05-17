@@ -1398,13 +1398,16 @@ void ABaseCharacter::VRMove(const FInputActionValue &Values)
 void ABaseCharacter::Turn(const FInputActionValue &Values)
 {
 	FVector2D Axis = Values.Get<FVector2D>();
-	if (Axis.X > 0.5f)
+	if (IsVR)
 	{
-		AddControllerYawInput(20);
-	}
-	else if (Axis.X < -0.5f)
-	{
-		AddControllerYawInput(-20);
+		if (Axis.X > 0.5f)
+		{
+			AddControllerYawInput(20);
+		}
+		else if (Axis.X < -0.5f)
+		{
+			AddControllerYawInput(-20);
+		}
 	}
 
 	//AddControllerYawInput(Axis.X);
@@ -1552,7 +1555,7 @@ void ABaseCharacter::RightGraspEnd()
 
 void ABaseCharacter::RightB()
 {
-	VRGetDamage(1);
+	//VRGetDamage(1);
 	if (!IsRightA && !IsRedDotSet && VRSkillCheck(FString("Right")))
 	{
 		IsRightB = true;
