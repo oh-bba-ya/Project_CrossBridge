@@ -474,7 +474,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UCameraComponent* VRCamera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
-		class USkeletalMeshComponent* HeadMesh;
+		class  UStaticMeshComponent* VRHeadMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UBoxComponent* HeadComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)

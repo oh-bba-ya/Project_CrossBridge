@@ -103,13 +103,13 @@ ABaseCharacter::ABaseCharacter()
 	VRCamera->bUsePawnControlRotation = true;
 	VRCamera->SetActive(false);
 
-	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HeadMesh"));
-	HeadMesh->SetupAttachment(VRCamera);
-
+	VRHeadMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VRHeadMesh"));
+	VRHeadMesh->SetupAttachment(VRCamera);
+	
 	HeadComp = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadComp"));
-	HeadComp->SetupAttachment(HeadMesh);
-	HeadComp->SetRelativeLocation(FVector(0, 0, 170));
-	HeadComp->SetBoxExtent(FVector(10, 10, 12));
+	HeadComp->SetupAttachment(VRHeadMesh);
+	HeadComp->SetRelativeLocation(FVector(0, 11.8f, 58));
+	HeadComp->SetBoxExtent(FVector(60, 90, 70));
 
 	LeftHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftHand"));
 	LeftHand->SetupAttachment(RootComponent);
@@ -153,23 +153,25 @@ ABaseCharacter::ABaseCharacter()
 	
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
 	SwordMesh->SetupAttachment(RightHand);
-	SwordMesh->SetRelativeLocation(FVector(5.1, -4, -4.8));
+	SwordMesh->SetRelativeLocation(FVector(10.0f, -2.6f, -6.5f));
 	SwordMesh->SetRelativeRotation(FRotator(-75, 0, 0));
+	SwordMesh->SetRelativeScale3D(FVector(0.12f));
 	SwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SwordMesh->SetVisibility(false);
 
 	InvisibleSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvisibleSwordMesh"));
 	InvisibleSwordMesh->SetupAttachment(RightHand);
-	InvisibleSwordMesh->SetRelativeLocation(FVector(5.1, -4, -4.8));
+	InvisibleSwordMesh->SetRelativeLocation(FVector(10.0f, -2.6f, -6.5f));
 	InvisibleSwordMesh->SetRelativeRotation(FRotator(-75, 0, 0));
+	InvisibleSwordMesh->SetRelativeScale3D(FVector(0.12f));
 	InvisibleSwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	InvisibleSwordMesh->SetVisibility(false);
 
 	SwordComp = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordComp"));
 	SwordComp->SetupAttachment(SwordMesh);
 	SwordComp->SetCollisionProfileName(TEXT("NoCollision"));
-	SwordComp->SetRelativeLocation(FVector(3, 1, 46));
-	SwordComp->SetBoxExtent(FVector(3, 3, 38));
+	SwordComp->SetRelativeLocation(FVector(-13, 0, 420));
+	SwordComp->SetBoxExtent(FVector(13, 13, 370));
 
 	GrabbableObjectCreateEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("GrabbableObjectCreateEffect"));
 	GrabbableObjectCreateEffect->SetupAttachment(LeftHand);
@@ -212,13 +214,14 @@ ABaseCharacter::ABaseCharacter()
 	RightWidgetInteractionComp->PointerIndex =1;
 	RightWidgetInteractionComp->InteractionDistance = 15;
 
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> VRHeadMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/VR_Head.VR_Head'"));
-	if (VRHeadMesh.Succeeded())
+	ConstructorHelpers::FObjectFinder<UStaticMesh> VRHeadAsset(TEXT("//Script/Engine.StaticMesh'/Game/HYY/Download/Helmet/source/casco/cscf.cscf'"));
+	if (VRHeadAsset.Succeeded())
 	{
-		HeadMesh->SetSkeletalMesh(VRHeadMesh.Object);
-		HeadMesh->SetRelativeLocation(FVector(0, 0, -170));
-		HeadMesh->SetRelativeRotation(FRotator(0, -90, 0));
-		HeadMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		VRHeadMesh->SetStaticMesh(VRHeadAsset.Object);
+		VRHeadMesh->SetRelativeLocation(FVector(-22.7f, 0, -17.1f));
+		VRHeadMesh->SetRelativeRotation(FRotator(0, -90, 0));
+		VRHeadMesh->SetRelativeScale3D(FVector(0.3f));
+		VRHeadMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> LeftMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_left.SKM_MannyXR_left'"));
@@ -261,7 +264,7 @@ ABaseCharacter::ABaseCharacter()
 
 
 	/** PC 디폴트 설정*/
-	HeadMesh->SetVisibility(false);
+	VRHeadMesh->SetVisibility(false);
 	HeadComp->SetCollisionProfileName(FName("NoCollision"));
 
 	LeftHand->SetCollisionProfileName(FName("NoCollision"));
@@ -352,10 +355,10 @@ void ABaseCharacter::BeginPlay()
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
 	VRStatus->SetHPBar(0);
-	UMaterialInterface *HeadBase = HeadMesh->GetMaterial(0);
+	UMaterialInterface *HeadBase = VRHeadMesh->GetMaterial(0);
 	if (HeadBase)
 	{
-		HeadMat = HeadMesh->CreateDynamicMaterialInstance(0, HeadBase);
+		HeadMat = VRHeadMesh->CreateDynamicMaterialInstance(0, HeadBase);
 	}
 	UMaterialInterface *LeftHandBase = LeftHandMesh->GetMaterial(0);
 	if (LeftHandBase)
@@ -368,10 +371,10 @@ void ABaseCharacter::BeginPlay()
 		RightHandMat = RightHandMesh->CreateDynamicMaterialInstance(0, RightHandBase);
 		RightHandMat->SetVectorParameterValue(FName("Tint"), (FLinearColor)FVector(0, 0, 0));
 	}
-	UMaterialInterface *SwordBase = SwordMesh->GetMaterial(3);
+	UMaterialInterface *SwordBase = SwordMesh->GetMaterial(1);
 	if (SwordBase)
 	{
-		SwordMat = SwordMesh->CreateDynamicMaterialInstance(3, SwordBase);
+		SwordMat = SwordMesh->CreateDynamicMaterialInstance(1, SwordBase);
 		SwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
 	}
 	//UMaterialInterface *InvisibleSwordBase = InvisibleSwordMesh->GetMaterial(3);
@@ -440,7 +443,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Right, 1, true);
 						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Left, 1, true);
 					}
-					VRGetDamage(-0.5 * DeltaTime);
+					VRGetDamage(-2 * DeltaTime);
 				}
 			}
 			else
@@ -1541,6 +1544,7 @@ void ABaseCharacter::RightGraspEnd()
 
 void ABaseCharacter::RightB()
 {
+	VRGetDamage(1);
 	if (!IsRightA && !IsRedDotSet && VRSkillCheck(FString("Right")))
 	{
 		IsRightB = true;
@@ -1880,7 +1884,7 @@ void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FStri
 		{
 			SwordMesh->SetVisibility(true);
 		}
-		float DissolveRate = UKismetMathLibrary::Lerp(0, 0.5f, Rate);
+		float DissolveRate = UKismetMathLibrary::Lerp(0, 1, Rate);
 		SwordMat->SetScalarParameterValue(FName("Dissolve"), DissolveRate);
 	}
 	else if (Position == FString("RightA"))
@@ -1962,7 +1966,7 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300;
 	GetCharacterMovement()->MaxFlySpeed = 600;
 
-	HeadMesh->SetVisibility(true);
+	VRHeadMesh->SetVisibility(true);
 	HeadComp->SetCollisionProfileName(TEXT("VRPlayerHeadPreset"));
 
 	LeftHandMesh->SetVisibility(true);
