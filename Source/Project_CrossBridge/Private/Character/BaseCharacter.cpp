@@ -1398,9 +1398,17 @@ void ABaseCharacter::VRMove(const FInputActionValue &Values)
 void ABaseCharacter::Turn(const FInputActionValue &Values)
 {
 	FVector2D Axis = Values.Get<FVector2D>();
+	if (Axis.X > 0.5f)
+	{
+		AddControllerYawInput(20);
+	}
+	else if (Axis.X < -0.5f)
+	{
+		AddControllerYawInput(-20);
+	}
 
-	AddControllerYawInput(Axis.X);
-	AddControllerPitchInput(Axis.Y);
+	//AddControllerYawInput(Axis.X);
+	//AddControllerPitchInput(Axis.Y);
 }
 
 void ABaseCharacter::LeftIndexCurl()
