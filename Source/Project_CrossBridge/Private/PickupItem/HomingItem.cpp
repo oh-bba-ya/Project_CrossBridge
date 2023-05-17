@@ -56,6 +56,7 @@ void AHomingItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		{
 			if(Ownerplayer != nullptr)
 			{
+				Ownerplayer->SetEquip(false);
 				Ownerplayer->SetHomingItem(nullptr);
 			}
 			PickUp(player);

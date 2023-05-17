@@ -65,6 +65,7 @@ void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* Overlapp
 		{
 			if(OwnerCharacter != nullptr)
 			{
+				OwnerCharacter->SetEquip(false);
 				OwnerCharacter->SetWeapon(nullptr);	
 			}
 			PickUp(player);
