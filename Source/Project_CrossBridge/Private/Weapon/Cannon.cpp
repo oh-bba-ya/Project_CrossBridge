@@ -19,6 +19,7 @@ ACannon::ACannon()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	bReplicates = true;
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	SetRootComponent(BoxComponent);
 	BoxComponent->SetCollisionProfileName(FName("WeaponPreset"));
@@ -29,7 +30,7 @@ ACannon::ACannon()
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	Arrow->SetupAttachment(RootComponent);
 	Arrow->SetRelativeLocationAndRotation(FVector(30.f,0.f,37.f), FRotator(50.f,0.f,0.f));
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -39,8 +40,6 @@ void ACannon::BeginPlay()
 
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&ACannon::OnBeginOverlap);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this,&ACannon::OnEndOverlap);
-
-	core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
 	
 }
 
@@ -48,12 +47,7 @@ void ACannon::BeginPlay()
 void ACannon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if(core == nullptr)
-	{
-		core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
-	}
-
+	
 }
 
 
@@ -124,12 +118,12 @@ void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
 		FTimerHandle fireDelayHandle;
 		GetWorldTimerManager().SetTimer(fireDelayHandle, FTimerDelegate::CreateLambda([&](){bFireDelay= true;}), fireDelayTime,false);
 
+		core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
 		AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
 		Multicast_HomingFire(p,homing);
 		homing->SetOwner(p);
 		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
 		SubtractHominAmmo(1);
-		
 	}
 
 	

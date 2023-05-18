@@ -131,11 +131,8 @@ protected:
 	
 #pragma endregion 
 
-	/** overheadwidget */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* OverheadWidget;
 
-	
+
 private:
 	class UGameInstance* GameInstance;
 
@@ -287,22 +284,7 @@ protected:
 
 #pragma endregion
 
-
-/** Player Name*/
-#pragma region PlayerName
-
-public:
-
-	UPROPERTY(Replicated)
-	FString myName;
 	
-	UFUNCTION(Server, Unreliable)
-	void ServerSetName(const FString& name);
-	
-	class UOverheadWidget* overhead;
-
-#pragma endregion 
-
 
 	/** Skill : Freeze */
 #pragma region Skill Freeze
@@ -436,7 +418,10 @@ protected:
 	UFUNCTION()
 	void UsingConverter();
 
-#pragma endregion 
+#pragma endregion
+
+
+	/** GameStart*/
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
