@@ -59,9 +59,6 @@ ABaseCharacter::ABaseCharacter()
 	camComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CamComp"));
 	camComp->SetupAttachment(springArmComp);
 
-	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
-	OverheadWidget->SetupAttachment(RootComponent);
-
 	DashEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashEffectComponent"));
 	DashEffectComponent->SetAutoActivate(false);
 
@@ -322,15 +319,12 @@ void ABaseCharacter::BeginPlay()
 
 			if (MultiplayerSessionsSubsystem)
 			{
-				ServerSetName(MultiplayerSessionsSubsystem->SessionID.ToString());
+				//ServerSetName(MultiplayerSessionsSubsystem->SessionID.ToString());
 			}
 		}
 	}
 
-	if (OverheadWidget)
-	{
-		overhead = Cast<UOverheadWidget>(OverheadWidget->GetWidget());
-	}
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -403,10 +397,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		AddMovementInput(FVector(0, 0, JetPackSpeed));
 	}
 
-	if (overhead)
-	{
-		overhead->DisplayText->SetText(FText::FromString(myName));
-	}
+
 
 	if (freeze != nullptr)
 	{
@@ -1091,18 +1082,7 @@ void ABaseCharacter::DropWeapon()
 	}
 }
 
-/** Player Name */
-void ABaseCharacter::ServerSetName_Implementation(const FString &name)
-{
-	myName = name;
 
-	ACrossPlayerState *ps = Cast<ACrossPlayerState>(GetPlayerState());
-
-	if (ps != nullptr)
-	{
-		ps->SetPlayerName(name);
-	}
-}
 
 /** Freeze Skill */
 #pragma region Skill Freeze
@@ -1367,7 +1347,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, bJetPackActive);
 	DOREPLIFETIME(ABaseCharacter, Fuel);
 	DOREPLIFETIME(ABaseCharacter, CurrentHP);
-	DOREPLIFETIME(ABaseCharacter, myName);
+	//DOREPLIFETIME(ABaseCharacter, myName);
 	DOREPLIFETIME(ABaseCharacter, freeze);
 	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
 	DOREPLIFETIME(ABaseCharacter, VRCurHP);
@@ -1968,7 +1948,6 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 {
 	GetMesh()->SetVisibility(false);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	OverheadWidget->SetVisibility(false);
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("VRPlayerPreset"));
 	GetCapsuleComponent()->SetRelativeScale3D(FVector(1.3f));

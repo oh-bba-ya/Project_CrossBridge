@@ -3,13 +3,21 @@
 
 #include "BaseCharacterController.h"
 
+#include "CrossBridgeState.h"
+#include "CrossBridgeStateBase.h"
+#include "CrossPlayerState.h"
 #include "Components/TextBlock.h"
+#include "GameMode/CrossBridgeGameMode.h"
 #include "HUD/BaseCharacterWidget.h"
 #include "HUD/ReturnToMainMenu.h"
+#include "Kismet/GameplayStatics.h"
+#include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
 
 void ABaseCharacterController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Server_CheckMatchState();
 
 	if(baseCharacterWidget != nullptr && IsLocalController())
 	{
@@ -20,6 +28,8 @@ void ABaseCharacterController::BeginPlay()
 			baseCharacterUI->AddToViewport();
 		}
 	}
+
+	BridgeState = Cast<ACrossBridgeStateBase>(GetWorld()->GetGameState());
 	
 }
 
@@ -36,8 +46,20 @@ void ABaseCharacterController::SetupInputComponent()
 void ABaseCharacterController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
 	SetHUDTime();
 	CheckTimeSync(DeltaSeconds);
+
+	
+
+	if(BridgeState != nullptr)
+	{
+		if(!BridgeState->GetStart())
+		{
+			BridgeState->AddOffsetTime(DeltaSeconds);
+		}
+	}
+	
 	
 }
 
@@ -69,6 +91,25 @@ void ABaseCharacterController::ReceivedPlayer()
 	}
 }
 
+void ABaseCharacterController::Client_JoinMidgame_Implementation(float Warmup, float Match, float LevelStarting)
+{
+	WarmupTime = Warmup;
+	MatchTime = Match;
+	LevelStartingTime = LevelStarting;
+}
+
+void ABaseCharacterController::Server_CheckMatchState_Implementation()
+{
+	BridgeGM = Cast<AProject_CrossBridgeGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if(BridgeGM != nullptr)
+	{
+		WarmupTime = BridgeGM->WarmupTime;
+		MatchTime = BridgeGM->MatchTime;
+		LevelStartingTime = BridgeGM->LevelStartingTime;
+		Client_JoinMidgame(WarmupTime,MatchTime,LevelStartingTime);
+	}
+}
+
 void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 {
 	int32 Min = FMath::FloorToInt(CountdownTime/60.f);
@@ -87,7 +128,18 @@ void ABaseCharacterController::SetHUDTime()
 	uint32 SecondsLeft = FMath::CeilToInt(MatchTime-GetServerTimer());
 	if(CountdownInt != SecondsLeft)
 	{
-		SetHUDCountDown(MatchTime-GetServerTimer());
+		if(BridgeState != nullptr)
+		{
+			if(BridgeState->GetStart())
+			{
+				SetHUDCountDown(MatchTime-GetServerTimer() + BridgeState->GetOffsetTime());
+				//SetHUDCountDown(MatchTime-GetServerTimer());
+			}
+			else
+			{
+				SetHUDCountDown(0);
+			}
+		}
 	}
 
 	CountdownInt = SecondsLeft;

@@ -17,11 +17,21 @@ AHomingProjectile::AHomingProjectile()
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	SetRootComponent(BoxComponent);
 	BoxComponent->SetCollisionProfileName(FName("BulletPreset"));
+	BoxComponent->SetBoxExtent(FVector(18.f,8.f,8.f));
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent->SetRelativeLocationAndRotation(FVector(-15.f,0.f,0.f),FRotator(-90,0,0));
+	MeshComponent->SetRelativeScale3D(FVector(5.0f));
 
+
+	MissileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MissileMeshComponent"));
+	MissileMeshComponent->SetupAttachment(RootComponent);
+	MissileMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MissileMeshComponent->SetRelativeLocationAndRotation(FVector(-5.f,0.f,0.f),FRotator(-90.f,0.f,0.f));
+	MissileMeshComponent->SetRelativeScale3D(FVector(3.0f));
+	
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComponent"));
 
 	MovementComponent->bRotationFollowsVelocity =true;

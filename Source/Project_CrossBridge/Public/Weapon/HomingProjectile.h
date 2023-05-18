@@ -34,6 +34,10 @@ public:
 	class UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class UStaticMeshComponent* MissileMeshComponent;
+	
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UProjectileMovementComponent* MovementComponent;
 
 

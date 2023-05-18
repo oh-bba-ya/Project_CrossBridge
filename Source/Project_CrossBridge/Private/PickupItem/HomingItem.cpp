@@ -56,6 +56,7 @@ void AHomingItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		{
 			if(Ownerplayer != nullptr)
 			{
+				Ownerplayer->SetEquip(false);
 				Ownerplayer->SetHomingItem(nullptr);
 			}
 			PickUp(player);
@@ -129,6 +130,7 @@ void AHomingItem::Multicast_UsingItem_Implementation(ABaseCharacter* player)
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	player->SetHomingItem(nullptr);
 	Ownerplayer = nullptr;
+	player->SetEquip(false);
 	Destroy();
 }
 

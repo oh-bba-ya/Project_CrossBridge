@@ -30,6 +30,8 @@ ATrashCan::ATrashCan()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(FName("NoCollision"));
+	MeshComponent->SetRelativeScale3D(FVector(0.7f,0.7f,0.7f));
+	MeshComponent->SetRelativeLocationAndRotation(FVector(0,0,4.f),FRotator(0.f,-90.f,0.f));
 	
 
 }

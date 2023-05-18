@@ -9,8 +9,17 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 
 
+void AProject_CrossBridgeGameModeBase::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
 
+	LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
 
+void AProject_CrossBridgeGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+}
 
 AActor* AProject_CrossBridgeGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 {

@@ -23,7 +23,12 @@ protected:
 
 	virtual float GetServerTimer();
 	virtual void ReceivedPlayer() override;
-	
+
+	UFUNCTION(Server, Reliable)
+	void Server_CheckMatchState();
+
+	UFUNCTION(Client, Reliable)
+	void Client_JoinMidgame(float Warmup, float Match, float LevelStarting);
 
 public:
 	UPROPERTY(EditAnywhere, Category="Settings|Widget")
@@ -56,6 +61,20 @@ public:
 private:
 	UBaseCharacterWidget* baseCharacterUI;
 
+	UPROPERTY(EditAnywhere, Category = "Settings|Time")
+	float MatchTime = 0.f;
+
+	float LevelStartingTime = 0.f;
+	float WarmupTime = 0.f;
+	float CountdownInt = 0.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Properties")
+	class AProject_CrossBridgeGameModeBase* BridgeGM;
+
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Properties")
+	class ACrossBridgeStateBase* BridgeState;
+
+#pragma region Quit Widget
 	/** Quit Widget */
 protected:
 	void ShowReturnToMainMenu();
@@ -73,8 +92,5 @@ private:
 
 	bool bReturnToMainMenuOpen = false;
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Time")
-	float MatchTime = 120.f;
-	float CountdownInt = 0.f;
-	
+#pragma endregion 
 };
