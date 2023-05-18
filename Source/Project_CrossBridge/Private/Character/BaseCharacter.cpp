@@ -102,22 +102,27 @@ ABaseCharacter::ABaseCharacter()
 	VRCamera->SetupAttachment(RootComponent);
 	VRCamera->bUsePawnControlRotation = true;
 	VRCamera->SetActive(false);
+	VRCamera->SetIsReplicated(true);
 
 	VRHeadMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VRHeadMesh"));
 	VRHeadMesh->SetupAttachment(VRCamera);
+	VRHeadMesh->SetIsReplicated(true);
 	
 	HeadComp = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadComp"));
 	HeadComp->SetupAttachment(VRHeadMesh);
 	HeadComp->SetRelativeLocation(FVector(0, 11.8f, 58));
 	HeadComp->SetBoxExtent(FVector(60, 90, 70));
+	HeadComp->SetIsReplicated(true);
 
 	LeftHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftHand"));
 	LeftHand->SetupAttachment(RootComponent);
 	LeftHand->SetTrackingMotionSource(FName("Left"));
+	LeftHand->SetIsReplicated(true);
 
 	RightHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightHand"));
 	RightHand->SetupAttachment(RootComponent);
 	RightHand->SetTrackingMotionSource(FName("Right"));
+	RightHand->SetIsReplicated(true);
 
 	LeftGrip = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftGrip"));
 	LeftGrip->SetupAttachment(RootComponent);
@@ -139,17 +144,21 @@ ABaseCharacter::ABaseCharacter()
 	LeftHandBox->SetupAttachment(LeftHand);
 	LeftHandBox->SetRelativeLocation(FVector(3, 1, -4));
 	LeftHandBox->SetBoxExtent(FVector(5));
+	LeftHandBox->SetIsReplicated(true);
 
 	RightHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightHandBox"));
 	RightHandBox->SetupAttachment(RightHand);
 	RightHandBox->SetRelativeLocation(FVector(3, -1, -4));
 	RightHandBox->SetBoxExtent(FVector(5));
+	RightHandBox->SetIsReplicated(true);
 
 	LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftHandMesh"));
 	LeftHandMesh->SetupAttachment(LeftHand);
+	LeftHandMesh->SetIsReplicated(true);
 	
 	RightHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightHandMesh"));
 	RightHandMesh->SetupAttachment(RightHand);
+	RightHandMesh->SetIsReplicated(true);
 	
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
 	SwordMesh->SetupAttachment(RightHand);
@@ -158,6 +167,7 @@ ABaseCharacter::ABaseCharacter()
 	SwordMesh->SetRelativeScale3D(FVector(0.12f));
 	SwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SwordMesh->SetVisibility(false);
+	SwordMesh->SetIsReplicated(true);
 
 	InvisibleSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvisibleSwordMesh"));
 	InvisibleSwordMesh->SetupAttachment(RightHand);
@@ -166,12 +176,14 @@ ABaseCharacter::ABaseCharacter()
 	InvisibleSwordMesh->SetRelativeScale3D(FVector(0.12f));
 	InvisibleSwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	InvisibleSwordMesh->SetVisibility(false);
+	InvisibleSwordMesh->SetIsReplicated(true);
 
 	SwordComp = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordComp"));
 	SwordComp->SetupAttachment(SwordMesh);
 	SwordComp->SetCollisionProfileName(TEXT("NoCollision"));
 	SwordComp->SetRelativeLocation(FVector(-13, 0, 420));
 	SwordComp->SetBoxExtent(FVector(13, 13, 370));
+	SwordComp->SetIsReplicated(true);
 
 	GrabbableObjectCreateEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("GrabbableObjectCreateEffect"));
 	GrabbableObjectCreateEffect->SetupAttachment(LeftHand);
@@ -341,8 +353,9 @@ void ABaseCharacter::BeginPlay()
 	if (IsVR)
 	{
 		UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
-
-		ServerVRSetting();
+		FTimerHandle VRSettingTimer;
+		GetWorld()->GetTimerManager().SetTimer(VRSettingTimer, this, &ABaseCharacter::ServerVRSetting, 0.1f, false);
+		//ServerVRSetting();
 		camComp->SetActive(false);
 		VRCamera->SetActive(true);
 
@@ -1525,6 +1538,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 
 void ABaseCharacter::LeftGraspEnd()
 {
+	VRGetDamage(1);
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{

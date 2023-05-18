@@ -29,3 +29,11 @@ void APracticeActorSpawn::Tick(float DeltaTime)
 
 }
 
+void APracticeActorSpawn::SpawnObject()
+{
+	if (IsBulletTest)
+	{
+		BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget, GetActorLocation(), GetActorRotation());
+		
+	}
+}

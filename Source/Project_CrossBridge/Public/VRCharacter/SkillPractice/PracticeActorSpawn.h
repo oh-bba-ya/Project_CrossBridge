@@ -34,5 +34,6 @@ public:
 	UPROPERTY()
 		class ABulletTarget* BulletTarget;
 
-	
+	UFUNCTION()
+		void SpawnObject();
 };
