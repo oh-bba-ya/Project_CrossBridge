@@ -815,4 +815,9 @@ public:
 
 	UPROPERTY()
 		class AActor* BreakableDoor;
+
+	public:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsDummy;
 };

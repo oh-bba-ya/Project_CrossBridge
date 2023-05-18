@@ -350,7 +350,7 @@ void ABaseCharacter::BeginPlay()
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	IsVR = UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled();
-	if (IsVR)
+	if (IsVR && !IsDummy)
 	{
 		UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
 		FTimerHandle VRSettingTimer;
