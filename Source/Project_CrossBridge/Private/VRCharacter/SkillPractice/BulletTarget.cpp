@@ -5,6 +5,8 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Objects/ThrowingWeapon.h"
+#include "GeometryCollection/GeometryCollectionComponent.h"
+
 
 // Sets default values
 ABulletTarget::ABulletTarget()
@@ -12,10 +14,11 @@ ABulletTarget::ABulletTarget()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	MeshComp = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("MeshComp"));
+	MeshComp->SetSimulatePhysics(false);
+	SetRootComponent(MeshComp);
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
-	SetRootComponent(BoxComp);
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	MeshComp->SetupAttachment(BoxComp);
+	BoxComp->SetupAttachment(MeshComp);
 
 	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ABulletTarget::OnOverlap);
 }
@@ -122,7 +125,14 @@ void ABulletTarget::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	if (Cast<AThrowingWeapon>(OtherActor))
 	{
-		Destroy();
+		MeshComp->SetSimulatePhysics(true);
+		SpawnPoint = OtherActor->GetActorLocation();
+		GetWorld()->SpawnActor<AActor>(BreakActor, SpawnPoint, GetActorRotation());
+		FTimerHandle DestroyTimer;
+		GetWorld()->GetTimerManager().SetTimer(DestroyTimer,
+			FTimerDelegate::CreateLambda([this]()->void
+				{
+					Destroy();
+				}), 3, false);
 	}
-
 }
