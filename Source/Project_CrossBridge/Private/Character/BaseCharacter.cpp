@@ -59,6 +59,11 @@ ABaseCharacter::ABaseCharacter()
 	camComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CamComp"));
 	camComp->SetupAttachment(springArmComp);
 
+	overHeadComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("overHeadComp"));
+	overHeadComp->SetupAttachment(RootComponent);
+	overHeadComp->SetCollisionProfileName(FName("NoCollision"));
+	overHeadComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	DashEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashEffectComponent"));
 	DashEffectComponent->SetAutoActivate(false);
 
@@ -295,6 +300,13 @@ void ABaseCharacter::BeginPlay()
 		SetCurrentHealth(MaxHP);
 	}
 
+	// 게임 시작시 플레이어 오버헤드(overhead)컬러 설정
+
+	if(HasAuthority())
+	{
+		SetFirstColor();
+	}
+	
 	//UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
 
 	if (APlayerController *PlayerController = Cast<APlayerController>(GetController()))
@@ -812,6 +824,29 @@ void ABaseCharacter::ContextualActionReleased()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Released"));
 	RemoveFreeze();
+}
+
+void ABaseCharacter::MultiCast_SetFirstColor_Implementation()
+{
+	UMaterialInterface* iMat = overHeadComp->GetMaterial(0);
+	FHashedMaterialParameterInfo param = FHashedMaterialParameterInfo(TEXT("MyColor"));
+
+	iMat->GetVectorParameterValue(param, initColor);
+
+	dynamicMat = UMaterialInstanceDynamic::Create(iMat,this);
+
+	if(dynamicMat != nullptr)
+	{
+		linearColor = FMath::VRand();
+		linearColor = linearColor.GetAbs();
+		dynamicMat->SetVectorParameterValue(TEXT("MyColor"),linearColor);
+		overHeadComp->SetMaterial(0,dynamicMat);
+	}
+}
+
+void ABaseCharacter::SetFirstColor()
+{
+	MultiCast_SetFirstColor();
 }
 
 /** Sliding , Rolling Functions()*/
@@ -1358,6 +1393,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, ReturnSpeedTime);
 	DOREPLIFETIME(ABaseCharacter, DuringSpeedTime);
 	DOREPLIFETIME(ABaseCharacter, bisEquip);
+	DOREPLIFETIME(ABaseCharacter, linearColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
