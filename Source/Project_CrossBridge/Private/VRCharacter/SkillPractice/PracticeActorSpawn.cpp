@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Character/BaseCharacter.h"
 #include "EngineUtils.h"
+#include "Objects/Trash.h"
 
 // Sets default values
 APracticeActorSpawn::APracticeActorSpawn()
@@ -14,6 +15,10 @@ APracticeActorSpawn::APracticeActorSpawn()
 	PrimaryActorTick.bCanEverTick = true;
 
 	BlackholeCheckComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BlackholeCheckComp"));
+	BlackholeCheckComp->SetupAttachment(RootComponent);
+	TrashCheckComp = CreateDefaultSubobject<UBoxComponent>(TEXT("TrashCheckComp"));
+	TrashCheckComp->SetupAttachment(RootComponent);
+
 }
 
 // Called when the game starts or when spawned
@@ -28,7 +33,7 @@ void APracticeActorSpawn::BeginPlay()
 	}
 	else if (IsBlackholeTest)
 	{
-		BlackholeCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnOverlap);
+		BlackholeCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnBlackholeOverlap);
 		for (TActorIterator<ABaseCharacter> It(GetWorld()); It; ++It)
 		{
 			if (It->IsDummy)
@@ -49,6 +54,11 @@ void APracticeActorSpawn::BeginPlay()
 				}
 			}
 		}
+	}
+	else if (IsTrashTest)
+	{
+		TrashCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnTrashOverlap);
+		TrashCheckComp->SetCollisionProfileName(TEXT("PlayerPreset"));
 	}
 }
 
@@ -86,7 +96,7 @@ void APracticeActorSpawn::SpawnObject()
 	}
 }
 
-void APracticeActorSpawn::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APracticeActorSpawn::OnBlackholeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (TestActor1 == Cast<ABaseCharacter>(OtherActor))
 	{
@@ -97,7 +107,7 @@ void APracticeActorSpawn::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		IsTestActor2 = true;
 	}
 
-	if (TestActor1 && TestActor2)
+	if (IsTestActor1 && IsTestActor2)
 	{
 		TestActor1->SetActorLocation(TestActorLoc1);
 		TestActor2->SetActorLocation(TestActorLoc2);
@@ -105,4 +115,12 @@ void APracticeActorSpawn::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		IsTestActor2 = false;
 	}
 
+}
+
+void APracticeActorSpawn::OnTrashOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (Cast<ATrash>(OtherActor))
+	{
+		TrashCount++;
+	}
 }

@@ -46,6 +46,9 @@ public:
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* BlackholeCheckComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool IsBlackholeTest;
 	UPROPERTY()
 		bool IsTestActor1;
@@ -55,13 +58,24 @@ public:
 		FVector TestActorLoc1;
 	UPROPERTY()
 		FVector TestActorLoc2;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UBoxComponent* BlackholeCheckComp;
 	UFUNCTION()
-		void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void OnBlackholeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY()
 		class ABaseCharacter* TestActor1;
 	UPROPERTY()
 		class ABaseCharacter* TestActor2;
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* TrashCheckComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsTrashTest;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 TrashCount;
+
+	UFUNCTION()
+		void OnTrashOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

@@ -529,6 +529,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 			{
 				VRController->StopHapticEffect(EControllerHand::Left);
 				IsTrashSpawningPoolCast = false;
+				TrashSpawningPool->IsRangeActivate = true;
 			}
 			FVector Loc = LeftHand->GetComponentLocation() + LeftAim->GetForwardVector() * 1000;
 			ServerTrashSpawningPoolSet(FVector(Loc.X, Loc.Y, 800));
@@ -543,6 +544,8 @@ void ABaseCharacter::Tick(float DeltaTime)
 			ServerTrashSpawningPoolReset();
 			IsTrashSpawningPoolSet = false;
 			IsTrashSpawningPoolCool = true;
+			TrashSpawningPool->IsRangeActivate = false;
+			TrashSpawningPool->TrashRangeDeactivate();
 		}
 	}
 
