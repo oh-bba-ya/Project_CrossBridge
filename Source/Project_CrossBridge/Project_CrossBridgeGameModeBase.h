@@ -26,7 +26,7 @@ public:
 		TSubclassOf<class AVRPlayer> VRUser;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Time")
-	float WarmupTime = 0.f;
+	float WarmupTime = 30.f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Time")
 	float MatchTime = 120.f;

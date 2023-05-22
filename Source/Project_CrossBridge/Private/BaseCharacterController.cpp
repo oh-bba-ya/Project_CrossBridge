@@ -50,15 +50,22 @@ void ABaseCharacterController::Tick(float DeltaSeconds)
 	SetHUDTime();
 	CheckTimeSync(DeltaSeconds);
 
+
 	
 
+	/*
 	if(BridgeState != nullptr)
 	{
 		if(!BridgeState->GetStart())
 		{
-			BridgeState->AddOffsetTime(DeltaSeconds);
+			uint32 SecondsLeft = FMath::CeilToInt(WarmupTime - GetServerTimer());
+			if(CountdownInt != SecondsLeft)
+			{
+				BridgeState->AddOffsetTime(WarmupTime - GetServerTimer());
+			}
 		}
 	}
+	*/
 	
 	
 }
@@ -116,6 +123,7 @@ void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 	int32 Seconds = CountdownTime - Min*60;
 
 	FString CountdownText = FString::Printf(TEXT("%02d:%02d"),Min,Seconds);
+	s
 	if(baseCharacterUI != nullptr)
 	{
 		baseCharacterUI->CountdownText->SetText(FText::FromString(CountdownText));
@@ -125,19 +133,34 @@ void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 
 void ABaseCharacterController::SetHUDTime()
 {
+	uint32 WarmTimeSecondsLeft = FMath::CeilToInt(WarmupTime - GetServerTimer());
+
+	
 	uint32 SecondsLeft = FMath::CeilToInt(MatchTime-GetServerTimer());
 	if(CountdownInt != SecondsLeft)
 	{
 		if(BridgeState != nullptr)
 		{
-			if(BridgeState->GetStart())
+			if(BridgeState->GetStart())   // 게임 시작 후 ..
 			{
-				SetHUDCountDown(MatchTime-GetServerTimer() + BridgeState->GetOffsetTime());
-				//SetHUDCountDown(MatchTime-GetServerTimer());
+				SetHUDCountDown(MatchTime+BridgeState->GetOffsetTime()-GetServerTimer());
 			}
-			else
+			else // 게임 시작전.. 
 			{
-				SetHUDCountDown(0);
+				if(WarmTimeSecondsLeft != CountdownInt)
+				{
+					SetHUDCountDown(WarmupTime - GetServerTimer());
+
+					// 준비시간이 끝나면 자동으로 게임 상태 시작으로 변경..
+					if(GetServerTimer() >= WarmupTime)
+					{
+						BridgeState->SetStart(true);
+						BridgeState->AddOffsetTime(FMath::CeilToInt(GetServerTimer()));
+					}
+				}
+				
+
+
 			}
 		}
 	}
