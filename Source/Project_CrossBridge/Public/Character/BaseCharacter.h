@@ -84,6 +84,23 @@ protected:
 
 	virtual void ContextualActionReleased();
 
+/** PC Overhead Component */
+#pragma region Overhead Component
+public:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Overhead")
+	class UStaticMeshComponent* overHeadComp;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SetOverheadCompColor)
+	FVector linearColor;
+	
+	FLinearColor initColor;
+	UMaterialInstanceDynamic* dynamicMat;
+
+	UFUNCTION()
+	void OnRep_SetOverheadCompColor();
+#pragma endregion 
+	
+
 /** Sliding, Rolling */
 #pragma region Sliding, Rolling Action
 private:

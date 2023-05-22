@@ -59,6 +59,11 @@ ABaseCharacter::ABaseCharacter()
 	camComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CamComp"));
 	camComp->SetupAttachment(springArmComp);
 
+	overHeadComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("overHeadComp"));
+	overHeadComp->SetupAttachment(RootComponent);
+	overHeadComp->SetCollisionProfileName(FName("NoCollision"));
+	overHeadComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	DashEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DashEffectComponent"));
 	DashEffectComponent->SetAutoActivate(false);
 
@@ -301,12 +306,20 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 게임 시작시 플레이어 오버헤드(overhead)컬러 설정
+	linearColor = FMath::VRand();
+	linearColor = linearColor.GetAbs();
+
 	// Health 초기화.
 	if (HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
+		OnRep_SetOverheadCompColor();
 	}
 
+
+	
+	
 	//UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
 
 	if (APlayerController *PlayerController = Cast<APlayerController>(GetController()))
@@ -827,8 +840,32 @@ void ABaseCharacter::ContextualActionReleased()
 	RemoveFreeze();
 }
 
+/** PC Player Overhead Comp Color */
+#pragma region OverheadComp
+void ABaseCharacter::OnRep_SetOverheadCompColor()
+{
+	
+	UMaterialInterface* iMat = overHeadComp->GetMaterial(0);
+	FHashedMaterialParameterInfo param = FHashedMaterialParameterInfo(TEXT("MyColor"));
+
+	iMat->GetVectorParameterValue(param, initColor);
+
+	dynamicMat = UMaterialInstanceDynamic::Create(iMat,this);
+
+	if(dynamicMat != nullptr)
+	{
+		dynamicMat->SetVectorParameterValue(TEXT("MyColor"),linearColor);
+		overHeadComp->SetMaterial(0,dynamicMat);
+	}
+
+}
+#pragma endregion 
+
+
+
 /** Sliding , Rolling Functions()*/
 #pragma region Sliding, Rolling Function()
+
 void ABaseCharacter::RollingActionPressed()
 {
 	if(freeze == nullptr)
@@ -1360,7 +1397,6 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, bJetPackActive);
 	DOREPLIFETIME(ABaseCharacter, Fuel);
 	DOREPLIFETIME(ABaseCharacter, CurrentHP);
-	//DOREPLIFETIME(ABaseCharacter, myName);
 	DOREPLIFETIME(ABaseCharacter, freeze);
 	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
 	DOREPLIFETIME(ABaseCharacter, VRCurHP);
@@ -1371,6 +1407,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, ReturnSpeedTime);
 	DOREPLIFETIME(ABaseCharacter, DuringSpeedTime);
 	DOREPLIFETIME(ABaseCharacter, bisEquip);
+	DOREPLIFETIME(ABaseCharacter, linearColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1983,6 +2020,8 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 
 	LeftWidgetInteraction->SetCollisionProfileName(TEXT("VRPlayerWidgetInteractionPreset"));
 	RightWidgetInteraction->SetCollisionProfileName(TEXT("VRPlayerWidgetInteractionPreset"));
+
+	overHeadComp->SetVisibility(false);
 }
 
 
