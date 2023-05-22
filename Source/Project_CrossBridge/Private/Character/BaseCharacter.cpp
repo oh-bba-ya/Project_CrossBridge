@@ -294,18 +294,19 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 게임 시작시 플레이어 오버헤드(overhead)컬러 설정
+	linearColor = FMath::VRand();
+	linearColor = linearColor.GetAbs();
+
 	// Health 초기화.
 	if (HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
+		OnRep_SetOverheadCompColor();
 	}
 
-	// 게임 시작시 플레이어 오버헤드(overhead)컬러 설정
 
-	if(HasAuthority())
-	{
-		SetFirstColor();
-	}
+	
 	
 	//UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
 
@@ -826,8 +827,11 @@ void ABaseCharacter::ContextualActionReleased()
 	RemoveFreeze();
 }
 
-void ABaseCharacter::MultiCast_SetFirstColor_Implementation()
+/** PC Player Overhead Comp Color */
+#pragma region OverheadComp
+void ABaseCharacter::OnRep_SetOverheadCompColor()
 {
+	
 	UMaterialInterface* iMat = overHeadComp->GetMaterial(0);
 	FHashedMaterialParameterInfo param = FHashedMaterialParameterInfo(TEXT("MyColor"));
 
@@ -837,20 +841,18 @@ void ABaseCharacter::MultiCast_SetFirstColor_Implementation()
 
 	if(dynamicMat != nullptr)
 	{
-		linearColor = FMath::VRand();
-		linearColor = linearColor.GetAbs();
 		dynamicMat->SetVectorParameterValue(TEXT("MyColor"),linearColor);
 		overHeadComp->SetMaterial(0,dynamicMat);
 	}
-}
 
-void ABaseCharacter::SetFirstColor()
-{
-	MultiCast_SetFirstColor();
 }
+#pragma endregion 
+
+
 
 /** Sliding , Rolling Functions()*/
 #pragma region Sliding, Rolling Function()
+
 void ABaseCharacter::RollingActionPressed()
 {
 	if(freeze == nullptr)
@@ -1382,7 +1384,6 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, bJetPackActive);
 	DOREPLIFETIME(ABaseCharacter, Fuel);
 	DOREPLIFETIME(ABaseCharacter, CurrentHP);
-	//DOREPLIFETIME(ABaseCharacter, myName);
 	DOREPLIFETIME(ABaseCharacter, freeze);
 	DOREPLIFETIME(ABaseCharacter, IsBlackholeSet);
 	DOREPLIFETIME(ABaseCharacter, VRCurHP);
@@ -2005,6 +2006,8 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 
 	LeftWidgetInteraction->SetCollisionProfileName(TEXT("VRPlayerWidgetInteractionPreset"));
 	RightWidgetInteraction->SetCollisionProfileName(TEXT("VRPlayerWidgetInteractionPreset"));
+
+	overHeadComp->SetVisibility(false);
 }
 
 

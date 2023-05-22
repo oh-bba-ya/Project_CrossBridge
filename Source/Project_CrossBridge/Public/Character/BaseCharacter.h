@@ -90,18 +90,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Overhead")
 	class UStaticMeshComponent* overHeadComp;
 
-	UPROPERTY(ReplicatedUsing= SetFirstColor)
+	UPROPERTY(ReplicatedUsing=OnRep_SetOverheadCompColor)
 	FVector linearColor;
-
+	
 	FLinearColor initColor;
 	UMaterialInstanceDynamic* dynamicMat;
 
 	UFUNCTION()
-	void SetFirstColor();
-	
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCast_SetFirstColor();
-
+	void OnRep_SetOverheadCompColor();
 #pragma endregion 
 	
 
