@@ -3,10 +3,16 @@
 
 #include "VRCharacter/SkillPractice/PracticeActorSpawn.h"
 #include "VRCharacter/SkillPractice/BulletTarget.h"
+#include "VRCharacter/SkillPractice/SwordTarget.h"
 #include "Components/BoxComponent.h"
 #include "Character/BaseCharacter.h"
 #include "EngineUtils.h"
 #include "Objects/Trash.h"
+#include "Components/WidgetComponent.h"
+#include "VRCharacter/SkillPractice/Widget/BulletTestWidget.h"
+#include "VRCharacter/SkillPractice/Widget/BlackholeTestWidget.h"
+#include "VRCharacter/SkillPractice/Widget/TrashTestWidget.h"
+#include "VRCharacter/SkillPractice/Widget/SwordTestWidget.h"
 
 // Sets default values
 APracticeActorSpawn::APracticeActorSpawn()
@@ -14,11 +20,20 @@ APracticeActorSpawn::APracticeActorSpawn()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	BulletTestWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("BulletTestWidget"));
+	BulletTestWidget->SetVisibility(false);
 	BlackholeCheckComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BlackholeCheckComp"));
 	BlackholeCheckComp->SetupAttachment(RootComponent);
+	BlackholeTestWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("BlackholeTestWidget"));
+	BlackholeTestWidget->SetVisibility(false);
+
 	TrashCheckComp = CreateDefaultSubobject<UBoxComponent>(TEXT("TrashCheckComp"));
 	TrashCheckComp->SetupAttachment(RootComponent);
+	TrashTestWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("TrashTestWidget"));
+	TrashTestWidget->SetVisibility(false);
 
+	SwordTestWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("SwordTestWidget"));
+	SwordTestWidget->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -29,10 +44,12 @@ void APracticeActorSpawn::BeginPlay()
 	if (IsBulletTest)
 	{
 		BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget1, GetActorLocation(), GetActorRotation());
+		BulletTestWidget->SetVisibility(true);
 		BulletPattern++;
 	}
 	else if (IsBlackholeTest)
 	{
+		BlackholeTestWidget->SetVisibility(true);
 		BlackholeCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnBlackholeOverlap);
 		for (TActorIterator<ABaseCharacter> It(GetWorld()); It; ++It)
 		{
@@ -57,8 +74,14 @@ void APracticeActorSpawn::BeginPlay()
 	}
 	else if (IsTrashTest)
 	{
+		TrashTestWidget->SetVisibility(true);
 		TrashCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnTrashOverlap);
 		TrashCheckComp->SetCollisionProfileName(TEXT("PlayerPreset"));
+	}
+	else if (IsSwordTest)
+	{
+		SwordTestWidget->SetVisibility(true);
+		SwordTarget = GetWorld()->SpawnActor<ASwordTarget>(SpawnSwordTarget, GetActorLocation(), GetActorRotation());
 	}
 }
 
@@ -72,7 +95,7 @@ void APracticeActorSpawn::Tick(float DeltaTime)
 
 void APracticeActorSpawn::SpawnObject()
 {
-	if (IsBulletTest && BulletTarget->IsPendingKill())
+	if (IsBulletTest && (!BulletTarget || BulletTarget->IsPendingKill()))
 	{
 		if (BulletPattern == 0)
 		{
@@ -83,16 +106,35 @@ void APracticeActorSpawn::SpawnObject()
 		{
 			BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget2, GetActorLocation(), GetActorRotation());
 			BulletPattern++;
+			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(1);
 		}
 		else if (BulletPattern == 2)
 		{
 			BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget3, GetActorLocation(), GetActorRotation());
 			BulletPattern++;
+			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(2);
 		}
-		else
+		else if (BulletPattern == 3)
 		{
-			BulletPattern = 0;
+			BulletPattern++;
+			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(3);
+			FTimerHandle SuccessImageTimer;
+			GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
+				FTimerDelegate::CreateLambda([this]()->void {
+					Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(4);
+					}), 1, false);
+			//BulletPattern = 0;
 		}
+	}
+	else if (IsSwordTest && (!SwordTarget || SwordTarget->IsPendingKill()))
+	{
+		IsSwordTest = false;
+		Cast<USwordTestWidget>(SwordTestWidget->GetWidget())->SetImageVisibility(1);
+		FTimerHandle SuccessImageTimer;
+		GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
+			FTimerDelegate::CreateLambda([this]()->void {
+				Cast<USwordTestWidget>(SwordTestWidget->GetWidget())->SetImageVisibility(2);
+				}), 1, false);
 	}
 }
 
@@ -109,10 +151,16 @@ void APracticeActorSpawn::OnBlackholeOverlap(UPrimitiveComponent* OverlappedComp
 
 	if (IsTestActor1 && IsTestActor2)
 	{
-		TestActor1->SetActorLocation(TestActorLoc1);
-		TestActor2->SetActorLocation(TestActorLoc2);
+		//TestActor1->SetActorLocation(TestActorLoc1);
+		//TestActor2->SetActorLocation(TestActorLoc2);
 		IsTestActor1 = false;
 		IsTestActor2 = false;
+		Cast<UBlackholeTestWidget>(BlackholeTestWidget->GetWidget())->SetImageVisibility(1);
+		FTimerHandle SuccessImageTimer;
+		GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
+			FTimerDelegate::CreateLambda([this]()->void {
+				Cast<UBlackholeTestWidget>(BlackholeTestWidget->GetWidget())->SetImageVisibility(2);
+				}), 1, false);
 	}
 
 }
@@ -122,5 +170,18 @@ void APracticeActorSpawn::OnTrashOverlap(UPrimitiveComponent* OverlappedComponen
 	if (Cast<ATrash>(OtherActor))
 	{
 		TrashCount++;
+		if (TrashCount <= 20)
+		{
+			Cast<UTrashTestWidget>(TrashTestWidget->GetWidget())->SetTrashCountText(TrashCount);
+			if (TrashCount == 20)
+			{
+				Cast<UTrashTestWidget>(TrashTestWidget->GetWidget())->SetImageVisibility(1);
+				FTimerHandle SuccessImageTimer;
+				GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
+					FTimerDelegate::CreateLambda([this]()->void {
+						Cast<UTrashTestWidget>(TrashTestWidget->GetWidget())->SetImageVisibility(2);
+						}), 1, false);
+			}
+		}
 	}
 }

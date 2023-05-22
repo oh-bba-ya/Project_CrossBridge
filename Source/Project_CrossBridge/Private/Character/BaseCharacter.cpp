@@ -2092,7 +2092,7 @@ void ABaseCharacter::SetRedDot()
 	BulletTraces.Add(DotEnd);
 	BulletAimTraceComp->SetVisibility(true);
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(BulletAimTraceComp, FName(TEXT("User.PointArray")), BulletTraces);
-	RedDot->SetActorScale3D(FVector(Distance / 500));
+   	RedDot->SetActorScale3D(FVector(Distance / 500));
 	RedDot->SetActorRotation((-RedDot->GetActorLocation() + VRCamera->GetComponentLocation()).Rotation());
 	
 }

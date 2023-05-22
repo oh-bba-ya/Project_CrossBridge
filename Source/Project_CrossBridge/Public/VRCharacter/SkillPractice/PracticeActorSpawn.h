@@ -24,6 +24,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* BulletTestWidget;
 	UPROPERTY()
 		int32 BulletPattern=0;
 
@@ -47,6 +49,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UBoxComponent* BlackholeCheckComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* BlackholeTestWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool IsBlackholeTest;
@@ -70,6 +74,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UBoxComponent* TrashCheckComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* TrashTestWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool IsTrashTest;
@@ -78,4 +84,16 @@ public:
 
 	UFUNCTION()
 		void OnTrashOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* SwordTestWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsSwordTest;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class ASwordTarget> SpawnSwordTarget;
+	UPROPERTY()
+		class ASwordTarget* SwordTarget;
 };
