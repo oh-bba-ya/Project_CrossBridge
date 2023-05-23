@@ -13,6 +13,11 @@
 #include "VRCharacter/SkillPractice/Widget/BlackholeTestWidget.h"
 #include "VRCharacter/SkillPractice/Widget/TrashTestWidget.h"
 #include "VRCharacter/SkillPractice/Widget/SwordTestWidget.h"
+#include "VRCharacter/SkillPractice/Widget/HealTestWidget.h"
+#include "VRCharacter/SkillPractice/Widget/SkillTestCompleteWidget.h"
+#include "VRCharacter/SkillPractice/Portal.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APracticeActorSpawn::APracticeActorSpawn()
@@ -34,12 +39,29 @@ APracticeActorSpawn::APracticeActorSpawn()
 
 	SwordTestWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("SwordTestWidget"));
 	SwordTestWidget->SetVisibility(false);
+
+	HealTestComp = CreateDefaultSubobject<UBoxComponent>(TEXT("HealTestComp"));
+	HealTestComp->SetupAttachment(RootComponent);
+	HealTestWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealTestWidget"));
+	HealTestWidget->SetVisibility(false);
+
 }
 
 // Called when the game starts or when spawned
 void APracticeActorSpawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SuccessCheckActor = Cast<APortal>(UGameplayStatics::GetActorOfClass(GetWorld(), APortal::StaticClass()));
+	if (SuccessCheckActor)
+	{
+		//SuccessCheck = Cast<USkillTestCompleteWidget>(SuccessCheckActor->SuccessWidget->GetWidget());
+		FTimerHandle WidgetCastTimer;
+		GetWorld()->GetTimerManager().SetTimer(WidgetCastTimer,
+			FTimerDelegate::CreateLambda([this]()->void {
+				SuccessCheck = Cast<USkillTestCompleteWidget>(SuccessCheckActor->SuccessWidget->GetWidget());
+				}), 1, false);
+	}
 	
 	if (IsBulletTest)
 	{
@@ -83,6 +105,13 @@ void APracticeActorSpawn::BeginPlay()
 		SwordTestWidget->SetVisibility(true);
 		SwordTarget = GetWorld()->SpawnActor<ASwordTarget>(SpawnSwordTarget, GetActorLocation(), GetActorRotation());
 	}
+	else if (IsHealTest)
+	{
+		HealTestComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnHealOverlap);
+		HealTestComp->SetCollisionProfileName(TEXT("PlayerPreset"));
+		HealTestWidget->SetVisibility(true);
+
+	}
 }
 
 // Called every frame
@@ -107,12 +136,16 @@ void APracticeActorSpawn::SpawnObject()
 			BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget2, GetActorLocation(), GetActorRotation());
 			BulletPattern++;
 			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(1);
+			SuccessCheck->Index++;
+			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
 		}
 		else if (BulletPattern == 2)
 		{
 			BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget3, GetActorLocation(), GetActorRotation());
 			BulletPattern++;
 			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(2);
+			SuccessCheck->Index++;
+			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
 		}
 		else if (BulletPattern == 3)
 		{
@@ -123,6 +156,8 @@ void APracticeActorSpawn::SpawnObject()
 				FTimerDelegate::CreateLambda([this]()->void {
 					Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(4);
 					}), 1, false);
+			SuccessCheck->Index++;
+			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
 			//BulletPattern = 0;
 		}
 	}
@@ -135,6 +170,8 @@ void APracticeActorSpawn::SpawnObject()
 			FTimerDelegate::CreateLambda([this]()->void {
 				Cast<USwordTestWidget>(SwordTestWidget->GetWidget())->SetImageVisibility(2);
 				}), 1, false);
+		SuccessCheck->Index++;
+		SuccessCheck->SetImageVisibility(SuccessCheck->Index);
 	}
 }
 
@@ -161,6 +198,8 @@ void APracticeActorSpawn::OnBlackholeOverlap(UPrimitiveComponent* OverlappedComp
 			FTimerDelegate::CreateLambda([this]()->void {
 				Cast<UBlackholeTestWidget>(BlackholeTestWidget->GetWidget())->SetImageVisibility(2);
 				}), 1, false);
+		SuccessCheck->Index++;
+		SuccessCheck->SetImageVisibility(SuccessCheck->Index);
 	}
 
 }
@@ -181,7 +220,38 @@ void APracticeActorSpawn::OnTrashOverlap(UPrimitiveComponent* OverlappedComponen
 					FTimerDelegate::CreateLambda([this]()->void {
 						Cast<UTrashTestWidget>(TrashTestWidget->GetWidget())->SetImageVisibility(2);
 						}), 1, false);
+				SuccessCheck->Index++;
+				SuccessCheck->SetImageVisibility(SuccessCheck->Index);
 			}
 		}
 	}
+}
+
+void APracticeActorSpawn::OnHealOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp->GetCollisionObjectType() == ECC_GameTraceChannel3)
+	{
+		class ABaseCharacter* VRUser = Cast<ABaseCharacter>(OtherActor);
+		if (!IsHit)
+		{
+			Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(1);
+			SuccessCheck->Index++;
+			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
+			VRUser->VRGetDamage(80);
+			IsHit = true;
+		}
+		else if (IsHit && VRUser->VRCurHP == VRUser->VRMaxHP)
+		{
+			Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(2);
+			FTimerHandle SuccessImageTimer;
+			GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
+				FTimerDelegate::CreateLambda([this]()->void {
+					Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(3);
+					}), 1, false);
+			SuccessCheck->Index++;
+			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
+			//IsHit = false;
+		}
+	}
+
 }

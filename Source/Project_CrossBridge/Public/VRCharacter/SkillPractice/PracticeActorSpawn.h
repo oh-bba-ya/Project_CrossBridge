@@ -24,6 +24,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+
+	UPROPERTY()
+		class APortal* SuccessCheckActor;
+	UPROPERTY()
+		class USkillTestCompleteWidget* SuccessCheck;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetComponent* BulletTestWidget;
 	UPROPERTY()
@@ -96,4 +102,19 @@ public:
 		TSubclassOf<class ASwordTarget> SpawnSwordTarget;
 	UPROPERTY()
 		class ASwordTarget* SwordTarget;
+
+public:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* HealTestComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* HealTestWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsHealTest;
+	UPROPERTY()
+		bool IsHit;
+	UFUNCTION()
+		void OnHealOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 };
