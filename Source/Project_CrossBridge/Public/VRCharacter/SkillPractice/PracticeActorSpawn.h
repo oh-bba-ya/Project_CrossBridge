@@ -24,6 +24,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+
+	UPROPERTY()
+		class APortal* SuccessCheckActor;
+	UPROPERTY()
+		class USkillTestCompleteWidget* SuccessCheck;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* BulletTestWidget;
 	UPROPERTY()
 		int32 BulletPattern=0;
 
@@ -46,6 +54,11 @@ public:
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* BlackholeCheckComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* BlackholeTestWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool IsBlackholeTest;
 	UPROPERTY()
 		bool IsTestActor1;
@@ -55,13 +68,53 @@ public:
 		FVector TestActorLoc1;
 	UPROPERTY()
 		FVector TestActorLoc2;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UBoxComponent* BlackholeCheckComp;
 	UFUNCTION()
-		void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void OnBlackholeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY()
 		class ABaseCharacter* TestActor1;
 	UPROPERTY()
 		class ABaseCharacter* TestActor2;
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* TrashCheckComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* TrashTestWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsTrashTest;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 TrashCount;
+
+	UFUNCTION()
+		void OnTrashOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* SwordTestWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsSwordTest;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class ASwordTarget> SpawnSwordTarget;
+	UPROPERTY()
+		class ASwordTarget* SwordTarget;
+
+public:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* HealTestComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* HealTestWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsHealTest;
+	UPROPERTY()
+		bool IsHit;
+	UFUNCTION()
+		void OnHealOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 };

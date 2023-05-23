@@ -27,6 +27,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UBoxComponent* BoxComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* TrashRangeEffect1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* TrashRangeEffect2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* TrashRangeEffect3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* TrashRangeEffect4;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ATrash> SpawnTrash;
@@ -52,12 +60,17 @@ public:
 	UPROPERTY()
 		float SpawningTimer;
 	UPROPERTY()
-		float SpawningDelayTime = 1;
+		float SpawningDelayTime = 0.3;
 
 	UPROPERTY()
 		bool IsActivate;
 	
+	UPROPERTY()
+		bool IsRangeActivate;
 
-
+	UFUNCTION()
+		void TrashRangeActivate(UNiagaraComponent* TrashRangeEffect);
+	UFUNCTION()
+		void TrashRangeDeactivate();
 
 };

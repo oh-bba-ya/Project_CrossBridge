@@ -542,6 +542,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 			{
 				VRController->StopHapticEffect(EControllerHand::Left);
 				IsTrashSpawningPoolCast = false;
+				TrashSpawningPool->IsRangeActivate = true;
 			}
 			FVector Loc = LeftHand->GetComponentLocation() + LeftAim->GetForwardVector() * 1000;
 			ServerTrashSpawningPoolSet(FVector(Loc.X, Loc.Y, 800));
@@ -556,6 +557,8 @@ void ABaseCharacter::Tick(float DeltaTime)
 			ServerTrashSpawningPoolReset();
 			IsTrashSpawningPoolSet = false;
 			IsTrashSpawningPoolCool = true;
+			TrashSpawningPool->IsRangeActivate = false;
+			TrashSpawningPool->TrashRangeDeactivate();
 		}
 	}
 
@@ -2128,7 +2131,7 @@ void ABaseCharacter::SetRedDot()
 	BulletTraces.Add(DotEnd);
 	BulletAimTraceComp->SetVisibility(true);
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(BulletAimTraceComp, FName(TEXT("User.PointArray")), BulletTraces);
-	RedDot->SetActorScale3D(FVector(Distance / 500));
+   	RedDot->SetActorScale3D(FVector(Distance / 500));
 	RedDot->SetActorRotation((-RedDot->GetActorLocation() + VRCamera->GetComponentLocation()).Rotation());
 	
 }
