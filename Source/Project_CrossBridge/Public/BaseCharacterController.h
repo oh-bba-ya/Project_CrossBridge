@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameMode/PCStartGameMode.h"
 #include "BaseCharacterController.generated.h"
 
 /**
@@ -57,22 +58,27 @@ public:
 	void CheckTimeSync(float DeltaTime);
 
 
-
 private:
 	UBaseCharacterWidget* baseCharacterUI;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Time")
 	float MatchTime = 0.f;
 
+	UPROPERTY()
 	float LevelStartingTime = 0.f;
-	float WarmupTime = 0.f;
+
+	UPROPERTY()
+	float WarmupTime = 10.f;
+	
 	float CountdownInt = 0.f;
+	
 
 	UPROPERTY(EditDefaultsOnly,Category="Settings|Properties")
 	class AProject_CrossBridgeGameModeBase* BridgeGM;
 
 	UPROPERTY(EditDefaultsOnly,Category="Settings|Properties")
 	class ACrossBridgeStateBase* BridgeState;
+
 
 #pragma region Quit Widget
 	/** Quit Widget */
@@ -92,5 +98,7 @@ private:
 
 	bool bReturnToMainMenuOpen = false;
 
-#pragma endregion 
+#pragma endregion
+
+
 };

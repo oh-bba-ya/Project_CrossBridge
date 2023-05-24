@@ -78,7 +78,6 @@ void AHomingProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		if(servercore!=nullptr)
 		{
 			servercore->OnTakeDamage(Damage);
-			servercore->ChangeColor();
 		}
 	}
 }

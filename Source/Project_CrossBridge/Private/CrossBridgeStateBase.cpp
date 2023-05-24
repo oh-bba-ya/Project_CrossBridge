@@ -5,21 +5,85 @@
 
 #include "Net/UnrealNetwork.h"
 
-bool ACrossBridgeStateBase::BpGetStart()
+ACrossBridgeStateBase::ACrossBridgeStateBase()
 {
-	return bIsStart;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ACrossBridgeStateBase::BPSetStart(bool b)
+void ACrossBridgeStateBase::BeginPlay()
 {
-	bIsStart = b;
+	Super::BeginPlay();
+	state = EGameState::Wait;
+	eWinner = EWinner::NONE;
+}
+
+void ACrossBridgeStateBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	switch (state)
+	{
+	case EGameState::Wait :
+		break;
+	case EGameState::Start:
+		StartStateCallBack();
+		break;
+	case EGameState::End:
+		EndStateCallBack();
+		break;
+	default:
+			break;
+	}
 }
 
 
-void ACrossBridgeStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
+
+
+void ACrossBridgeStateBase::GameMatchState(EGameState e)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ACrossBridgeStateBase, OffsetTime);
-
+	state = e;
+	bStateCall =false;
 }
+
+void ACrossBridgeStateBase::GameWinner(EWinner e)
+{
+	state = EGameState::End;
+	eWinner = e;
+}
+
+void ACrossBridgeStateBase::WaitStateCallBack()
+{
+
+	waitStateDelegate.Broadcast();
+}
+
+void ACrossBridgeStateBase::StartStateCallBack()
+{
+	if(bStateCall)
+	{
+		return;
+	}
+	UE_LOG(LogTemp,Warning,TEXT("Start Callback"));
+	startStateDelegate.Broadcast((AActor*)nullptr);
+	bStateCall = true;
+}
+
+void ACrossBridgeStateBase::EndStateCallBack()
+{
+	if(bStateCall)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp,Warning,TEXT("End Callback"));
+	endStateDelegate.Broadcast();
+	bStateCall = true;
+}
+
+void ACrossBridgeStateBase::QuitStateCallBack()
+{
+	quitStateDelegate.Broadcast();
+}
+
+
+

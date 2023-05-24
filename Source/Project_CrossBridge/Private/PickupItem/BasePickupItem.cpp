@@ -3,6 +3,7 @@
 
 #include "PickupItem/BasePickupItem.h"
 
+#include "CrossBridgeStateBase.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Character/BaseCharacter.h"

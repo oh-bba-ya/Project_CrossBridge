@@ -3,6 +3,7 @@
 
 #include "Objects/ItemSpawnPoint.h"
 
+#include "CrossBridgeStateBase.h"
 #include "PickupItem/BasePickupItem.h"
 
 // Sets default values
@@ -20,13 +21,22 @@ void AItemSpawnPoint::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StartSpawnItemTimer((AActor*)nullptr);
+	BridgeState = Cast<ACrossBridgeStateBase>(GetWorld()->GetGameState());
+
+	if(BridgeState != nullptr)
+	{
+		//StartSpawnItemTimer((AActor*)nullptr);
+		BridgeState->startStateDelegate.AddDynamic(this,&AItemSpawnPoint::StartSpawnItemTimer);
+	}
+
 }
 
 // Called every frame
 void AItemSpawnPoint::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	
 	
 }
 
@@ -60,7 +70,6 @@ void AItemSpawnPoint::SpawnItemTimerFinished()
 
 void AItemSpawnPoint::StartSpawnItemTimer(AActor* DestroyedActor)
 {
-	UE_LOG(LogTemp,Warning,TEXT("StartTimer"));
 	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle,
 		this,
 		&AItemSpawnPoint::SpawnItemTimerFinished,
