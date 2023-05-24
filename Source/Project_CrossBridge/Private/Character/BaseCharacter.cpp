@@ -1041,6 +1041,7 @@ void ABaseCharacter::OnTakeDamage(float d)
 {
 	float hp = CurrentHP - d;
 	SetCurrentHealth(hp);
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), CurrentHP));
 }
 
 void ABaseCharacter::OnRep_CurrentHealth()
@@ -2171,6 +2172,7 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString& Position, clas
 {
 	if (Position == FString("Sword"))
 	{
+		Enemy->OnTakeDamage(10);
 		//Enemy->Server_TakeDamage(10);
 	}
 }
