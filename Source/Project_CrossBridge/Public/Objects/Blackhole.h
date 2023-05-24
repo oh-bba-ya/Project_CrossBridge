@@ -50,24 +50,21 @@ public:
 		void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		class ABaseCharacter* Target1;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		class ABaseCharacter* Target2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Power = 50;
 	UPROPERTY()
 	bool IsBlackholeActive = false;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		bool IsTarget1;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		bool IsTarget2;
-	UFUNCTION(Server, Unreliable)
-		void ServerBlackholeActive(int32 Num);
-
 	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastBlackholeActive(class ABaseCharacter* Target, FVector Input);
+		void MulticastBlackholeActive(int32 Num, FVector Input);
 	
 	void BlackholeActiveSetting();
 	void BlackholeDeactivate();

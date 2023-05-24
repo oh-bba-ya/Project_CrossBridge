@@ -6,7 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Character/BaseCharacter.h"
 #include "NiagaraComponent.h"
-
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABlackhole::ABlackhole()
@@ -117,11 +117,15 @@ void ABlackhole::Tick(float DeltaTime)
 	{
 		if (IsTarget1)
 		{
-			ServerBlackholeActive(1);
+			FVector Dir = (GetActorLocation() - Target1->GetActorLocation()).GetSafeNormal();
+			float Dist = GetDistanceTo(Target1);
+			MulticastBlackholeActive(1, Power * Dir / Dist);
 		}
 		if (IsTarget2)
 		{
-			ServerBlackholeActive(2);
+			FVector Dir = (GetActorLocation() - Target2->GetActorLocation()).GetSafeNormal();
+			float Dist = GetDistanceTo(Target2);
+			MulticastBlackholeActive(2, Power * Dir / Dist);
 		}
 	}
 }
@@ -168,28 +172,18 @@ void ABlackhole::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	}
 }
 
-void ABlackhole::ServerBlackholeActive_Implementation(int32 Num)
+void ABlackhole::MulticastBlackholeActive_Implementation(int32 Num, FVector Input)
 {
 	if (Num == 1)
 	{
-		FVector Dir = (GetActorLocation() - Target1->GetActorLocation()).GetSafeNormal();
-		float Dist = GetDistanceTo(Target1);
-		//Target1->AddMovementInput(Power * Dir / Dist);
-		MulticastBlackholeActive(Target1, Power * Dir / Dist);
+		Target1->AddMovementInput(Input);
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, *Input.ToString());
 	}
 	else if (Num == 2)
 	{
-		FVector Dir = (GetActorLocation() - Target2->GetActorLocation()).GetSafeNormal();
-		float Dist = GetDistanceTo(Target2);
-		//Target2->AddMovementInput(Power * Dir / Dist);
-		MulticastBlackholeActive(Target2, Power * Dir / Dist);
+		Target2->AddMovementInput(Input);
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, *Input.ToString());
 	}
-
-}
-void ABlackhole::MulticastBlackholeActive_Implementation(class ABaseCharacter* Target, FVector Input)
-{
-	Target->AddMovementInput(Input);
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, *Input.ToString());
 }
 
 void ABlackhole::BlackholeActiveSetting()
@@ -220,4 +214,14 @@ void ABlackhole::MulticastBlackholeDeactivate_Implementation()
 	CenterNiagaraComp->SetVisibility(false);
 	ExternalNiagaraComp->SetVisibility(false);
 
+}
+void ABlackhole::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABlackhole, Target1);
+	DOREPLIFETIME(ABlackhole, Target2);
+	DOREPLIFETIME(ABlackhole, IsTarget1);
+	DOREPLIFETIME(ABlackhole, IsTarget2);
+	
 }
