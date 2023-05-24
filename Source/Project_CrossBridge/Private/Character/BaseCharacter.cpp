@@ -2070,18 +2070,18 @@ void ABaseCharacter::ServerTrashSpawningPoolReset_Implementation()
 
 void ABaseCharacter::ServerVRTransform_Implementation(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform)
 {
-	VRCamera->SetRelativeTransform(HeadTransform);
-	// MulticastHandTransform(LeftTransform, RightTransform);
-	LeftHand->SetRelativeTransform(LeftTransform);
-	RightHand->SetRelativeTransform(RightTransform);
+	//VRCamera->SetRelativeTransform(HeadTransform);
+	//LeftHand->SetRelativeTransform(LeftTransform);
+	//RightHand->SetRelativeTransform(RightTransform);
+	MulticastVRTransform(HeadTransform, LeftTransform, RightTransform);
 }
 
 void ABaseCharacter::MulticastVRTransform_Implementation(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform)
 {
-	// LeftHand->SetRelativeTransform(LeftTransform);
-	// RightHand->SetRelativeTransform(RightTransform);
-}
-
+	VRCamera->SetRelativeTransform(HeadTransform);
+	RightHand->SetRelativeTransform(RightTransform);
+	LeftHand->SetRelativeTransform(LeftTransform);
+}	
 void ABaseCharacter::ServerBlackholeActivate_Implementation(bool IsActive)
 {
 	IsBlackholeSet = IsActive;
