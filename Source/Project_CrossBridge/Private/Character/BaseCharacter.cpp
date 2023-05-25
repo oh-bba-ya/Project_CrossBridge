@@ -716,9 +716,14 @@ void ABaseCharacter::Tick(float DeltaTime)
 	
 	if (IsSwordDamageCool)
 	{
+		if (SwordDamageCoolTime == 0)
+		{
+			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 0.256f, 0.3f));
+		}
 		SwordDamageCoolTime += DeltaTime;
 		if (SwordDamageCoolTime > SwordDamageCoolTimeLimit)
 		{
+			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 25.6f, 30));
 			IsSwordDamageCool = false;
 			SwordDamageCoolTime = 0;
 		}
@@ -1559,7 +1564,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 
 void ABaseCharacter::LeftGraspEnd()
 {
-	VRGetDamage(1);
+	//VRGetDamage(1);
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{
@@ -1650,6 +1655,7 @@ void ABaseCharacter::RightAEnd()
 	{
 		IsSwordDamageCool = false;
 		SwordDamageCoolTime = 0;
+		SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 25.6f, 30));
 	}
 	IsRightA = false;
 	SwordSetTime = 0;

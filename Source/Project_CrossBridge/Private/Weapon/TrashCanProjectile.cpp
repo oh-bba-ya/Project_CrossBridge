@@ -105,10 +105,8 @@ void ATrashCanProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponen
 		ABaseCharacter* player = Cast<ABaseCharacter>(OtherActor);
 		if(player != nullptr)
 		{
-			UE_LOG(LogTemp,Warning,TEXT("Not Null Player"));
-			if(player->IsVR)
+			if(OtherComp->GetCollisionObjectType() == ECC_GameTraceChannel8)
 			{
-				UE_LOG(LogTemp,Warning,TEXT("Player VR"));
 				player->VRGetDamage(damagePower);
 			}
 		}
