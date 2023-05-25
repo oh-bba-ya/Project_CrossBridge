@@ -21,6 +21,13 @@ void ABaseCharacterController::BeginPlay()
 
 	Server_CheckMatchState();
 
+	FTimerHandle MatchStateTimer;
+	GetWorld()->GetTimerManager().SetTimer(MatchStateTimer,
+		FTimerDelegate::CreateLambda([this]()->void
+			{
+				IsMatchStateSet = true;
+			}), 0.1, false);
+
 	if(baseCharacterWidget != nullptr && IsLocalController())
 	{
 		baseCharacterUI = CreateWidget<UBaseCharacterWidget>(this,baseCharacterWidget);
@@ -50,7 +57,10 @@ void ABaseCharacterController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	SetHUDTime();
+	if (IsMatchStateSet)
+	{
+		SetHUDTime();
+	}
 	CheckTimeSync(DeltaSeconds);
 
 	
@@ -117,6 +127,8 @@ void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 
 	FString CountdownText = FString::Printf(TEXT("%02d:%02d"),Min,Seconds);
 	
+	VRTimer = CountdownText;
+
 	if(baseCharacterUI != nullptr)
 	{
 		baseCharacterUI->CountdownText->SetText(FText::FromString(CountdownText));
@@ -141,6 +153,7 @@ void ABaseCharacterController::SetHUDTime()
 				// 만약 대기시간이 종료되었다면.. 게임 시작..
 				if(gameTime < 0)
 				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("STARTSTART"));
 					BridgeState->SetGameState(EGameState::Start);
 				}
 			}
@@ -219,7 +232,6 @@ void ABaseCharacterController::ShowReturnToMainMenu()
 	}
 	
 }
-
 
 
 

@@ -732,6 +732,8 @@ public:
 		TSubclassOf<class AActor> BreakDoor;
 	UPROPERTY()
 		class APlayerController* VRController;
+	UPROPERTY()
+		class ABaseCharacterController* VRTimerController;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UHapticFeedbackEffect_Base* BulletCastHaptic;	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -837,6 +839,8 @@ public:
 		bool VRSkillCheck(FString Position);
 	UFUNCTION(Server, Unreliable)
 		void ServerVRDoorBreak(const FString& Position,  UPrimitiveComponent* OtherComp);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastVRDoorBreak();
 
 	UPROPERTY()
 		class AActor* BreakableDoor;

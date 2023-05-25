@@ -100,5 +100,11 @@ private:
 
 #pragma endregion
 
+public:
 
+	UPROPERTY()
+	FString VRTimer;
+
+	UPROPERTY()
+		bool IsMatchStateSet;
 };

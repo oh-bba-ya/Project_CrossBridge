@@ -14,6 +14,7 @@ class PROJECT_CROSSBRIDGE_API UVRStatusWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+
 public:
 
 	UPROPERTY(meta = (BindWidget))
@@ -40,6 +41,9 @@ public:
 		UPROPERTY(meta = (BindWidget))
 		class UImage* SwordImage;
 
+		UPROPERTY(meta = (BindWidget))
+			class UTextBlock* GameTime;
+
 		UPROPERTY()
 		FLinearColor AvailableColor = (FLinearColor)FVector(1);
 
@@ -51,5 +55,7 @@ public:
 	void SetCooltimeText(FString Weapon, float Time);
 
 	void SetImageColor(FString Weapon, bool IsCoolTime);
+
+	void SetTimerText(FString GameTimer);
 
 };

@@ -6,6 +6,8 @@
 #include "Components/TextBlock.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Components/Image.h"
+#include "BaseCharacterController.h"
+
 
 void UVRStatusWidget::SetHPBar(float Percent)
 {
@@ -87,4 +89,9 @@ void UVRStatusWidget::SetImageColor(FString Weapon, bool IsCoolTime)
 			SwordImage->SetBrushTintColor(AvailableColor);
 		}
 	}
+}
+
+void UVRStatusWidget::SetTimerText(FString GameTimer)
+{
+	GameTime->SetText(FText::FromString(GameTimer));
 }
