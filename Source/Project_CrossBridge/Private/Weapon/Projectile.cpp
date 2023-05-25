@@ -4,6 +4,7 @@
 #include "Weapon/Projectile.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Character/BaseCharacter.h"
 
 
 // Sets default values
@@ -57,9 +58,18 @@ void AProjectile::Tick(float DeltaTime)
 void AProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Destroy();
 	FString s = OtherActor->GetName();
 	UE_LOG(LogTemp,Warning,TEXT("Name : %s"),*s);
+	if (OtherComp->GetCollisionObjectType() == ECC_GameTraceChannel8)
+	{
+		class ABaseCharacter* VRPlayer = Cast<ABaseCharacter>(OtherActor);
+		if (VRPlayer && HasAuthority())
+		{
+			VRPlayer->VRGetDamage(5);
+		}
+	}
+	Destroy();
+	
 }
 
 void AProjectile::ReadyShoot(float deltaTime)
