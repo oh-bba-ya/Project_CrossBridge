@@ -378,6 +378,7 @@ void ABaseCharacter::BeginPlay()
 		RedDot->SetActorHiddenInGame(true);
 		RedDot->SetActorEnableCollision(false);
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
+		VRTimerController = Cast<ABaseCharacterController>(VRController);
 
 	}
 
@@ -522,6 +523,11 @@ void ABaseCharacter::Tick(float DeltaTime)
 			{
 				RightAEnd();
 			}
+		}
+
+		if (VRTimerController)
+		{
+			VRStatus->SetTimerText(VRTimerController->VRTimer);
 		}
 	}
 
@@ -1793,6 +1799,10 @@ void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent *OverlappedComponent,
 	if (OtherComp->GetCollisionObjectType() == ECC_Destructible)
 	{
 		ServerVRDoorBreak(FString("Left"), OtherComp);
+		//if (BridgeState->GetGameState() == EGameState::Wait)
+		//{
+		//	BridgeState->SetGameState(EGameState::Start);
+		//}
 		//GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
 	}
 }
@@ -1829,6 +1839,11 @@ void ABaseCharacter::OnRightHandOverlap(UPrimitiveComponent *OverlappedComponent
 	if (OtherComp->GetCollisionObjectType() == ECC_Destructible)
 	{
 		ServerVRDoorBreak(FString("Right"), OtherComp);
+
+		//if (BridgeState->GetGameState() == EGameState::Wait)
+		//{
+		//	BridgeState->SetGameState(EGameState::Start);
+		//}
 	}
 }
 
@@ -2349,6 +2364,7 @@ void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString& Position, U
 		OtherComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		BreakableDoor = OtherComp->GetOwner();
+		BreakableDoor->SetActorEnableCollision(false);
 		FTimerHandle DoorDestroyTimer;
 		GetWorld()->GetTimerManager().SetTimer(DoorDestroyTimer,
 			FTimerDelegate::CreateLambda([this]()->void
@@ -2367,6 +2383,7 @@ void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString& Position, U
 		OtherComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		BreakableDoor = OtherComp->GetOwner();
+		BreakableDoor->SetActorEnableCollision(false);
 		FTimerHandle DoorDestroyTimer;
 		GetWorld()->GetTimerManager().SetTimer(DoorDestroyTimer,
 			FTimerDelegate::CreateLambda([this]()->void
@@ -2376,5 +2393,15 @@ void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString& Position, U
 						BreakableDoor->Destroy();
 					}
 				}), 5, false);
+	}
+	
+	MulticastVRDoorBreak();
+}
+
+void ABaseCharacter::MulticastVRDoorBreak_Implementation()
+{
+	if (BridgeState->GetGameState() == EGameState::Wait)
+	{
+		BridgeState->SetGameState(EGameState::Start);
 	}
 }
