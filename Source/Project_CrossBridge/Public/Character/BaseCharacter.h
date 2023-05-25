@@ -438,7 +438,29 @@ protected:
 #pragma endregion
 
 
-	/** GameStart*/
+	/** GameOver Widget */
+#pragma region PC Win, lose GameOver Widget
+protected:
+	UFUNCTION()
+	void ShowGameOverWidget();
+
+	UFUNCTION(Client ,Reliable)
+	void Clinet_ShowGameOverWidget();
+
+private:
+
+	class ACrossBridgeStateBase* BridgeState;
+	
+	UPROPERTY(EditAnywhere, Category="Settings|HUD")
+	TSubclassOf<class UUserWidget> GameOverWidget;
+
+	UPROPERTY()
+	class UGameOver* GameOverMenu;
+
+	bool bGameOverMenuOpen = false;
+
+
+#pragma endregion
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -647,8 +669,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float VRReviveLimitTime = 3;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsVR = false;
+	
 	bool IsVRDead;
 
 	bool IsLeftIndexCurl;

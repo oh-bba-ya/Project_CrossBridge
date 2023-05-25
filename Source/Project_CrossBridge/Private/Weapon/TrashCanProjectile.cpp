@@ -117,7 +117,6 @@ void ATrashCanProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponen
 		if(core != nullptr)
 		{
 			core->OnTakeDamage(damagePower);
-			core->ChangeColor();
 		}
 
 		Destroy();

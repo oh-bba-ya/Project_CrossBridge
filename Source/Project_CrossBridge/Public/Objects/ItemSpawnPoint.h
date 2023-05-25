@@ -45,4 +45,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class ABasePickupItem* Item;
 
+	class ACrossBridgeStateBase* BridgeState;
+
+
 };

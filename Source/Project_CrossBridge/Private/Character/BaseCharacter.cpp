@@ -3,6 +3,7 @@
 #include "Character/BaseCharacter.h"
 
 #include "BaseCharacterController.h"
+#include "CrossBridgeStateBase.h"
 #include "CrossPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -39,6 +40,7 @@
 #include "Objects/TrashSpawningPool.h"
 #include "Weapon/TrashCan.h"
 #include "Components/WidgetInteractionComponent.h"
+#include "HUD/GameOver.h"
 
 
 // Sets default values
@@ -306,6 +308,8 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	BridgeState = Cast<ACrossBridgeStateBase>(GetWorld()->GetGameState());
+	
 	// 게임 시작시 플레이어 오버헤드(overhead)컬러 설정
 	linearColor = FMath::VRand();
 	linearColor = linearColor.GetAbs();
@@ -318,6 +322,10 @@ void ABaseCharacter::BeginPlay()
 	}
 
 
+	if(BridgeState!=nullptr)
+	{
+		BridgeState->endStateDelegate.AddDynamic(this, &ABaseCharacter::ShowGameOverWidget);
+	}
 	
 	
 	//UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
@@ -1060,7 +1068,7 @@ void ABaseCharacter::OnHealthUpdate()
 		if (CurrentHP <= 0)
 		{
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
 	}
 
@@ -1390,6 +1398,106 @@ void ABaseCharacter::UsingConverter()
 			// 바로 HomingItem을 소환한다.
 			myConverter->MakingHoming();
 		}
+	}
+}
+
+
+
+void ABaseCharacter::ShowGameOverWidget()
+{
+	// 게임이 끝나지 않았다면 위젯띄우기 종료
+	if(BridgeState->GetGameState() != EGameState::End)
+	{
+		return ;
+	}
+
+	if(GameOverWidget == nullptr)
+	{
+		return;
+	}
+	
+	if(IsVR)
+	{
+		return;
+	}
+	
+
+	if(GameOverMenu == nullptr)
+	{
+		
+		GameOverMenu = CreateWidget<UGameOver>(GetWorld(),GameOverWidget);
+		
+		if(GameOverMenu != nullptr)
+		{
+			if(!bGameOverMenuOpen)
+			{
+				if(BridgeState->GetWinner() == EWinner::VR)
+				{
+					GameOverMenu->SetDisplayText(FString("LOSE"));
+				}
+				else if(BridgeState->GetWinner() == EWinner::PC)
+				{
+					GameOverMenu->SetDisplayText(FString("WIN"));
+				}
+
+				GameOverMenu->MenuSetup();
+				bGameOverMenuOpen = true;
+			
+			}
+		}
+		
+		
+
+
+	}
+	
+}
+
+void ABaseCharacter::Clinet_ShowGameOverWidget_Implementation()
+{
+	// 게임이 끝나지 않았다면 위젯띄우기 종료
+	if(BridgeState->GetGameState() != EGameState::End)
+	{
+		return ;
+	}
+
+	if(GameOverWidget == nullptr)
+	{
+		return;
+	}
+
+	if(IsVR)
+	{
+		return;
+	}
+
+	if(GameOverMenu == nullptr)
+	{
+		
+		GameOverMenu = CreateWidget<UGameOver>(GetWorld(),GameOverWidget);
+		
+		if(GameOverMenu != nullptr)
+		{
+			if(!bGameOverMenuOpen)
+			{
+				if(BridgeState->GetWinner() == EWinner::VR)
+				{
+					GameOverMenu->SetDisplayText(FString("LOSE"));
+				}
+				else if(BridgeState->GetWinner() == EWinner::PC)
+				{
+					GameOverMenu->SetDisplayText(FString("WIN"));
+				}
+
+				GameOverMenu->MenuSetup();
+				bGameOverMenuOpen = true;
+			
+			}
+		}
+		
+		
+
+
 	}
 }
 

@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "VRCore.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE(FDynamiceCoreDelegate);
+
 UCLASS()
 class PROJECT_CROSSBRIDGE_API AVRCore : public AActor
 {
@@ -29,40 +31,70 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UStaticMeshComponent* MeshComponent;
 
+
+	// VR유저가 이길시.. 레이저발사
 	UFUNCTION()
-	void SetHealth(float v);
+	void LaserFire();
 
+	// 레이저 재생 멈추고 실드 파괴 콜백 실행..
 	UFUNCTION()
-	void AddHealth(float v);
+	void EndLaser();
 
+	// PC유저가 이긴다면 VR코어 추락..
 	UFUNCTION()
-	void SubtractHealth(float v);
+	void FallingVRCore();
 
+	// 시티 에너지 실드 함수가 바인딩된 델리게이트..
+	FDynamiceCoreDelegate coreDelegate;
+
+
+	/** VR Core Status */
+private:
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Status Health")
+	float MaxHP = 100.f;
+
+	UPROPERTY(EditDefaultsOnly,ReplicatedUsing = OnRep_CurrentHealth, Category="Settings|Status Health")
+	float CurrentHP;
+
+	
+public:
+	/** 현재 체력 세터. 값을 0과 MaxHealth 사이로 범위제한하고 OnHealthUpdate를 호출합니다. 서버에서만 호출되어야 합니다.*/
 	UFUNCTION()
-	void OnTakeDamage(float v);
+	void OnRep_CurrentHealth();
 
-	UFUNCTION(Server,Unreliable)
-	void Server_OnTakeDamage(float v);
+	void OnHealthUpdate();
 
-	FORCEINLINE float GetHealth() const {return CureentHealth;}
+	FORCEINLINE float GetMaxHP() const {return MaxHP;}
+	FORCEINLINE float GetHealth() const { return CurrentHP; }
 
-	UFUNCTION()
-	void ChangeColor();
+	UFUNCTION(Category="Settings|Status Health")
+	void SetCurrentHealth(float value);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|Status Health")
+	void OnTakeDamage(float d);
+
 	
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
-	float MaxHealth = 100.f;
-
-	UPROPERTY(EditDefaultsOnly, Replicated, Category="Settings|Properties")
-	float CureentHealth;
-
-	UPROPERTY(ReplicatedUsing = ChangeColor)
-	FVector linearColor;
-
-	FLinearColor initColor;
-	UMaterialInstanceDynamic* dynamicMat;
-
+	class UNiagaraComponent* laserComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	bool bIsFire = false;
 	
 
+	class ACrossBridgeStateBase* BridgeState;
+
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Falling")
+	class ACoreTarget* Target;
+
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Falling")
+	float Speed = 3.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Falling")
+	float Distance = 100.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Falling")
+	float FallingCallTime = 0.01f;
 };

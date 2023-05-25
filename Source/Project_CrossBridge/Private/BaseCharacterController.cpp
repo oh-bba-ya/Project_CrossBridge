@@ -9,8 +9,10 @@
 #include "Components/TextBlock.h"
 #include "GameMode/CrossBridgeGameMode.h"
 #include "HUD/BaseCharacterWidget.h"
+#include "HUD/GameOver.h"
 #include "HUD/ReturnToMainMenu.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
 
 void ABaseCharacterController::BeginPlay()
@@ -37,6 +39,7 @@ void ABaseCharacterController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	if(InputComponent == nullptr) return;
+	
 
 	InputComponent->BindAction("Quit", IE_Pressed, this, &ABaseCharacterController::ShowReturnToMainMenu);
 	
@@ -51,17 +54,13 @@ void ABaseCharacterController::Tick(float DeltaSeconds)
 	CheckTimeSync(DeltaSeconds);
 
 	
-
-	if(BridgeState != nullptr)
-	{
-		if(!BridgeState->GetStart())
-		{
-			BridgeState->AddOffsetTime(DeltaSeconds);
-		}
-	}
-	
-	
 }
+
+
+
+
+
+
 
 /** Match Time */
 #pragma region MatchTime
@@ -74,6 +73,7 @@ void ABaseCharacterController::CheckTimeSync(float DeltaTime)
 		TimeSyncRunningTime = 0.f;
 	}
 }
+
 
 float ABaseCharacterController::GetServerTimer()
 {
@@ -116,6 +116,7 @@ void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 	int32 Seconds = CountdownTime - Min*60;
 
 	FString CountdownText = FString::Printf(TEXT("%02d:%02d"),Min,Seconds);
+	
 	if(baseCharacterUI != nullptr)
 	{
 		baseCharacterUI->CountdownText->SetText(FText::FromString(CountdownText));
@@ -125,24 +126,52 @@ void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 
 void ABaseCharacterController::SetHUDTime()
 {
-	uint32 SecondsLeft = FMath::CeilToInt(MatchTime-GetServerTimer());
-	if(CountdownInt != SecondsLeft)
+	float gameTime = 0.f;
+	
+	if(BridgeState != nullptr)
 	{
-		if(BridgeState != nullptr)
+		if(BridgeState->GetGameState() == EGameState::Wait)
 		{
-			if(BridgeState->GetStart())
+			uint32 SecondsLeft = FMath::CeilToInt(WarmupTime - GetServerTimer());
+			if (CountdownInt != SecondsLeft)
 			{
-				SetHUDCountDown(MatchTime-GetServerTimer() + BridgeState->GetOffsetTime());
-				//SetHUDCountDown(MatchTime-GetServerTimer());
+				gameTime = WarmupTime - GetServerTimer();
+				SetHUDCountDown(gameTime);
+
+				// 만약 대기시간이 종료되었다면.. 게임 시작..
+				if(gameTime < 0)
+				{
+					BridgeState->SetGameState(EGameState::Start);
+				}
 			}
-			else
+
+			CountdownInt = SecondsLeft;
+		}
+		else if(BridgeState->GetGameState() == EGameState::Start)
+		{
+			uint32 SecondsLeft = FMath::CeilToInt(MatchTime + WarmupTime - GetServerTimer());
+			if (CountdownInt != SecondsLeft)
 			{
-				SetHUDCountDown(0);
+				gameTime = MatchTime + WarmupTime - GetServerTimer();
+				SetHUDCountDown(gameTime);
+				if(gameTime < 0.f && EGameState::End != BridgeState->GetGameState())  // 만약 제한시간이 종료되었다면 VR 플레이어 승리
+				{
+					BridgeState->GameWinner(EWinner::VR);
+					BridgeState->GameMatchState(EGameState::End);
+				}
 			}
+
+			CountdownInt = SecondsLeft;
+		}
+		else if(BridgeState->GetGameState() == EGameState::End)
+		{
+			SetHUDCountDown(0.f);
 		}
 	}
+	
+	
 
-	CountdownInt = SecondsLeft;
+	
 }
 
 void ABaseCharacterController::ServerRequestServerTime_Implementation(float TimeOfClinetRequest)
@@ -162,8 +191,13 @@ void ABaseCharacterController::ClientReportServerTime_Implementation(float TimeO
 #pragma endregion 
 
 
+
+
 void ABaseCharacterController::ShowReturnToMainMenu()
 {
+	// 게임이 끝났다면 menu 위젯 띄우지 않기..
+	if(BridgeState->GetGameState() == EGameState::End) return;
+	
 	if(ReturnToMainMenuWidget == nullptr) return;
 
 	if(ReturnToMainMenu == nullptr)
@@ -185,4 +219,7 @@ void ABaseCharacterController::ShowReturnToMainMenu()
 	}
 	
 }
+
+
+
 
