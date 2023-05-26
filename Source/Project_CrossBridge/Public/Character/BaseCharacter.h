@@ -534,6 +534,10 @@ public:
 		class UNiagaraComponent* BlackholeTraceComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UNiagaraComponent* BulletAimTraceComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* LeftVRHealEffect;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* RightVRHealEffect;
 		
 
 	UPROPERTY()
@@ -814,6 +818,8 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 		void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
+	UFUNCTION(Server, Unreliable)
+		void ServerHealEffectActivate(bool IsActivate);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -835,6 +841,8 @@ public:
 
 	UFUNCTION()
 		void VRRevive();
+	UFUNCTION(Server, Unreliable)
+		void ServerVRDeath(bool IsVRAlive);
 	UFUNCTION()
 		bool VRSkillCheck(FString Position);
 	UFUNCTION(Server, Unreliable)

@@ -200,6 +200,20 @@ ABaseCharacter::ABaseCharacter()
 
 	BulletAimTraceComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BulletAimTraceComp"));
 	BulletAimTraceComp->SetupAttachment(RootComponent);
+
+	LeftVRHealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LeftVRHealEffect"));
+	LeftVRHealEffect->SetupAttachment(LeftHand);
+	LeftVRHealEffect->SetRelativeLocation(FVector(3, 4, -6));
+	LeftVRHealEffect->SetRelativeRotation(FRotator(90, 0, 90));
+	LeftVRHealEffect->SetVisibility(false);
+	LeftVRHealEffect->SetIsReplicated(true);
+
+	RightVRHealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RightVRHealEffect"));
+	RightVRHealEffect->SetupAttachment(RightHand);
+	RightVRHealEffect->SetRelativeLocation(FVector(3, -4, -6));
+	RightVRHealEffect->SetRelativeRotation(FRotator(0, 0, -90));
+	RightVRHealEffect->SetVisibility(false);
+	RightVRHealEffect->SetIsReplicated(true);
 	
 	VRStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("VRStatus"));
 	VRStatusWidget->SetupAttachment(LeftHand);
@@ -452,7 +466,10 @@ void ABaseCharacter::Tick(float DeltaTime)
 		float AimDotProduct = FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector());
 		float GripDotProduct = FVector::DotProduct(RightGrip->GetRightVector(), LeftGrip->GetRightVector());
 
-		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9 && VRSkillCheck(FString("Hands")))
+		float HandDist = FVector::Distance(LeftHand->GetComponentLocation(), RightHand->GetComponentLocation());
+		
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), HandDist));
+		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9 && VRSkillCheck(FString("Hands")) && HandDist >= 13 && HandDist <= 25)
 		{
 			VRHealTime += DeltaTime;
 			if (VRCurHP < VRMaxHP)
@@ -465,11 +482,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 				{
 					if (!IsHeal)
 					{
+						ServerHealEffectActivate(true);
 						IsHeal = true;
 						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Right, 1, true);
 						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Left, 1, true);
 					}
-					VRGetDamage(-2 * DeltaTime);
+					VRGetDamage(-3 * DeltaTime);
 				}
 			}
 			else
@@ -480,11 +498,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 					VRController->StopHapticEffect(EControllerHand::Right);
 					VRController->StopHapticEffect(EControllerHand::Left);
 					VRHealTime = 0;
+					ServerHealEffectActivate(false);
 					ServerResetColorChange("Right");
 				}
 			}
 		}
-		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9 || !VRSkillCheck(FString("Hands"))) && VRHealTime > 0)
+		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9 || HandDist < 13 || HandDist > 25 || !VRSkillCheck(FString("Hands"))) && VRHealTime > 0)
 		{
 			VRHealTime = 0;
 			if (IsHeal)
@@ -492,6 +511,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 				IsHeal = false;
 				VRController->StopHapticEffect(EControllerHand::Right);
 				VRController->StopHapticEffect(EControllerHand::Left);
+				ServerHealEffectActivate(false);
 				ServerResetColorChange("Right");
 			}
 		}
@@ -515,6 +535,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		if (VRCurHP <= 0 && !IsVRDead)
 		{
 			IsVRDead = true;
+			ServerVRDeath(true);
 			VRCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 			DisableInput(VRController);
 			FTimerHandle VRReviveTimer;
@@ -732,12 +753,24 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		if (SwordDamageCoolTime == 0)
 		{
-			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 0.256f, 0.3f));
+			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 2.56f, 3));
+			FTimerHandle SwordMatTimer;
+			GetWorld()->GetTimerManager().SetTimer(SwordMatTimer,
+				FTimerDelegate::CreateLambda([this]()->void
+					{
+						SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 0.256f, 0.3f));
+					}), 0.03, false);
 		}
 		SwordDamageCoolTime += DeltaTime;
 		if (SwordDamageCoolTime > SwordDamageCoolTimeLimit)
 		{
-			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 25.6f, 30));
+			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 2.56f, 3));
+			FTimerHandle SwordMatTimer;
+			GetWorld()->GetTimerManager().SetTimer(SwordMatTimer,
+				FTimerDelegate::CreateLambda([this]()->void
+					{
+						SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 25.6f, 30));
+					}), 0.03, false);
 			IsSwordDamageCool = false;
 			SwordDamageCoolTime = 0;
 		}
@@ -1748,7 +1781,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	//VRGetDamage(1);
+	VRGetDamage(10);
 	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
@@ -2234,6 +2267,20 @@ void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, 
 	AThrowingWeapon *ThrowingWeaponActor = GetWorld()->SpawnActor<AThrowingWeapon>(SpawnThrowingWeapon, SpawnLoc, SpawnRot);
 }
 
+void ABaseCharacter::ServerHealEffectActivate_Implementation(bool IsActivate)
+{
+	if (IsActivate)
+	{
+		LeftVRHealEffect->SetVisibility(true);
+		RightVRHealEffect->SetVisibility(true);
+	}
+	else
+	{
+		LeftVRHealEffect->SetVisibility(false);
+		RightVRHealEffect->SetVisibility(false);
+	}
+}
+
 void ABaseCharacter::SetRedDot()
 {
 	FVector DotStart = RightAim->GetComponentLocation();
@@ -2309,9 +2356,25 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString& Position, clas
 void ABaseCharacter::VRRevive()
 {
 	IsVRDead = false;
+	ServerVRDeath(false);
 	EnableInput(VRController);
 	VRGetDamage(-VRMaxHP);
 	VRCamera->PostProcessSettings.ColorSaturation = FVector4(1, 1, 1, 1);
+}
+
+void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
+{
+	if (IsVRAlive)
+	{
+		SetActorLocation(FVector(200, -100, 300));
+		SetActorHiddenInGame(true);
+		SetActorEnableCollision(false);
+	}
+	else
+	{
+		SetActorHiddenInGame(false);
+		SetActorEnableCollision(true);
+	}
 }
 
 bool ABaseCharacter::VRSkillCheck(FString Position)
