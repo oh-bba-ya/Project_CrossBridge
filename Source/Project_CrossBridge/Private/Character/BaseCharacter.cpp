@@ -41,6 +41,7 @@
 #include "Weapon/TrashCan.h"
 #include "Components/WidgetInteractionComponent.h"
 #include "HUD/GameOver.h"
+#include "VRCharacter/VRComponent.h"
 
 
 // Sets default values
@@ -1564,6 +1565,9 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, DuringSpeedTime);
 	DOREPLIFETIME(ABaseCharacter, bisEquip);
 	DOREPLIFETIME(ABaseCharacter, linearColor);
+	DOREPLIFETIME(ABaseCharacter, VRHeadActor);
+	DOREPLIFETIME(ABaseCharacter, VRLeftHandActor);
+	DOREPLIFETIME(ABaseCharacter, VRRightHandActor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2158,6 +2162,9 @@ void ABaseCharacter::ServerVRSetting_Implementation()
 {
 	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	VRHeadActor = GetWorld()->SpawnActor<AVRComponent>(VRHeadSpawn, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	VRLeftHandActor = GetWorld()->SpawnActor<AVRComponent>(VRLeftHandSpawn, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	VRRightHandActor = GetWorld()->SpawnActor<AVRComponent>(VRRightHandSpawn, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	MulticastVRSetting();
 }
 
@@ -2366,12 +2373,32 @@ void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
 {
 	if (IsVRAlive)
 	{
-		SetActorLocation(FVector(200, -100, 300));
+		VRHeadActor->SetActorLocationAndRotation(VRHeadMesh->GetComponentLocation(), VRHeadMesh->GetComponentRotation());
+		VRLeftHandActor->SetActorLocationAndRotation(LeftHandMesh->GetComponentLocation(), LeftHandMesh->GetComponentRotation());
+		VRRightHandActor->SetActorLocationAndRotation(RightHandMesh->GetComponentLocation(), RightHandMesh->GetComponentRotation());
+		FTimerHandle VRDeathTimer1;
+		GetWorld()->GetTimerManager().SetTimer(VRDeathTimer1,
+			FTimerDelegate::CreateLambda([this]()->void
+				{
+					VRHeadActor->MeshComp->SetSimulatePhysics(true);
+					VRLeftHandActor->MeshComp->SetSimulatePhysics(true);
+					VRRightHandActor->MeshComp->SetSimulatePhysics(true);
+					SetActorLocation(FVector(200, -100, 300));
+				}), 0.5f, false);	
+		FTimerHandle VRDeathTimer2;
+		GetWorld()->GetTimerManager().SetTimer(VRDeathTimer2,
+			FTimerDelegate::CreateLambda([this]()->void
+				{
+					VRHeadActor->MeshComp->SetSimulatePhysics(false);
+					VRLeftHandActor->MeshComp->SetSimulatePhysics(false);
+					VRRightHandActor->MeshComp->SetSimulatePhysics(false);
+				}), 1.9f, false);
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
 	}
 	else
 	{
+		
 		SetActorHiddenInGame(false);
 		SetActorEnableCollision(true);
 	}

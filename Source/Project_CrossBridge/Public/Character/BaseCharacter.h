@@ -671,7 +671,7 @@ public:
 		float SwordDamageCoolTimeLimit = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float VRReviveLimitTime = 3;
+		float VRReviveLimitTime = 7;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsVR = false;
@@ -734,6 +734,12 @@ public:
 		TSubclassOf<class ATrashSpawningPool> SpawnTrashSpawningPool;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AActor> BreakDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AVRComponent> VRHeadSpawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AVRComponent> VRLeftHandSpawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AVRComponent> VRRightHandSpawn;
 	UPROPERTY()
 		class APlayerController* VRController;
 	UPROPERTY()
@@ -852,6 +858,12 @@ public:
 
 	UPROPERTY()
 		class AActor* BreakableDoor;
+	UPROPERTY(Replicated)
+		class AVRComponent* VRHeadActor;
+	UPROPERTY(Replicated)
+		class AVRComponent* VRLeftHandActor;
+	UPROPERTY(Replicated)
+		class AVRComponent* VRRightHandActor;
 
 	public:
 	
