@@ -43,15 +43,7 @@ void AProjectileWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
-	/*
-	if(bEquippedWeapon && OwnerCharacter != nullptr &&OwnerCharacter->IsLocallyControlled())
-	{
-		TraceUnderCosshairs(HitResult);
-	}
-	*/
-
-	//SetHUDCrosshairs(DeltaTime);
+	
 }
 
 void AProjectileWeapon::OnBoxComponentBeingOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

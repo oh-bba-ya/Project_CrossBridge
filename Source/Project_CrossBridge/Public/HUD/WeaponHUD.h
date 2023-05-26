@@ -32,6 +32,19 @@ class PROJECT_CROSSBRIDGE_API AWeaponHUD : public AHUD
 public:
 	virtual void DrawHUD() override;
 
+	/** Character Widget HP */
+
+	UPROPERTY(EditAnywhere, Category="Settings|Player Status")
+	TSubclassOf<class UUserWidget> CharacterWidget;
+
+	class UBaseCharacterWidget* CharacterOverlay;
+
+protected:
+	virtual void BeginPlay() override;
+	void AddCharacterOverlay();
+
+
+
 private:
 	FHUDStruct HUDStruct;
 

@@ -43,3 +43,9 @@ AActor* AProject_CrossBridgeGameModeBase::ChoosePlayerStart_Implementation(ACont
 
 	return nullptr;
 }
+
+void AProject_CrossBridgeGameModeBase::SetDeadTransform(FVector Loc, FRotator Rot)
+{
+	DeadLocation = Loc;
+	DeadRotation = Rot;
+}

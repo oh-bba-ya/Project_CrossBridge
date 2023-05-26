@@ -3,6 +3,31 @@
 
 #include "HUD/WeaponHUD.h"
 
+#include "BaseCharacterController.h"
+#include "GameFramework/PlayerController.h"
+#include "HUD/BaseCharacterWidget.h"
+
+void AWeaponHUD::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AddCharacterOverlay();
+}
+
+void AWeaponHUD::AddCharacterOverlay()
+{
+	ABaseCharacterController* PCCon = Cast<ABaseCharacterController>(GetOwningPlayerController());
+	if(PCCon != nullptr && CharacterWidget)
+	{
+		CharacterOverlay = CreateWidget<UBaseCharacterWidget>(PCCon,CharacterWidget);
+		if(CharacterOverlay)
+		{
+			CharacterOverlay->AddToViewport();
+		}
+	}
+}
+
+
 void AWeaponHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -36,6 +61,8 @@ void AWeaponHUD::DrawHUD()
 		}
 	}
 }
+
+
 
 void AWeaponHUD::DrawCrossHair(UTexture2D* texture, FVector2D ViewportCenter)
 {

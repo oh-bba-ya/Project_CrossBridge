@@ -245,6 +245,36 @@ private:
 #pragma endregion
 
 
+/** Player Dead, Hit , Respawn*/
+#pragma region PCPlayer Dead, Respawn
+public:
+	UFUNCTION()
+	void PCPlayerDead();
+	
+	UFUNCTION(Server, Reliable)
+	void Server_PCPlayerDead();
+	
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCast_PCPlayerDead();
+
+	FORCEINLINE bool GetPCPlayerDead() const {return bIsDead;}
+
+	
+	UFUNCTION()
+	void ChangeSpectator();
+
+protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Hit();
+	
+private:
+	UPROPERTY(Replicated)
+	bool bIsDead = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
+	UAnimMontage* HitMontage;
+
 	/** Fire */
 #pragma region Weapon, TrashCan Fire
 protected:
@@ -461,6 +491,12 @@ private:
 
 
 #pragma endregion
+
+
+
+	/** HP , JetPack */
+private:
+
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

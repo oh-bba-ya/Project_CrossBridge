@@ -40,7 +40,10 @@
 #include "Objects/TrashSpawningPool.h"
 #include "Weapon/TrashCan.h"
 #include "Components/WidgetInteractionComponent.h"
+#include "HUD/BaseCharacterWidget.h"
 #include "HUD/GameOver.h"
+#include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
+#include "Spectator/PCSpectatorPawn.h"
 
 
 // Sets default values
@@ -313,13 +316,25 @@ void ABaseCharacter::BeginPlay()
 	// 게임 시작시 플레이어 오버헤드(overhead)컬러 설정
 	linearColor = FMath::VRand();
 	linearColor = linearColor.GetAbs();
+	
+	//SetCurrentHealth(MaxHP);
 
+	PCController = PCController==nullptr? Cast<ABaseCharacterController>(GetController()) : PCController;
+
+	if(PCController)
+	{
+		PCController->SetHealthStatus(CurrentHP,MaxHP);
+		PCController->SetJetpackStatus(Fuel,MaxFuel);
+	}
+
+	
 	// Health 초기화.
 	if (HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
 		OnRep_SetOverheadCompColor();
 	}
+	
 
 
 	if(BridgeState!=nullptr)
@@ -343,6 +358,8 @@ void ABaseCharacter::BeginPlay()
 	// 내가 조종하는 캐릭터
 	if (GetController() != nullptr && GetController()->IsLocalController())
 	{
+		UE_LOG(LogTemp,Warning,TEXT("my Controller"));
+		
 		// Player Name
 		GameInstance = GetGameInstance();
 
@@ -428,9 +445,15 @@ void ABaseCharacter::Tick(float DeltaTime)
 	
 	if (bJetPackActive)
 	{
-		AddMovementInput(FVector(0, 0, JetPackSpeed));
+		// DeltaTime을 통해 게임, 컴퓨터 성능에 따른 다른 이동속도를 갖지 못하도록 했다..
+		AddMovementInput(FVector(0, 0, JetPackSpeed * DeltaTime));
 	}
 
+	if(PCController)
+	{
+		PCController->SetHealthStatus(CurrentHP,MaxHP);
+		PCController->SetJetpackStatus(Fuel,MaxFuel);
+	}
 
 
 	if (freeze != nullptr)
@@ -995,7 +1018,7 @@ void ABaseCharacter::ActivateJetPack()
 
 void ABaseCharacter::Server_ActivateJetPack_Implementation()
 {
-	if (freeze == nullptr)
+	if (freeze == nullptr && !bIsDead)
 	{
 		bJetPackActive = true;
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
@@ -1013,7 +1036,7 @@ void ABaseCharacter::DeActivateJetPack()
 
 void ABaseCharacter::Server_DeActivateJetPack_Implementation()
 {
-	if (freeze == nullptr)
+	if (freeze == nullptr && !bIsDead)
 	{
 		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 		GetWorld()->GetTimerManager().SetTimer(fuelTimer, this, &ABaseCharacter::FillUpFuel, FuelRechargeSpeed, true, FuelRechargeDelay);
@@ -1040,6 +1063,7 @@ void ABaseCharacter::SetCurrentHealth(float value)
 	if(GetLocalRole() ==  ROLE_Authority)
 	{
 		CurrentHP = FMath::Clamp(value,0.f,MaxHP);
+		
 		OnHealthUpdate();
 	}
 }
@@ -1050,6 +1074,7 @@ void ABaseCharacter::OnTakeDamage(float d)
 	float hp = CurrentHP - d;
 	SetCurrentHealth(hp);
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), CurrentHP));
+	Multicast_Hit();
 }
 
 void ABaseCharacter::OnRep_CurrentHealth()
@@ -1067,6 +1092,8 @@ void ABaseCharacter::OnHealthUpdate()
 
 		if (CurrentHP <= 0)
 		{
+			bIsDead = true;
+			//PCPlayerDead();
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
@@ -1077,16 +1104,115 @@ void ABaseCharacter::OnHealthUpdate()
 	{
 		FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHP);
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+
+		if (CurrentHP <= 0)
+		{
+			bIsDead = true;
+			//PCPlayerDead();
+			//FString deathMessage = FString::Printf(TEXT("You have been killed."));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+		}
 	}
 
 	//모든 머신에서 실행되는 함수 
 	/*  
 		여기에 대미지 또는 사망의 결과로 발생하는 특별 함수 기능 배치 
 	*/
+
+
+	if(PCController)
+	{
+		PCController->SetHealthStatus(CurrentHP,MaxHP);
+	}
+	
+	
+	if(bIsDead)
+	{
+		MultiCast_PCPlayerDead();
+	}
+	
 }
 
-
 #pragma endregion
+
+
+/** Player Dead , Respawn*/
+#pragma region PCPlayer Dead, Respawn
+
+void ABaseCharacter::PCPlayerDead()
+{
+	if(GetController() != nullptr && GetController()->IsLocalController())
+	{
+		GetCharacterMovement()->DisableMovement();
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		bUseControllerRotationYaw =false;
+		camComp->PostProcessSettings.ColorSaturation = FVector4(0,0,0,1);
+	}
+}
+
+void ABaseCharacter::Multicast_Hit_Implementation()
+{
+	if(HitMontage != nullptr)
+	{
+		PlayAnimMontage(HitMontage);
+	}
+}
+
+void ABaseCharacter::Server_PCPlayerDead_Implementation()
+{
+	if(GetController() != nullptr && GetController()->IsLocalController())
+	{
+		GetCharacterMovement()->DisableMovement();
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		bUseControllerRotationYaw =false;
+		camComp->PostProcessSettings.ColorSaturation = FVector4(0,0,0,1);
+	}
+}
+
+void ABaseCharacter::MultiCast_PCPlayerDead_Implementation()
+{
+	GetCharacterMovement()->DisableMovement();
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	bUseControllerRotationYaw =false;
+	camComp->PostProcessSettings.ColorSaturation = FVector4(0,0,0,1);
+
+
+}
+
+void ABaseCharacter::ChangeSpectator()
+{
+	if(HasAuthority())
+	{
+		AProject_CrossBridgeGameModeBase* GM = Cast<AProject_CrossBridgeGameModeBase>(GetWorld()->GetAuthGameMode());
+
+		if(GM != nullptr)
+		{
+			GM->SetDeadTransform(GetActorLocation(), GetActorRotation());
+			TSubclassOf<APCSpectatorPawn> spectatorPawn = GM->SpectatorClass;
+
+			FActorSpawnParameters param;
+			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			APCSpectatorPawn* spectator = GetWorld()->SpawnActor<APCSpectatorPawn>(
+				spectatorPawn,
+				GetActorLocation(),
+				GetActorRotation(),
+				param);
+
+			if(spectator != nullptr)
+			{
+				spectator->SetOrigin(this);
+				GetController()->Possess(spectator);
+				Destroy();
+			}
+		}
+	}
+
+}
+#pragma endregion 
 
 /** Fire */
 #pragma region Fire()
@@ -1520,6 +1646,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, DuringSpeedTime);
 	DOREPLIFETIME(ABaseCharacter, bisEquip);
 	DOREPLIFETIME(ABaseCharacter, linearColor);
+	DOREPLIFETIME(ABaseCharacter, bIsDead);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

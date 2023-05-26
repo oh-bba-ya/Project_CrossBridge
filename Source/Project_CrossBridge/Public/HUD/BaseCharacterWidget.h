@@ -18,7 +18,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Fuel", meta = (BindWidget))
 	class UProgressBar* fuelBar;
 
-
+	
 	void SetFuelBar(float curFuel, float Max);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|HealthBar", meta = (BindWidget))
@@ -28,13 +28,15 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CountdownText;
+
+
 	
 protected:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-private:
-	class ABaseCharacter* baseCharacter;
+
+
 	
 };
