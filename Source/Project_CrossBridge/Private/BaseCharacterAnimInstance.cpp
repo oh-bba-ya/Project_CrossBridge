@@ -29,6 +29,8 @@ void UBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		isEquip = baseCharacter->GetIsEquip();
 
+		bisDead = baseCharacter->GetPCPlayerDead();
+
 		FRotator viewRot = baseCharacter->GetBaseAimRotation();
 		FRotator baseRot = baseCharacter->GetActorRotation();
 		FRotator deltaRot = baseRot-viewRot;
@@ -47,4 +49,9 @@ void UBaseCharacterAnimInstance::AnimNotify_RollingActionRelease()
 void UBaseCharacterAnimInstance::AnimNotify_SlidingActionRelease()
 {
 	baseCharacter->SlidingActionRelease();
+}
+
+void UBaseCharacterAnimInstance::AnimNotify_ChangeSpectator()
+{
+	baseCharacter->ChangeSpectator();
 }

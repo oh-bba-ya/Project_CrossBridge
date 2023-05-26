@@ -37,12 +37,18 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Anim")
 	bool isEquip;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Anim")
+	bool bisDead = false;
 	
 	UFUNCTION()
 	void AnimNotify_RollingActionRelease();
 
 	UFUNCTION()
 	void AnimNotify_SlidingActionRelease();
+
+	UFUNCTION()
+	void AnimNotify_ChangeSpectator();
 	
 private:
 	class ABaseCharacter* baseCharacter;

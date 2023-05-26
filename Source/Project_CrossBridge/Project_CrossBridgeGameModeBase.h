@@ -37,6 +37,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Time")
 	float LevelStartingTime = 0.f;
+
+	UFUNCTION()
+	void SetDeadTransform(FVector Loc, FRotator Rot);
+
+	FORCEINLINE FVector GetDeadLocation() const {return  DeadLocation;}
+	FORCEINLINE FRotator GetDeadRotation() const {return DeadRotation;}
+
+private:
+	FVector DeadLocation;
+	FRotator DeadRotation;
 	
 
 };

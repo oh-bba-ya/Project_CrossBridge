@@ -6,11 +6,13 @@
 #include "CrossBridgeState.h"
 #include "CrossBridgeStateBase.h"
 #include "CrossPlayerState.h"
+#include "Character/BaseCharacter.h"
 #include "Components/TextBlock.h"
 #include "GameMode/CrossBridgeGameMode.h"
 #include "HUD/BaseCharacterWidget.h"
 #include "HUD/GameOver.h"
 #include "HUD/ReturnToMainMenu.h"
+#include "HUD/WeaponHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
@@ -21,25 +23,9 @@ void ABaseCharacterController::BeginPlay()
 
 	Server_CheckMatchState();
 
-	FTimerHandle MatchStateTimer;
-	GetWorld()->GetTimerManager().SetTimer(MatchStateTimer,
-		FTimerDelegate::CreateLambda([this]()->void
-			{
-				IsMatchStateSet = true;
-			}), 0.1, false);
-
-	if(baseCharacterWidget != nullptr && IsLocalController())
-	{
-		baseCharacterUI = CreateWidget<UBaseCharacterWidget>(this,baseCharacterWidget);
-
-		if(baseCharacterUI)
-		{
-			baseCharacterUI->AddToViewport();
-		}
-	}
-
 	BridgeState = Cast<ACrossBridgeStateBase>(GetWorld()->GetGameState());
-	
+
+	PCHUD = Cast<AWeaponHUD>(GetHUD());
 }
 
 void ABaseCharacterController::SetupInputComponent()
@@ -62,7 +48,6 @@ void ABaseCharacterController::Tick(float DeltaSeconds)
 		SetHUDTime();
 	}
 	CheckTimeSync(DeltaSeconds);
-
 	
 }
 
@@ -127,11 +112,10 @@ void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 
 	FString CountdownText = FString::Printf(TEXT("%02d:%02d"),Min,Seconds);
 	
-	VRTimer = CountdownText;
 
-	if(baseCharacterUI != nullptr)
+	if(PCHUD != nullptr)
 	{
-		baseCharacterUI->CountdownText->SetText(FText::FromString(CountdownText));
+		PCHUD->CharacterOverlay->CountdownText->SetText(FText::FromString(CountdownText));
 	}
 	
 }
@@ -231,6 +215,54 @@ void ABaseCharacterController::ShowReturnToMainMenu()
 		}
 	}
 	
+}
+
+void ABaseCharacterController::Respawn(ABaseCharacter* player)
+{
+	
+	if(HasAuthority())
+	{
+		AProject_CrossBridgeGameModeBase* GM = Cast<AProject_CrossBridgeGameModeBase>(GetWorld()->GetAuthGameMode());
+		if(GM != nullptr)
+		{
+			
+			if(player != nullptr)
+			{
+				UE_LOG(LogTemp,Warning,TEXT(" Restart Player "));
+				GM->RestartPlayer(this);
+			}
+		}
+	}
+	
+}
+
+void ABaseCharacterController::SetHealthStatus(float curHP, float maxHP)
+{
+	PCHUD = PCHUD == nullptr ? Cast<AWeaponHUD>(GetHUD()) : PCHUD;
+
+
+	bool bPCHUDValid = PCHUD && PCHUD->CharacterOverlay;
+
+	if(bPCHUDValid)
+	{
+		
+		PCHUD->CharacterOverlay->SetHealthBar(curHP,maxHP);
+	}
+	
+}
+
+void ABaseCharacterController::SetJetpackStatus(float curFuel, float maxFuel)
+{
+	PCHUD = PCHUD == nullptr ? Cast<AWeaponHUD>(GetHUD()) : PCHUD;
+
+
+	bool bPCHUDValid = PCHUD && PCHUD->CharacterOverlay;
+
+	if(bPCHUDValid)
+	{
+		
+		PCHUD->CharacterOverlay->SetFuelBar(curFuel,maxFuel);
+	}
 }
 
 

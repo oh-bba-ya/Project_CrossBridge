@@ -101,6 +101,19 @@ private:
 #pragma endregion
 
 public:
+/** PC Player Respawn */
+#pragma region Respawn
+public:
+	void Respawn(class ABaseCharacter* player);
+#pragma endregion
+
+
+private:
+	class AWeaponHUD* PCHUD;
+
+public:
+	void SetHealthStatus(float curHP, float maxHP);
+	void SetJetpackStatus(float curFuel, float maxFuel);
 
 	UPROPERTY()
 	FString VRTimer;
