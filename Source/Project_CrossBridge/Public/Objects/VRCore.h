@@ -97,4 +97,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly,Category="Settings|Falling")
 	float FallingCallTime = 0.01f;
+
+
+	UPROPERTY(EditDefaultsOnly,Category="Settings|Falling")
+	class UNiagaraComponent* VRCoreDestroyComp;
 };

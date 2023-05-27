@@ -27,6 +27,10 @@ AVRCore::AVRCore()
 	laserComponent->SetupAttachment(MeshComponent);
 	laserComponent->SetAutoActivate(false);
 
+	VRCoreDestroyComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("VRCoreDestroyComp"));
+	VRCoreDestroyComp->SetupAttachment(RootComponent);
+	VRCoreDestroyComp->SetAutoActivate(false);
+
 }
 
 // Called when the game starts or when spawned
@@ -161,6 +165,7 @@ void AVRCore::FallingVRCore()
 
 	if(Target != nullptr)
 	{
+		VRCoreDestroyComp->SetActive(true);
 		float CurDisTance = (Target->GetActorLocation() - GetActorLocation()).Size();
 		if(CurDisTance <= Distance)
 		{

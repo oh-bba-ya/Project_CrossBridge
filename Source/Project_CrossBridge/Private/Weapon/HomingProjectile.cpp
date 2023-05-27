@@ -3,6 +3,7 @@
 
 #include "Weapon/HomingProjectile.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -51,7 +52,10 @@ void AHomingProjectile::BeginPlay()
 void AHomingProjectile::Destroyed()
 {
 	FVector SapwnLoc = GetActorLocation();
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),ExplosionEffect,SapwnLoc,FRotator::ZeroRotator);
+	if(ExplosionEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ExplosionEffect,SapwnLoc,FRotator::ZeroRotator);
+	}
 }
 
 // Called every frame

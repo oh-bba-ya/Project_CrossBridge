@@ -25,6 +25,14 @@ void ABaseCharacterController::BeginPlay()
 
 	BridgeState = Cast<ACrossBridgeStateBase>(GetWorld()->GetGameState());
 
+	FTimerHandle MatchStateTimer;
+	GetWorld()->GetTimerManager().SetTimer(MatchStateTimer,
+		FTimerDelegate::CreateLambda([this]()->void
+			{
+				IsMatchStateSet = true;
+			}), 0.1, false);
+
+	
 	PCHUD = Cast<AWeaponHUD>(GetHUD());
 }
 
@@ -43,10 +51,13 @@ void ABaseCharacterController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	//SetHUDTime();
+	
 	if (IsMatchStateSet)
 	{
 		SetHUDTime();
 	}
+	
 	CheckTimeSync(DeltaSeconds);
 	
 }
@@ -111,8 +122,9 @@ void ABaseCharacterController::SetHUDCountDown(float CountdownTime)
 	int32 Seconds = CountdownTime - Min*60;
 
 	FString CountdownText = FString::Printf(TEXT("%02d:%02d"),Min,Seconds);
-	
 
+	VRTimer = CountdownText;
+	
 	if(PCHUD != nullptr)
 	{
 		PCHUD->CharacterOverlay->CountdownText->SetText(FText::FromString(CountdownText));

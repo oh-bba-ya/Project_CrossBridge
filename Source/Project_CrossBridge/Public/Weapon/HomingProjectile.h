@@ -50,6 +50,6 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
-	class UParticleSystem* ExplosionEffect;
+	class UNiagaraSystem* ExplosionEffect;
 
 };

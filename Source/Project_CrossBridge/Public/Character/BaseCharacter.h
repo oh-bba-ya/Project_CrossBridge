@@ -309,6 +309,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
 	class ATrashCan* myTrashCan;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Weapon")
+	TSubclassOf<class ATrashCan> trashcanFactory;
 	
 public:
 	FORCEINLINE void SetEquip(bool b) { bisEquip = b;}
@@ -322,6 +325,10 @@ public:
 
 	FORCEINLINE void SetTrashCan(ATrashCan* t) {myTrashCan = t;}
 	FORCEINLINE ATrashCan* GetTrashCan() {return myTrashCan;}
+
+	UFUNCTION()
+	void SpawnTrashCan();
+
 
 	
 

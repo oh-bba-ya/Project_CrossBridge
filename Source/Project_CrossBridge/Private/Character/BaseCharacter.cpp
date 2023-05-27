@@ -1167,6 +1167,7 @@ void ABaseCharacter::Multicast_Hit_Implementation()
 	if(HitMontage != nullptr)
 	{
 		PlayAnimMontage(HitMontage);
+		
 	}
 }
 
@@ -1184,12 +1185,13 @@ void ABaseCharacter::Server_PCPlayerDead_Implementation()
 
 void ABaseCharacter::MultiCast_PCPlayerDead_Implementation()
 {
+	FString DeadMessage = FString::Printf(TEXT("Dead"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, DeadMessage);
 	GetCharacterMovement()->DisableMovement();
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	bUseControllerRotationYaw =false;
 	camComp->PostProcessSettings.ColorSaturation = FVector4(0,0,0,1);
-
 
 }
 
@@ -1197,6 +1199,7 @@ void ABaseCharacter::ChangeSpectator()
 {
 	if(HasAuthority())
 	{
+		SpawnTrashCan();
 		AProject_CrossBridgeGameModeBase* GM = Cast<AProject_CrossBridgeGameModeBase>(GetWorld()->GetAuthGameMode());
 
 		if(GM != nullptr)
@@ -1239,6 +1242,7 @@ void ABaseCharacter::TrashCanFire()
 	}
 }
 
+
 void ABaseCharacter::Fire()
 {
 	if (myWeapon != nullptr && freeze == nullptr && bisEquip)
@@ -1266,6 +1270,23 @@ void ABaseCharacter::Multicast_Fire_Implementation()
 	}
 }
 #pragma endregion
+
+/** 쓰레기통을 들고 죽는다면 쓰레기통 소환.. */
+void ABaseCharacter::SpawnTrashCan()
+{
+	float count = 0.f;
+	if(myTrashCan !=nullptr)
+	{
+		count = myTrashCan->GetCount();
+		myTrashCan->Destroy();
+		if(trashcanFactory)
+		{
+			ATrashCan* Trash = GetWorld()->SpawnActor<ATrashCan>(trashcanFactory,GetActorLocation(),GetActorRotation());
+			Trash->SetCount(count);
+		}
+	}
+
+}
 
 /** Weapon */
 void ABaseCharacter::DropWeapon()

@@ -40,6 +40,7 @@ ATrashCan::ATrashCan()
 void ATrashCan::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ATrashCan::OnBeginOverlap);
 	
 }
@@ -61,7 +62,7 @@ void ATrashCan::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		if(player != nullptr && player->GetTrashCan() == nullptr && !(player->IsVR))
 		{
 			 // 쓰레기통은 쓰레기통을 소지하지 못한 타플레이어가 뺏을 수 없음
-			if(OwnerPlayer == nullptr)
+			if(OwnerPlayer == nullptr && !(player->GetPCPlayerDead()))
 			{
 				UE_LOG(LogTemp,Warning,TEXT("PickUPTrashCan"));
 				PickUpTrashCan(player);
@@ -120,8 +121,11 @@ void ATrashCan::Multicast_PickUpTrashCan_Implementation(ABaseCharacter* player)
 
 void ATrashCan::Server_PickUpTrashCan_Implementation(ABaseCharacter* player)
 {
-	Multicast_PickUpTrashCan(player);
-	SetOwner(player);
+	if(player != nullptr)
+	{
+		Multicast_PickUpTrashCan(player);
+		SetOwner(player);
+	}
 }
 
 
