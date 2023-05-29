@@ -35,7 +35,7 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_PickUpTrashCan(class ABaseCharacter* player);
-
+	
 	FORCEINLINE bool GetbFireDelay() {return bFireDelay;}
 
 	FORCEINLINE float GetCount() const {return Count;}

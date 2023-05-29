@@ -3,8 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "MaterialConverter.generated.h"
+
+
+DECLARE_DELEGATE(FMAKINGDELEGATE);
+DECLARE_DELEGATE(FUNMAKINGDELEGATE);
 
 UCLASS()
 class PROJECT_CROSSBRIDGE_API AMaterialConverter : public AActor
@@ -34,6 +39,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
 	class UArrowComponent* Arrow;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
+	class UNiagaraComponent* MakingEffectComp;
 	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -57,8 +65,11 @@ public:
 
 
 protected:
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void Server_MakingHoming();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_MakingHoming();
 	
 	UFUNCTION()
 	void Entrance(class ABaseCharacter* p);
@@ -108,6 +119,35 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
 	class ABaseCharacter* myOwner;
 
+	
+	/** Time line을 이용한 메쉬 움직임 */
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UTimelineComponent* ConverterTimeLineComp;
+
+
+public:
+	// 커브 에셋을 보관하는 변수
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* ConverterTimelineFloatCurve;
+
+private:
+	// 업데이트 트랙 이벤트를 처리할 플로트 트랙 시그니처
+	class FOnTimelineFloat UpdateFunctionFloat;
+
+	UFUNCTION()
+	void UpdateTimelineComp(float Output);
+
+	
+	FMAKINGDELEGATE FmakingDelegate;
+
+	FUNMAKINGDELEGATE Funmakingdelegate;
+
+	UFUNCTION()
+	void MakingEffect();
+
+	UFUNCTION()
+	void UnMakeingEffect();
 	
 
 };
