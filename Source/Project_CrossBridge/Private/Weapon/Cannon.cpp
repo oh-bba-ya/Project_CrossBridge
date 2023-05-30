@@ -3,6 +3,7 @@
 
 #include "Weapon/Cannon.h"
 
+#include "NiagaraComponent.h"
 #include "Character/BaseCharacter.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
@@ -30,7 +31,11 @@ ACannon::ACannon()
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	Arrow->SetupAttachment(RootComponent);
 	Arrow->SetRelativeLocationAndRotation(FVector(30.f,0.f,37.f), FRotator(50.f,0.f,0.f));
-	
+/*
+	muzzleEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MuzzleEffect"));
+	muzzleEffect->SetupAttachment(RootComponent);
+	muzzleEffect->SetAutoActivate(false);
+	*/
 }
 
 // Called when the game starts or when spawned
@@ -124,6 +129,7 @@ void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
 		homing->SetOwner(p);
 		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
 		SubtractHominAmmo(1);
+		
 	}
 
 	
@@ -136,6 +142,7 @@ void ACannon::Multicast_HomingFire_Implementation(ABaseCharacter* p, class AHomi
 		if(core != nullptr)
 		{
 			UE_LOG(LogTemp,Warning,TEXT("Target 선정완료"));
+			
 			h->MovementComponent->HomingTargetComponent = core->GetRootComponent();
 		}
 	}

@@ -30,6 +30,7 @@ AVRCore::AVRCore()
 	VRCoreDestroyComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("VRCoreDestroyComp"));
 	VRCoreDestroyComp->SetupAttachment(RootComponent);
 	VRCoreDestroyComp->SetAutoActivate(false);
+	VRCoreDestroyComp->SetRelativeRotation(FRotator(0.f,0.f,90.f));
 
 }
 

@@ -49,7 +49,7 @@ AMaterialConverter::AMaterialConverter()
 	MakingEffectComp->SetAutoActivate(false);
 	
 	ConverterTimeLineComp = CreateDefaultSubobject<UTimelineComponent>(TEXT("ConverterTimeLineComp"));
-	
+	//ConverterTimeLineComp->SetLooping(true);
 }
 
 // Called when the game starts or when spawned
@@ -242,7 +242,7 @@ void AMaterialConverter::MakingEffect()
 void AMaterialConverter::UnMakeingEffect()
 {
 	MakingEffectComp->Deactivate();
-	ConverterTimeLineComp->Reverse();
+	ConverterTimeLineComp->SetNewTime(0.f);
 }
 
 

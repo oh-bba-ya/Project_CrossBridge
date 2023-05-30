@@ -32,6 +32,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UArrowComponent* Arrow;
 
+	/*
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class UNiagaraComponent* muzzleEffect;
+	*/
+	
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Projectile")
 	TSubclassOf<class AHomingProjectile> HomingFactory;
