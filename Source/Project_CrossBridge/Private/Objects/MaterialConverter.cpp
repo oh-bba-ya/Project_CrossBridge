@@ -9,6 +9,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "PickupItem/HomingItem.h"
 
@@ -47,6 +48,7 @@ AMaterialConverter::AMaterialConverter()
 	MakingEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MakingEffectComp"));
 	MakingEffectComp->SetupAttachment(RootComponent);
 	MakingEffectComp->SetAutoActivate(false);
+	MakingEffectComp->SetRelativeRotation(FRotator(0.f,0.f,90.f));
 	
 	ConverterTimeLineComp = CreateDefaultSubobject<UTimelineComponent>(TEXT("ConverterTimeLineComp"));
 	//ConverterTimeLineComp->SetLooping(true);
@@ -237,6 +239,11 @@ void AMaterialConverter::MakingEffect()
 {
 	MakingEffectComp->SetActive(true);
 	ConverterTimeLineComp->Play();
+
+	if(UsingSound && UsingSoundAttenuation)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),UsingSound,GetActorLocation(),1,1,0,UsingSoundAttenuation);
+	}
 }
 
 void AMaterialConverter::UnMakeingEffect()

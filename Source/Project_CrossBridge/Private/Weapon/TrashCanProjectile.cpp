@@ -57,7 +57,11 @@ void ATrashCanProjectile::Destroyed()
 {
 	FVector SpawnLoc = GetActorLocation();
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, SpawnLoc,FRotator::ZeroRotator, true, EPSCPoolMethod::AutoRelease);
-	
+
+	if(HitSound && HitAttenuation)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),HitSound,GetActorLocation(),1,1,0,HitAttenuation);
+	}
 }
 
 void ATrashCanProjectile::OnProjectileImpact(UPrimitiveComponent* HitComponent, AActor* OtherActor,

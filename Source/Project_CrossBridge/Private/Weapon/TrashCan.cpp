@@ -6,6 +6,7 @@
 #include "Character/BaseCharacter.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Weapon/TrashCanProjectile.h"
 
@@ -88,6 +89,8 @@ void ATrashCan::Fire(ABaseCharacter* player,const FVector hitTarget)
 	}
 }
 
+
+
 void ATrashCan::Server_Fire_Implementation(ABaseCharacter* player, const FVector hitTarget)
 {
 	if(projectileFactory)
@@ -103,7 +106,16 @@ void ATrashCan::Server_Fire_Implementation(ABaseCharacter* player, const FVector
 		{
 			Projectile->SetOwner(OwnerPlayer);
 			Projectile->Fire(hitTarget);
+			Multicast_Fire();
 		}
+	}
+}
+
+void ATrashCan::Multicast_Fire_Implementation()
+{
+	if(FireSound && FireAttenucation)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),FireSound,GetActorLocation(),1,1,0,FireAttenucation);
 	}
 }
 

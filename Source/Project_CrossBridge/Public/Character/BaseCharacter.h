@@ -343,6 +343,14 @@ protected:
 	/** Skill : Freeze */
 #pragma region Skill Freeze
 private:
+
+	UPROPERTY(EditDefaultsOnly,Replicated,Category="Settings|Skill Freeze")
+	float FreezeCoolTime = 2.0f;
+
+	UPROPERTY(EditDefaultsOnly,Replicated,Category="Settings|Skill Freeze")
+	bool bCanFreeze = true;
+	
+	
 	UPROPERTY(EditDefaultsOnly,Category="Settings|Skill Freeze")
 	TSubclassOf<class AFreeze> FreezeFactory;
 
@@ -361,6 +369,9 @@ protected:
 	void Server_RemoveFreeze();
 public:
 	FORCEINLINE AFreeze* GetFreeze() {return freeze;}
+
+	FORCEINLINE bool GetCanFreeze() const {return bCanFreeze;}
+	FORCEINLINE void SetCanFreeze(bool can) {bCanFreeze = can;}
 
 
 #pragma endregion 

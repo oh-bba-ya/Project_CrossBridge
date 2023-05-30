@@ -42,6 +42,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
 	class UNiagaraComponent* MakingEffectComp;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
+	class USoundBase* UsingSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
+	class USoundAttenuation* UsingSoundAttenuation;
 	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

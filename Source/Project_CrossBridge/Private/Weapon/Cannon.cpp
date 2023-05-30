@@ -4,9 +4,11 @@
 #include "Weapon/Cannon.h"
 
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Character/BaseCharacter.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -31,11 +33,7 @@ ACannon::ACannon()
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	Arrow->SetupAttachment(RootComponent);
 	Arrow->SetRelativeLocationAndRotation(FVector(30.f,0.f,37.f), FRotator(50.f,0.f,0.f));
-/*
-	muzzleEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MuzzleEffect"));
-	muzzleEffect->SetupAttachment(RootComponent);
-	muzzleEffect->SetAutoActivate(false);
-	*/
+
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +43,10 @@ void ACannon::BeginPlay()
 
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&ACannon::OnBeginOverlap);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this,&ACannon::OnEndOverlap);
+
+
+	core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
+	
 	
 }
 
@@ -54,6 +56,7 @@ void ACannon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 }
+
 
 
 
@@ -107,10 +110,15 @@ void ACannon::Server_Exit_Implementation(class ABaseCharacter* p)
 void ACannon::HomingFire(class ABaseCharacter* p)
 {
 	UE_LOG(LogTemp,Warning,TEXT("HOming Fire start"));
+
 	if(HommingAmmo > 0)
 	{
-		Server_HomingFire(p);
+		if(p !=nullptr)
+		{
+			Server_HomingFire(p);
+		}
 	}
+	
 }
 
 
@@ -119,16 +127,30 @@ void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
 {
 	if(bFireDelay)
 	{
+		
 		bFireDelay = false;
 		FTimerHandle fireDelayHandle;
 		GetWorldTimerManager().SetTimer(fireDelayHandle, FTimerDelegate::CreateLambda([&](){bFireDelay= true;}), fireDelayTime,false);
 
-		core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
-		AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation());
-		Multicast_HomingFire(p,homing);
-		homing->SetOwner(p);
-		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("HomingAmmo : %d"),HommingAmmo));
-		SubtractHominAmmo(1);
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Instigator = p;
+		SpawnParameters.Owner= p;
+
+		AHomingProjectile* homing = GetWorld()->SpawnActor<AHomingProjectile>(HomingFactory,Arrow->GetComponentLocation(),Arrow->GetComponentRotation(),SpawnParameters);
+
+		if(homing != nullptr)
+		{
+			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("homingSpawn")));
+			Multicast_HomingFire(p,homing);
+			//testMulticast(homing);
+			SubtractHominAmmo(1);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Not HOming")));
+		}
+
+		
 		
 	}
 
@@ -141,10 +163,62 @@ void ACannon::Multicast_HomingFire_Implementation(ABaseCharacter* p, class AHomi
 	{
 		if(core != nullptr)
 		{
-			UE_LOG(LogTemp,Warning,TEXT("Target 선정완료"));
+			if(muzzleEffect)
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),muzzleEffect,h->GetActorLocation());
+			}
+
+			if(FireSound)
+			{
+				if(FireAttenu)
+				{
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound,GetActorLocation(),1,1,0,FireAttenu);
+				}
+			}
 			
 			h->MovementComponent->HomingTargetComponent = core->GetRootComponent();
 		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Client")));
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("not multicast homing")));
+	}
+}
+
+
+void ACannon::testMulticast_Implementation(AHomingProjectile* h)
+{
+	if(h!=nullptr)
+	{
+		if(core != nullptr)
+		{
+			if(muzzleEffect)
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),muzzleEffect,h->GetActorLocation());
+			}
+
+			if(FireSound)
+			{
+				if(FireAttenu)
+				{
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound,GetActorLocation(),1,1,0,FireAttenu);
+				}
+			}
+			
+			h->MovementComponent->HomingTargetComponent = core->GetRootComponent();
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Client")));
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("not Test multicast homing")));
 	}
 }
 
@@ -208,16 +282,16 @@ void ACannon::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	
 }
 
-void ACannon::Reload(AHomingItem* homing)
+void ACannon::Reload(AHomingItem* homingPro)
 {
-	if(homing != nullptr)
+	if(homingPro != nullptr)
 	{
-		Server_Reload(homing);
+		Server_Reload(homingPro);
 	}
 }
 
 
-void ACannon::Server_Reload_Implementation(AHomingItem* homing)
+void ACannon::Server_Reload_Implementation(AHomingItem* homingPro)
 {
 	HommingAmmo += 1;
 }
@@ -228,6 +302,8 @@ void ACannon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(ACannon, core);
 	DOREPLIFETIME(ACannon, HommingAmmo);
 	DOREPLIFETIME(ACannon, bIsFire);
+	DOREPLIFETIME(ACannon, targetComp);
+	DOREPLIFETIME(ACannon, tempHoming);
 
 }
 
