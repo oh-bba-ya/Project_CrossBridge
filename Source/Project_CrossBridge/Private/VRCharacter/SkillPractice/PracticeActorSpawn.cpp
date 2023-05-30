@@ -232,25 +232,28 @@ void APracticeActorSpawn::OnHealOverlap(UPrimitiveComponent* OverlappedComponent
 	if (OtherComp->GetCollisionObjectType() == ECC_GameTraceChannel3)
 	{
 		class ABaseCharacter* VRUser = Cast<ABaseCharacter>(OtherActor);
-		if (!IsHit)
+		if (!IsCheck)
 		{
-			Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(1);
-			SuccessCheck->Index++;
-			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
-			VRUser->VRGetDamage(80);
-			IsHit = true;
-		}
-		else if (IsHit && VRUser->VRCurHP == VRUser->VRMaxHP)
-		{
-			Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(2);
-			FTimerHandle SuccessImageTimer;
-			GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
-				FTimerDelegate::CreateLambda([this]()->void {
-					Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(3);
-					}), 1, false);
-			SuccessCheck->Index++;
-			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
-			//IsHit = false;
+			if (!IsHit)
+			{
+				Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(1);
+				SuccessCheck->Index++;
+				SuccessCheck->SetImageVisibility(SuccessCheck->Index);
+				VRUser->VRGetDamage(80);
+				IsHit = true;
+			}
+			else if (IsHit && VRUser->VRCurHP == VRUser->VRMaxHP)
+			{
+				Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(2);
+				FTimerHandle SuccessImageTimer;
+				GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
+					FTimerDelegate::CreateLambda([this]()->void {
+						Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(3);
+						}), 1, false);
+				SuccessCheck->Index++;
+				SuccessCheck->SetImageVisibility(SuccessCheck->Index);
+				IsCheck = true;
+			}
 		}
 	}
 

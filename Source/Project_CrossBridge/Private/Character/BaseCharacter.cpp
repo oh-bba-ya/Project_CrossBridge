@@ -44,7 +44,7 @@
 #include "HUD/GameOver.h"
 #include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
 #include "Spectator/PCSpectatorPawn.h"
-
+#include "VRCharacter/VRComponent.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -54,7 +54,7 @@ ABaseCharacter::ABaseCharacter()
 
 	bReplicates = true;
 	SetReplicateMovement(true);
-	
+
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
 	springArmComp->SetRelativeLocation(FVector(0, 70, 90));
@@ -74,31 +74,27 @@ ABaseCharacter::ABaseCharacter()
 
 	// 현재 Bridge 맵의 지역의 위치가 이상하다. 좌표는 0,0,0 인데 , 지역은 다른곳에 있다. 아무래도 중심좌표를 정확히 맞추지 않아서 그런것 같다.
 	// 그래서 TraceLength를 굉장히 높게 설정해야 정확히 조준된다.
-	TraceLength = 500,000.f;
+	TraceLength = 500, 000.f;
 
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> dashEffect(TEXT("/Script/Niagara.NiagaraSystem'/Game/Assets/effects/Niagara/NG_DashEffect.NG_DashEffect'"));
 
-	if(dashEffect.Succeeded())
+	if (dashEffect.Succeeded())
 	{
 		DashEffectComponent->SetAsset(dashEffect.Object);
 	}
-	
+
 	DashEffectComponent->SetupAttachment(GetMesh());
-	
+
 	MaxHP = 100.f;
 	CurrentHP = MaxHP;
-	
+
 	/** PC 캐릭터 디폴트 세팅 */
 	GetCharacterMovement()->Crouch(true);
 	GetCharacterMovement()->MaxWalkSpeed = 100;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 50;
 	GetCharacterMovement()->MaxFlySpeed = 100.f;
 	GetCapsuleComponent()->SetWorldScale3D(FVector(0.2f));
-	
-	
 
-	
-	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +110,7 @@ ABaseCharacter::ABaseCharacter()
 	VRHeadMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VRHeadMesh"));
 	VRHeadMesh->SetupAttachment(VRCamera);
 	VRHeadMesh->SetIsReplicated(true);
-	
+
 	HeadComp = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadComp"));
 	HeadComp->SetupAttachment(VRHeadMesh);
 	HeadComp->SetRelativeLocation(FVector(0, 11.8f, 58));
@@ -162,11 +158,11 @@ ABaseCharacter::ABaseCharacter()
 	LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftHandMesh"));
 	LeftHandMesh->SetupAttachment(LeftHand);
 	LeftHandMesh->SetIsReplicated(true);
-	
+
 	RightHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightHandMesh"));
 	RightHandMesh->SetupAttachment(RightHand);
 	RightHandMesh->SetIsReplicated(true);
-	
+
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
 	SwordMesh->SetupAttachment(RightHand);
 	SwordMesh->SetRelativeLocation(FVector(10.0f, -2.6f, -6.5f));
@@ -197,13 +193,27 @@ ABaseCharacter::ABaseCharacter()
 	GrabbableObjectCreateEffect->SetRelativeLocation(FVector(3, 4, -6));
 	GrabbableObjectCreateEffect->SetVisibility(false);
 	GrabbableObjectCreateEffect->SetIsReplicated(true);
-	
+
 	BlackholeTraceComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BlackholeTraceComp"));
 	BlackholeTraceComp->SetupAttachment(RootComponent);
 
 	BulletAimTraceComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BulletAimTraceComp"));
 	BulletAimTraceComp->SetupAttachment(RootComponent);
-	
+
+	LeftVRHealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LeftVRHealEffect"));
+	LeftVRHealEffect->SetupAttachment(LeftHand);
+	LeftVRHealEffect->SetRelativeLocation(FVector(3, 4, -6));
+	LeftVRHealEffect->SetRelativeRotation(FRotator(90, 0, 90));
+	LeftVRHealEffect->SetVisibility(false);
+	LeftVRHealEffect->SetIsReplicated(true);
+
+	RightVRHealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RightVRHealEffect"));
+	RightVRHealEffect->SetupAttachment(RightHand);
+	RightVRHealEffect->SetRelativeLocation(FVector(3, -4, -6));
+	RightVRHealEffect->SetRelativeRotation(FRotator(0, 0, -90));
+	RightVRHealEffect->SetVisibility(false);
+	RightVRHealEffect->SetIsReplicated(true);
+
 	VRStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("VRStatus"));
 	VRStatusWidget->SetupAttachment(LeftHand);
 	VRStatusWidget->SetRelativeLocation(FVector(-2, 0.15, 6));
@@ -230,7 +240,7 @@ ABaseCharacter::ABaseCharacter()
 	RightWidgetInteraction->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RightWidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("RightWidgetInteractionComp"));
 	RightWidgetInteractionComp->SetupAttachment(RightAim);
-	RightWidgetInteractionComp->PointerIndex =1;
+	RightWidgetInteractionComp->PointerIndex = 1;
 	RightWidgetInteractionComp->InteractionDistance = 15;
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> VRHeadAsset(TEXT("//Script/Engine.StaticMesh'/Game/HYY/Download/Helmet/source/casco/cscf.cscf'"));
@@ -281,7 +291,6 @@ ABaseCharacter::ABaseCharacter()
 	RightWidgetInteraction->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnWidgetRightOverlap);
 	RightWidgetInteraction->OnComponentEndOverlap.AddDynamic(this, &ABaseCharacter::OnWidgetRightEndOverlap);
 
-
 	/** PC 디폴트 설정*/
 	VRHeadMesh->SetVisibility(false);
 	HeadComp->SetCollisionProfileName(FName("NoCollision"));
@@ -300,10 +309,8 @@ ABaseCharacter::ABaseCharacter()
 	LeftAim->SetCollisionProfileName(FName("NoCollision"));
 	LeftHandBox->SetCollisionProfileName(FName("NoCollision"));
 	RightHandBox->SetCollisionProfileName(FName("NoCollision"));
-	
+
 	VRStatusWidget->SetVisibility(false);
-
-
 }
 
 // Called when the game starts or when spawned
@@ -312,38 +319,34 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	BridgeState = Cast<ACrossBridgeStateBase>(GetWorld()->GetGameState());
-	
+
 	// 게임 시작시 플레이어 오버헤드(overhead)컬러 설정
 	linearColor = FMath::VRand();
 	linearColor = linearColor.GetAbs();
-	
-	//SetCurrentHealth(MaxHP);
 
-	PCController = PCController==nullptr? Cast<ABaseCharacterController>(GetController()) : PCController;
+	// SetCurrentHealth(MaxHP);
 
-	if(PCController)
+	PCController = PCController == nullptr ? Cast<ABaseCharacterController>(GetController()) : PCController;
+
+	if (PCController)
 	{
-		PCController->SetHealthStatus(CurrentHP,MaxHP);
-		PCController->SetJetpackStatus(Fuel,MaxFuel);
+		PCController->SetHealthStatus(CurrentHP, MaxHP);
+		PCController->SetJetpackStatus(Fuel, MaxFuel);
 	}
 
-	
 	// Health 초기화.
 	if (HasAuthority())
 	{
 		SetCurrentHealth(MaxHP);
 		OnRep_SetOverheadCompColor();
 	}
-	
 
-
-	if(BridgeState!=nullptr)
+	if (BridgeState != nullptr)
 	{
 		BridgeState->endStateDelegate.AddDynamic(this, &ABaseCharacter::ShowGameOverWidget);
 	}
-	
-	
-	//UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
+
+	// UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
 
 	if (APlayerController *PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -358,8 +361,8 @@ void ABaseCharacter::BeginPlay()
 	// 내가 조종하는 캐릭터
 	if (GetController() != nullptr && GetController()->IsLocalController())
 	{
-		UE_LOG(LogTemp,Warning,TEXT("my Controller"));
-		
+		UE_LOG(LogTemp, Warning, TEXT("my Controller"));
+
 		// Player Name
 		GameInstance = GetGameInstance();
 
@@ -369,11 +372,10 @@ void ABaseCharacter::BeginPlay()
 
 			if (MultiplayerSessionsSubsystem)
 			{
-				//ServerSetName(MultiplayerSessionsSubsystem->SessionID.ToString());
+				// ServerSetName(MultiplayerSessionsSubsystem->SessionID.ToString());
 			}
 		}
 	}
-
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -387,7 +389,7 @@ void ABaseCharacter::BeginPlay()
 		UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
 		FTimerHandle VRSettingTimer;
 		GetWorld()->GetTimerManager().SetTimer(VRSettingTimer, this, &ABaseCharacter::ServerVRSetting, 0.1f, false);
-		//ServerVRSetting();
+		// ServerVRSetting();
 		camComp->SetActive(false);
 		VRCamera->SetActive(true);
 
@@ -396,7 +398,6 @@ void ABaseCharacter::BeginPlay()
 		RedDot->SetActorEnableCollision(false);
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
 		VRTimerController = Cast<ABaseCharacterController>(VRController);
-
 	}
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
@@ -423,15 +424,14 @@ void ABaseCharacter::BeginPlay()
 		SwordMat = SwordMesh->CreateDynamicMaterialInstance(1, SwordBase);
 		SwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
 	}
-	//UMaterialInterface *InvisibleSwordBase = InvisibleSwordMesh->GetMaterial(3);
-	//if (InvisibleSwordBase)
+	// UMaterialInterface *InvisibleSwordBase = InvisibleSwordMesh->GetMaterial(3);
+	// if (InvisibleSwordBase)
 	//{
 	//	InvisibleSwordMat = InvisibleSwordMesh->CreateDynamicMaterialInstance(3, InvisibleSwordBase);
 	//	InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
-	//}
+	// }
 
 	ServerResetColorChange(FString("SwordDissolve"));
-
 }
 
 // Called every frame
@@ -439,30 +439,29 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(CurrentHP <= 0)
+	if (CurrentHP <= 0)
 	{
-		//UE_LOG(LogTemp,Warning,TEXT("Die"));
+		// UE_LOG(LogTemp,Warning,TEXT("Die"));
 	}
-	
+
 	if (bJetPackActive)
 	{
 		// DeltaTime을 통해 게임, 컴퓨터 성능에 따른 다른 이동속도를 갖지 못하도록 했다..
 		AddMovementInput(FVector(0, 0, JetPackSpeed * DeltaTime));
 	}
 
-	if(PCController)
+	if (PCController)
 	{
-		PCController->SetHealthStatus(CurrentHP,MaxHP);
-		PCController->SetJetpackStatus(Fuel,MaxFuel);
+		PCController->SetHealthStatus(CurrentHP, MaxHP);
+		PCController->SetJetpackStatus(Fuel, MaxFuel);
 	}
-
 
 	if (freeze != nullptr)
 	{
 		freeze->SetActorLocation(GetActorLocation());
 	}
 
-	if(!IsVR)
+	if (!IsVR)
 	{
 		TraceUnderCosshairs(HitResult);
 		SetHUDCrosshairs(DeltaTime);
@@ -475,7 +474,10 @@ void ABaseCharacter::Tick(float DeltaTime)
 		float AimDotProduct = FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector());
 		float GripDotProduct = FVector::DotProduct(RightGrip->GetRightVector(), LeftGrip->GetRightVector());
 
-		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9 && VRSkillCheck(FString("Hands")))
+		float HandDist = FVector::Distance(LeftHand->GetComponentLocation(), RightHand->GetComponentLocation());
+
+		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), HandDist));
+		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9 && VRSkillCheck(FString("Hands")) && HandDist >= 13 && HandDist <= 25)
 		{
 			VRHealTime += DeltaTime;
 			if (VRCurHP < VRMaxHP)
@@ -488,11 +490,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 				{
 					if (!IsHeal)
 					{
+						ServerHealEffectActivate(true);
 						IsHeal = true;
 						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Right, 1, true);
 						VRController->PlayHapticEffect(HealHaptic, EControllerHand::Left, 1, true);
 					}
-					VRGetDamage(-2 * DeltaTime);
+					VRGetDamage(-3 * DeltaTime);
 				}
 			}
 			else
@@ -503,11 +506,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 					VRController->StopHapticEffect(EControllerHand::Right);
 					VRController->StopHapticEffect(EControllerHand::Left);
 					VRHealTime = 0;
+					ServerHealEffectActivate(false);
 					ServerResetColorChange("Right");
 				}
 			}
 		}
-		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9 || !VRSkillCheck(FString("Hands"))) && VRHealTime > 0)
+		else if ((AimDotProduct < 0.9 || GripDotProduct < 0.9 || HandDist < 13 || HandDist > 25 || !VRSkillCheck(FString("Hands"))) && VRHealTime > 0)
 		{
 			VRHealTime = 0;
 			if (IsHeal)
@@ -515,6 +519,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 				IsHeal = false;
 				VRController->StopHapticEffect(EControllerHand::Right);
 				VRController->StopHapticEffect(EControllerHand::Left);
+				ServerHealEffectActivate(false);
 				ServerResetColorChange("Right");
 			}
 		}
@@ -538,13 +543,52 @@ void ABaseCharacter::Tick(float DeltaTime)
 		if (VRCurHP <= 0 && !IsVRDead)
 		{
 			IsVRDead = true;
+			ServerVRDeath(true);
+			// 2초
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Dead!!"));
 			VRCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 			DisableInput(VRController);
-			FTimerHandle VRReviveTimer;
-			GetWorld()->GetTimerManager().SetTimer(VRReviveTimer, this, &ABaseCharacter::VRRevive, VRReviveLimitTime, false);
 			if (IsRightA)
 			{
 				RightAEnd();
+			}
+			// FTimerHandle VRReviveTimer;
+			// GetWorld()->GetTimerManager().SetTimer(VRReviveTimer, this, &ABaseCharacter::VRRevive, VRReviveLimitTime, false);
+		}
+		else if (VRCurHP <= 0 && IsVRDead)
+		{
+			VRReviveTime += DeltaTime;
+			if (VRReviveTime > 2 && VRReviveLimitTime > VRReviveTime)
+			{
+				if (!IsVRRevive)
+				{
+					IsVRRevive = true;
+					VRHeadLoc = VRHeadActor->GetActorLocation();
+					LeftHandLoc = VRLeftHandActor->GetActorLocation();
+					RightHandLoc = VRRightHandActor->GetActorLocation();
+
+					VRHeadRot = VRHeadActor->GetActorRotation();
+					LeftHandRot = VRLeftHandActor->GetActorRotation();
+					RightHandRot = VRRightHandActor->GetActorRotation();
+				}
+				float Rate = (VRReviveTime - 2) / (VRReviveLimitTime - 2);
+				float VRate = 1.3f;
+
+				if (Rate * VRate <= 1)
+				{
+					HeadReviveLoc = UKismetMathLibrary::VLerp(VRHeadLoc, VRHeadMesh->GetComponentLocation(), Rate * VRate);
+					LeftHandReviveLoc = UKismetMathLibrary::VLerp(LeftHandLoc, LeftHandMesh->GetComponentLocation(), Rate * VRate);
+					RightHandReviveLoc = UKismetMathLibrary::VLerp(RightHandLoc, RightHandMesh->GetComponentLocation(), Rate * VRate);
+				}
+				FRotator HeadReviveRot = UKismetMathLibrary::RLerp(VRHeadRot, VRHeadMesh->GetComponentRotation(), Rate, true);
+				FRotator LeftHandReviveRot = UKismetMathLibrary::RLerp(LeftHandRot, LeftHandMesh->GetComponentRotation(), Rate, true);
+				FRotator RightHandReviveRot = UKismetMathLibrary::RLerp(RightHandRot, RightHandMesh->GetComponentRotation(), Rate, true);
+				ServerVRRevive(Rate, HeadReviveLoc, LeftHandReviveLoc, RightHandReviveLoc, HeadReviveRot, LeftHandReviveRot, RightHandReviveRot);
+			}
+			else if (VRReviveLimitTime <= VRReviveTime)
+			{
+				ServerVRReviveSetting();
+				MulticastVRReviveSetting();
 			}
 		}
 
@@ -558,10 +602,10 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsLeftY && !IsTrashSpawningPoolCool && !IsTrashSpawningPoolSet)
 	{
-		//if (!TrashSpawningPool)
+		// if (!TrashSpawningPool)
 		//{
 		//	TrashSpawningPool = Cast<ATrashSpawningPool>(UGameplayStatics::GetActorOfClass(GetWorld(), ATrashSpawningPool::StaticClass()));
-		//}
+		// }
 		if (LeftYTimer == 0)
 		{
 			VRController->PlayHapticEffect(TrashCastHaptic, EControllerHand::Left, 1, true);
@@ -618,10 +662,10 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsLeftX && !IsBlackholeCool && !IsBlackholeSet)
 	{
-		//if (!Blackhole)
+		// if (!Blackhole)
 		//{
 		//	Blackhole = Cast<ABlackhole>(UGameplayStatics::GetActorOfClass(GetWorld(), ABlackhole::StaticClass()));
-		//}
+		// }
 		FVector BlackHoleLoc = BlackHoleTrace();
 		LeftXTimer += DeltaTime;
 		if (LeftXTimer / LeftXCastTime <= 1)
@@ -722,7 +766,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 				VRController->StopHapticEffect(EControllerHand::Right);
 				VRController->StopHapticEffect(EControllerHand::Left);
 				SwordSetTime = 0;
-				//ServerResetColorChange(FString("SwordOpacity"));
+				// ServerResetColorChange(FString("SwordOpacity"));
 				ServerResetColorChange(FString("SwordDissolve"));
 				ServerResetColorChange(FString("Left"));
 			}
@@ -737,7 +781,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 			ServerResetColorChange(FString("SwordOpacity"));
 		}
 		SwordActivateTime += DeltaTime;
-	
+
 		if (SwordActivateTime > SwordActivateLimitTime)
 		{
 			IsSwordSet = false;
@@ -748,19 +792,28 @@ void ABaseCharacter::Tick(float DeltaTime)
 			ServerResetColorChange(FString("SwordDissolve"));
 			ServerResetColorChange(FString("Left"));
 		}
-
 	}
-	
+
 	if (IsSwordDamageCool)
 	{
 		if (SwordDamageCoolTime == 0)
 		{
-			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 0.256f, 0.3f));
+			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 2.56f, 3));
+			FTimerHandle SwordMatTimer;
+			GetWorld()->GetTimerManager().SetTimer(SwordMatTimer,
+												   FTimerDelegate::CreateLambda([this]() -> void
+																				{ SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 0.256f, 0.3f)); }),
+												   0.03, false);
 		}
 		SwordDamageCoolTime += DeltaTime;
 		if (SwordDamageCoolTime > SwordDamageCoolTimeLimit)
 		{
-			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 25.6f, 30));
+			SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 2.56f, 3));
+			FTimerHandle SwordMatTimer;
+			GetWorld()->GetTimerManager().SetTimer(SwordMatTimer,
+												   FTimerDelegate::CreateLambda([this]() -> void
+																				{ SwordMat->SetVectorParameterValue(FName("MainColor"), (FLinearColor)FVector(0, 25.6f, 30)); }),
+												   0.03, false);
 			IsSwordDamageCool = false;
 			SwordDamageCoolTime = 0;
 		}
@@ -774,7 +827,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		}
 		SwordCoolTime += DeltaTime;
 		VRStatus->SetCooltimeText(FString("Sword"), SwordCoolTimeLimit - SwordCoolTime);
-		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), SwordCoolTime));
+		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), SwordCoolTime));
 		if (SwordCoolTime > SwordCoolTimeLimit)
 		{
 			VRStatus->SetCooltimeText(FString("Sword"), 0);
@@ -786,9 +839,9 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	// FVector StartPos = LeftGrip->GetComponentLocation() + LeftAim->GetForwardVector() * 10;
 	// FVector EndPos = StartPos + LeftGrip->GetRightVector() * 1000;
-	//FVector StartPos = LeftHand->GetComponentLocation();
-	//FVector EndPos = StartPos + LeftHand->GetUpVector() * 1000;
-	//DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
+	// FVector StartPos = LeftHand->GetComponentLocation();
+	// FVector EndPos = StartPos + LeftHand->GetUpVector() * 1000;
+	// DrawDebugLine(GetWorld(), StartPos, EndPos, FColor::Red, false, -1, 0, 1);
 }
 
 // Called to bind functionality to input
@@ -869,19 +922,19 @@ void ABaseCharacter::Jump()
 
 void ABaseCharacter::Attack()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Base Attack"));
+	// UE_LOG(LogTemp, Warning, TEXT("Base Attack"));
 	Fire();
 }
 
 void ABaseCharacter::ContextualActionPressed()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Pressed"));
+	// UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Pressed"));
 	FreezeSpawn();
 }
 
 void ABaseCharacter::ContextualActionReleased()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Released"));
+	// UE_LOG(LogTemp, Warning, TEXT("Base ContextualAction Released"));
 	RemoveFreeze();
 }
 
@@ -889,31 +942,28 @@ void ABaseCharacter::ContextualActionReleased()
 #pragma region OverheadComp
 void ABaseCharacter::OnRep_SetOverheadCompColor()
 {
-	
-	UMaterialInterface* iMat = overHeadComp->GetMaterial(0);
+
+	UMaterialInterface *iMat = overHeadComp->GetMaterial(0);
 	FHashedMaterialParameterInfo param = FHashedMaterialParameterInfo(TEXT("MyColor"));
 
 	iMat->GetVectorParameterValue(param, initColor);
 
-	dynamicMat = UMaterialInstanceDynamic::Create(iMat,this);
+	dynamicMat = UMaterialInstanceDynamic::Create(iMat, this);
 
-	if(dynamicMat != nullptr)
+	if (dynamicMat != nullptr)
 	{
-		dynamicMat->SetVectorParameterValue(TEXT("MyColor"),linearColor);
-		overHeadComp->SetMaterial(0,dynamicMat);
+		dynamicMat->SetVectorParameterValue(TEXT("MyColor"), linearColor);
+		overHeadComp->SetMaterial(0, dynamicMat);
 	}
-
 }
-#pragma endregion 
-
-
+#pragma endregion
 
 /** Sliding , Rolling Functions()*/
 #pragma region Sliding, Rolling Function()
 
 void ABaseCharacter::RollingActionPressed()
 {
-	if(freeze == nullptr)
+	if (freeze == nullptr)
 	{
 		Server_RollingActionPressed();
 	}
@@ -922,7 +972,6 @@ void ABaseCharacter::RollingActionPressed()
 void ABaseCharacter::RollingActionReleased()
 {
 	Server_RollingActionReleased();
-
 }
 
 void ABaseCharacter::Server_RollingActionPressed_Implementation()
@@ -937,14 +986,13 @@ void ABaseCharacter::Server_RollingActionReleased_Implementation()
 
 void ABaseCharacter::Multicast_RollingActionPressed_Implementation()
 {
-	
+
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	if (RollingMontage)
 	{
 		PlayAnimMontage(RollingMontage);
 	}
 	GetCapsuleComponent()->SetCapsuleHalfHeight(20.f);
-
 }
 
 void ABaseCharacter::Multicast_RollingActionReleased_Implementation()
@@ -953,11 +1001,9 @@ void ABaseCharacter::Multicast_RollingActionReleased_Implementation()
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
-
-
 void ABaseCharacter::SlidingActionPressed()
 {
-	if(freeze == nullptr)
+	if (freeze == nullptr)
 	{
 		Server_SlidingActionPressed();
 	}
@@ -978,12 +1024,10 @@ void ABaseCharacter::Server_SlidingActionReleased_Implementation()
 	Multicast_SlidingActionReleased();
 }
 
-
-
 void ABaseCharacter::Multicast_SlidingActionPressed_Implementation()
 {
 	Crouch();
-	//GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	// GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	if (SlidingMontage)
 	{
 		PlayAnimMontage(SlidingMontage);
@@ -1061,24 +1105,21 @@ void ABaseCharacter::Server_DeActivateJetPack_Implementation()
 /** Health() */
 #pragma region Health()
 
-
 void ABaseCharacter::Server_RecoveryHP_Implementation(float value)
 {
 	float hp = CurrentHP + value;
 	SetCurrentHealth(hp);
 }
 
-
 void ABaseCharacter::SetCurrentHealth(float value)
 {
-	if(GetLocalRole() ==  ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
-		CurrentHP = FMath::Clamp(value,0.f,MaxHP);
-		
+		CurrentHP = FMath::Clamp(value, 0.f, MaxHP);
+
 		OnHealthUpdate();
 	}
 }
-
 
 void ABaseCharacter::OnTakeDamage(float d)
 {
@@ -1095,91 +1136,86 @@ void ABaseCharacter::OnRep_CurrentHealth()
 
 void ABaseCharacter::OnHealthUpdate()
 {
-	//클라이언트 전용 함수 기능
+	// 클라이언트 전용 함수 기능
 	if (IsLocallyControlled())
 	{
 		FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHP);
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 
 		if (CurrentHP <= 0)
 		{
 			bIsDead = true;
-			//PCPlayerDead();
+			// PCPlayerDead();
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
 	}
 
-	//서버 전용 함수 기능
+	// 서버 전용 함수 기능
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHP);
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 
 		if (CurrentHP <= 0)
 		{
 			bIsDead = true;
-			//PCPlayerDead();
-			//FString deathMessage = FString::Printf(TEXT("You have been killed."));
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+			// PCPlayerDead();
+			// FString deathMessage = FString::Printf(TEXT("You have been killed."));
+			// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
 	}
 
-	//모든 머신에서 실행되는 함수 
-	/*  
-		여기에 대미지 또는 사망의 결과로 발생하는 특별 함수 기능 배치 
+	// 모든 머신에서 실행되는 함수
+	/*
+		여기에 대미지 또는 사망의 결과로 발생하는 특별 함수 기능 배치
 	*/
 
-
-	if(PCController)
+	if (PCController)
 	{
-		PCController->SetHealthStatus(CurrentHP,MaxHP);
+		PCController->SetHealthStatus(CurrentHP, MaxHP);
 	}
-	
-	
-	if(bIsDead)
+
+	if (bIsDead)
 	{
 		MultiCast_PCPlayerDead();
 	}
-	
 }
 
 #pragma endregion
-
 
 /** Player Dead , Respawn*/
 #pragma region PCPlayer Dead, Respawn
 
 void ABaseCharacter::PCPlayerDead()
 {
-	if(GetController() != nullptr && GetController()->IsLocalController())
+	if (GetController() != nullptr && GetController()->IsLocalController())
 	{
 		GetCharacterMovement()->DisableMovement();
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		bUseControllerRotationYaw =false;
-		camComp->PostProcessSettings.ColorSaturation = FVector4(0,0,0,1);
+		bUseControllerRotationYaw = false;
+		camComp->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 	}
 }
 
 void ABaseCharacter::Multicast_Hit_Implementation()
 {
-	if(HitMontage != nullptr)
+	if (HitMontage != nullptr)
 	{
 		PlayAnimMontage(HitMontage);
-		
 	}
 }
 
 void ABaseCharacter::Server_PCPlayerDead_Implementation()
 {
-	if(GetController() != nullptr && GetController()->IsLocalController())
+	if (GetController() != nullptr && GetController()->IsLocalController())
 	{
 		GetCharacterMovement()->DisableMovement();
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		bUseControllerRotationYaw =false;
-		camComp->PostProcessSettings.ColorSaturation = FVector4(0,0,0,1);
+		bUseControllerRotationYaw = false;
+		camComp->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 	}
 }
 
@@ -1190,19 +1226,18 @@ void ABaseCharacter::MultiCast_PCPlayerDead_Implementation()
 	GetCharacterMovement()->DisableMovement();
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	bUseControllerRotationYaw =false;
-	camComp->PostProcessSettings.ColorSaturation = FVector4(0,0,0,1);
-
+	bUseControllerRotationYaw = false;
+	camComp->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 }
 
 void ABaseCharacter::ChangeSpectator()
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		SpawnTrashCan();
-		AProject_CrossBridgeGameModeBase* GM = Cast<AProject_CrossBridgeGameModeBase>(GetWorld()->GetAuthGameMode());
+		AProject_CrossBridgeGameModeBase *GM = Cast<AProject_CrossBridgeGameModeBase>(GetWorld()->GetAuthGameMode());
 
-		if(GM != nullptr)
+		if (GM != nullptr)
 		{
 			GM->SetDeadTransform(GetActorLocation(), GetActorRotation());
 			TSubclassOf<APCSpectatorPawn> spectatorPawn = GM->SpectatorClass;
@@ -1210,13 +1245,13 @@ void ABaseCharacter::ChangeSpectator()
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			APCSpectatorPawn* spectator = GetWorld()->SpawnActor<APCSpectatorPawn>(
+			APCSpectatorPawn *spectator = GetWorld()->SpawnActor<APCSpectatorPawn>(
 				spectatorPawn,
 				GetActorLocation(),
 				GetActorRotation(),
 				param);
 
-			if(spectator != nullptr)
+			if (spectator != nullptr)
 			{
 				spectator->SetOrigin(this);
 				GetController()->Possess(spectator);
@@ -1224,37 +1259,34 @@ void ABaseCharacter::ChangeSpectator()
 			}
 		}
 	}
-
 }
-#pragma endregion 
+#pragma endregion
 
 /** Fire */
 #pragma region Fire()
 
 void ABaseCharacter::TrashCanFire()
 {
-	if(myTrashCan != nullptr && freeze == nullptr)
+	if (myTrashCan != nullptr && freeze == nullptr)
 	{
-		if(myTrashCan->GetbFireDelay())
+		if (myTrashCan->GetbFireDelay())
 		{
-			myTrashCan->Fire(this,HitTarget);
+			myTrashCan->Fire(this, HitTarget);
 		}
 	}
 }
-
 
 void ABaseCharacter::Fire()
 {
 	if (myWeapon != nullptr && freeze == nullptr && bisEquip)
 	{
-		if(myWeapon->GetbFireDelay())
+		if (myWeapon->GetbFireDelay())
 		{
 			Server_Fire();
-			myWeapon->Fire(this,HitTarget);
+			myWeapon->Fire(this, HitTarget);
 		}
 	}
 }
-
 
 void ABaseCharacter::Server_Fire_Implementation()
 {
@@ -1265,7 +1297,7 @@ void ABaseCharacter::Multicast_Fire_Implementation()
 {
 	if (fireMontage != nullptr)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Fire Montage"));
+		// UE_LOG(LogTemp, Warning, TEXT("Fire Montage"));
 		PlayAnimMontage(fireMontage);
 	}
 }
@@ -1275,17 +1307,16 @@ void ABaseCharacter::Multicast_Fire_Implementation()
 void ABaseCharacter::SpawnTrashCan()
 {
 	float count = 0.f;
-	if(myTrashCan !=nullptr)
+	if (myTrashCan != nullptr)
 	{
 		count = myTrashCan->GetCount();
 		myTrashCan->Destroy();
-		if(trashcanFactory)
+		if (trashcanFactory)
 		{
-			ATrashCan* Trash = GetWorld()->SpawnActor<ATrashCan>(trashcanFactory,GetActorLocation(),GetActorRotation());
+			ATrashCan *Trash = GetWorld()->SpawnActor<ATrashCan>(trashcanFactory, GetActorLocation(), GetActorRotation());
 			Trash->SetCount(count);
 		}
 	}
-
 }
 
 /** Weapon */
@@ -1301,8 +1332,6 @@ void ABaseCharacter::DropWeapon()
 		myHoming->DropItem(this);
 	}
 }
-
-
 
 /** Freeze Skill */
 #pragma region Skill Freeze
@@ -1342,28 +1371,26 @@ void ABaseCharacter::Server_RemoveFreeze_Implementation()
 #pragma region Canon
 void ABaseCharacter::CanonFire()
 {
-	if(mycanon != nullptr)
+	if (mycanon != nullptr)
 	{
-		if(myHoming != nullptr)
+		if (myHoming != nullptr)
 		{
 			mycanon->Reload(myHoming);
-			
+
 			myHoming->UsingItem(this);
-			if(myHoming != nullptr)
+			if (myHoming != nullptr)
 			{
 				myHoming = nullptr;
 			}
 		}
 		else
 		{
-			if(mycanon->GetFireDelay())
+			if (mycanon->GetFireDelay())
 			{
 				mycanon->HomingFire(this);
 			}
 		}
 	}
-
-
 }
 
 #pragma endregion
@@ -1371,7 +1398,7 @@ void ABaseCharacter::CanonFire()
 #pragma region SpeedUp
 void ABaseCharacter::SpeedUp()
 {
-	if(!bIsSpeedUp)
+	if (!bIsSpeedUp)
 	{
 		MultiCast_SpeedUP();
 	}
@@ -1384,10 +1411,9 @@ void ABaseCharacter::MultiCast_SpeedUP_Implementation()
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 100;
 
 	bIsSpeedUp = true;
-	
-	FTimerHandle SpeedUpDelayHandle;
-	GetWorld()->GetTimerManager().SetTimer(SpeedUpDelayHandle,this, &ABaseCharacter::ComeBackSpeed,DuringSpeedTime);
 
+	FTimerHandle SpeedUpDelayHandle;
+	GetWorld()->GetTimerManager().SetTimer(SpeedUpDelayHandle, this, &ABaseCharacter::ComeBackSpeed, DuringSpeedTime);
 }
 
 void ABaseCharacter::ComeBackSpeed()
@@ -1396,21 +1422,20 @@ void ABaseCharacter::ComeBackSpeed()
 	MultiCast_CombackSpeed();
 }
 
-
 void ABaseCharacter::MultiCast_CombackSpeed_Implementation()
 {
-	if(!bIsSpeedUp)
+	if (!bIsSpeedUp)
 	{
 		return;
 	}
 
 	SpeedCurrentTime = 0.f;
 
-	//UE_LOG(LogTemp,Warning,TEXT("ComeBackSpeed"));
+	// UE_LOG(LogTemp,Warning,TEXT("ComeBackSpeed"));
 
 	GetWorld()->GetTimerManager().SetTimer(SpeedHandle,
-		FTimerDelegate::CreateLambda([this]()->void
-		{
+										   FTimerDelegate::CreateLambda([this]() -> void
+																		{
 			SpeedCurrentTime += GetWorld()->DeltaTimeSeconds;
 
 			float curWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
@@ -1432,18 +1457,16 @@ void ABaseCharacter::MultiCast_CombackSpeed_Implementation()
 				bIsSpeedUp = false;
 				GetWorld()->GetTimerManager().ClearTimer(SpeedHandle);
 				//UE_LOG(LogTemp,Warning,TEXT("End Speed UP"));
-			}
-		})
-		,0.02f,true);
+			} }),
+										   0.02f, true);
 }
 
 #pragma endregion
 
-
 void ABaseCharacter::SetHUDCrosshairs(float DeletaTime)
 {
 
-	if(myWeapon == nullptr && myTrashCan == nullptr)
+	if (myWeapon == nullptr && myTrashCan == nullptr)
 	{
 		bDisplayCrosshair = false;
 	}
@@ -1453,15 +1476,15 @@ void ABaseCharacter::SetHUDCrosshairs(float DeletaTime)
 	}
 
 	PCController = PCController == nullptr ? Cast<ABaseCharacterController>(GetController()) : PCController;
-	
-	if(PCController)
+
+	if (PCController)
 	{
 		HUD = HUD == nullptr ? Cast<AWeaponHUD>(PCController->GetHUD()) : HUD;
 
-		if(HUD)
+		if (HUD)
 		{
 			FHUDStruct HudStruct;
-			if(bDisplayCrosshair)
+			if (bDisplayCrosshair)
 			{
 				HudStruct.CrosshairCenter = CrosshairsCenter;
 				HudStruct.CrosshairRight = CrosshairsRight;
@@ -1482,10 +1505,10 @@ void ABaseCharacter::SetHUDCrosshairs(float DeletaTime)
 	}
 }
 
-void ABaseCharacter::TraceUnderCosshairs(FHitResult& TraceHitResult)
+void ABaseCharacter::TraceUnderCosshairs(FHitResult &TraceHitResult)
 {
 	FVector2D ViewportSize;
-	if(GEngine && GEngine->GameViewport)
+	if (GEngine && GEngine->GameViewport)
 	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
 	}
@@ -1495,14 +1518,13 @@ void ABaseCharacter::TraceUnderCosshairs(FHitResult& TraceHitResult)
 	FVector CrosshairWorldDirection;
 
 	// 2D 스크린 좌표를 3D 월드 좌표로 변환
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0),
-		CrosshairLocation,
-		CrosshairWorldPosition,
-		CrosshairWorldDirection
-		);
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0),
+																   CrosshairLocation,
+																   CrosshairWorldPosition,
+																   CrosshairWorldDirection);
 
 	// 변환 작업 성공
-	if(bScreenToWorld)
+	if (bScreenToWorld)
 	{
 		FVector Start = CrosshairWorldPosition;
 
@@ -1514,40 +1536,40 @@ void ABaseCharacter::TraceUnderCosshairs(FHitResult& TraceHitResult)
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECC_Visibility);
 
 		// LineTrace 범위안에 감지되는 액터가 존재하지 않을시..
-		if(!TraceHitResult.bBlockingHit)
+		if (!TraceHitResult.bBlockingHit)
 		{
 			TraceHitResult.ImpactPoint = End;
 			HitTarget = End;
-			//DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
+			// DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Green);
 		}
-		else  // 범위안에 감지되는 액터가 존재한다면..
-			{
+		else // 범위안에 감지되는 액터가 존재한다면..
+		{
 			HitTarget = TraceHitResult.ImpactPoint;
-			//DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
-			}
+			// DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint,12.f,12,FColor::Red);
+		}
 	}
 }
 
 void ABaseCharacter::UsingConverter()
 {
-	if(myConverter != nullptr)
+	if (myConverter != nullptr)
 	{
 		// 만약 쓰레기통을 들고 있다면..
-		if(myTrashCan != nullptr)
+		if (myTrashCan != nullptr)
 		{
 			// 쓰레기통속에 모아둔 쓰레기가 존재한다면..
-			if(myTrashCan->GetCount() > 0)
+			if (myTrashCan->GetCount() > 0)
 			{
-				//UE_LOG(LogTemp,Warning,TEXT("쓰레기 저장"));
-				// 변환기에 쓰레기통에 존재하는 모든 쓰레기부터 저장한다..
+				// UE_LOG(LogTemp,Warning,TEXT("쓰레기 저장"));
+				//  변환기에 쓰레기통에 존재하는 모든 쓰레기부터 저장한다..
 				myConverter->SaveGarbage(myTrashCan->GetCount());
-				
+
 				// 쓰레기통에 존재하던 쓰레기 개수를 0으로 초기화한다.
 				myTrashCan->SetCount(-1 * myTrashCan->GetCount());
 			}
 			else // 만약 존재하지 않는다면 바로 HomingItem을 소환한다.
 			{
-				//UE_LOG(LogTemp,Warning,TEXT("아이템 소환"));
+				// UE_LOG(LogTemp,Warning,TEXT("아이템 소환"));
 				myConverter->MakingHoming();
 			}
 		}
@@ -1559,103 +1581,89 @@ void ABaseCharacter::UsingConverter()
 	}
 }
 
-
-
 void ABaseCharacter::ShowGameOverWidget()
 {
 	// 게임이 끝나지 않았다면 위젯띄우기 종료
-	if(BridgeState->GetGameState() != EGameState::End)
-	{
-		return ;
-	}
-
-	if(GameOverWidget == nullptr)
+	if (BridgeState->GetGameState() != EGameState::End)
 	{
 		return;
 	}
-	
-	if(IsVR)
+
+	if (GameOverWidget == nullptr)
 	{
 		return;
 	}
-	
 
-	if(GameOverMenu == nullptr)
+	if (IsVR)
 	{
-		
-		GameOverMenu = CreateWidget<UGameOver>(GetWorld(),GameOverWidget);
-		
-		if(GameOverMenu != nullptr)
+		return;
+	}
+
+	if (GameOverMenu == nullptr)
+	{
+
+		GameOverMenu = CreateWidget<UGameOver>(GetWorld(), GameOverWidget);
+
+		if (GameOverMenu != nullptr)
 		{
-			if(!bGameOverMenuOpen)
+			if (!bGameOverMenuOpen)
 			{
-				if(BridgeState->GetWinner() == EWinner::VR)
+				if (BridgeState->GetWinner() == EWinner::VR)
 				{
 					GameOverMenu->SetDisplayText(FString("LOSE"));
 				}
-				else if(BridgeState->GetWinner() == EWinner::PC)
+				else if (BridgeState->GetWinner() == EWinner::PC)
 				{
 					GameOverMenu->SetDisplayText(FString("WIN"));
 				}
 
 				GameOverMenu->MenuSetup();
 				bGameOverMenuOpen = true;
-			
 			}
 		}
-		
-		
-
-
 	}
-	
 }
 
 void ABaseCharacter::Clinet_ShowGameOverWidget_Implementation()
 {
 	// 게임이 끝나지 않았다면 위젯띄우기 종료
-	if(BridgeState->GetGameState() != EGameState::End)
-	{
-		return ;
-	}
-
-	if(GameOverWidget == nullptr)
+	if (BridgeState->GetGameState() != EGameState::End)
 	{
 		return;
 	}
 
-	if(IsVR)
+	if (GameOverWidget == nullptr)
 	{
 		return;
 	}
 
-	if(GameOverMenu == nullptr)
+	if (IsVR)
 	{
-		
-		GameOverMenu = CreateWidget<UGameOver>(GetWorld(),GameOverWidget);
-		
-		if(GameOverMenu != nullptr)
+		return;
+	}
+
+	if (GameOverMenu == nullptr)
+	{
+
+		GameOverMenu = CreateWidget<UGameOver>(GetWorld(), GameOverWidget);
+
+		if (GameOverMenu != nullptr)
 		{
-			if(!bGameOverMenuOpen)
+			if (!bGameOverMenuOpen)
 			{
-				if(BridgeState->GetWinner() == EWinner::VR)
+				if (BridgeState->GetWinner() == EWinner::VR)
 				{
 					GameOverMenu->SetDisplayText(FString("LOSE"));
 				}
-				else if(BridgeState->GetWinner() == EWinner::PC)
+				else if (BridgeState->GetWinner() == EWinner::PC)
 				{
 					GameOverMenu->SetDisplayText(FString("WIN"));
 				}
 
 				GameOverMenu->MenuSetup();
 				bGameOverMenuOpen = true;
-			
 			}
 		}
-		
-		
-
-
 	}
 }
 
@@ -1679,6 +1687,9 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, bisEquip);
 	DOREPLIFETIME(ABaseCharacter, linearColor);
 	DOREPLIFETIME(ABaseCharacter, bIsDead);
+	DOREPLIFETIME(ABaseCharacter, VRHeadActor);
+	DOREPLIFETIME(ABaseCharacter, VRLeftHandActor);
+	DOREPLIFETIME(ABaseCharacter, VRRightHandActor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1711,8 +1722,8 @@ void ABaseCharacter::Turn(const FInputActionValue &Values)
 		}
 	}
 
-	//AddControllerYawInput(Axis.X);
-	//AddControllerPitchInput(Axis.Y);
+	// AddControllerYawInput(Axis.X);
+	// AddControllerPitchInput(Axis.Y);
 }
 
 void ABaseCharacter::LeftIndexCurl()
@@ -1746,8 +1757,8 @@ void ABaseCharacter::LeftYEnd()
 {
 	if (LeftYTimer / LeftYCastTime > 1)
 	{
-		//ServerSpawnThunder();
-		//TrashSpawningPool->SetActorLocation(GetActorLocation() + GetActorUpVector()*200);
+		// ServerSpawnThunder();
+		// TrashSpawningPool->SetActorLocation(GetActorLocation() + GetActorUpVector()*200);
 		ServerTrashSpawningPoolActivate();
 		IsTrashSpawningPoolSet = true;
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left, 1, false);
@@ -1765,7 +1776,7 @@ void ABaseCharacter::LeftYEnd()
 
 void ABaseCharacter::LeftX()
 {
-	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY && !IsBlackholeSet &&!IsLeftX && !IsBlackholeCool && BlackholeTimer == 0)
+	if (!IsLeftIndexCurl && !IsLeftGrasp && !IsLeftY && !IsBlackholeSet && !IsLeftX && !IsBlackholeCool && BlackholeTimer == 0)
 	{
 		IsLeftX = true;
 		VRController->PlayHapticEffect(BlackholeCastHaptic, EControllerHand::Left, 1, false);
@@ -1826,7 +1837,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 
 void ABaseCharacter::LeftGraspEnd()
 {
-	//VRGetDamage(1);
+	// VRGetDamage(1);
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{
@@ -1857,11 +1868,11 @@ void ABaseCharacter::RightGraspEnd()
 
 void ABaseCharacter::RightB()
 {
-	//VRGetDamage(1);
+	// VRGetDamage(1);
 	if (!IsRightA && !IsRedDotSet && VRSkillCheck(FString("Right")))
 	{
 		IsRightB = true;
-		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("READY"));
+		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("READY"));
 		VRController->PlayHapticEffect(BulletCastHaptic, EControllerHand::Right);
 		IsRedDotSet = true;
 		RedDot->SetActorHiddenInGame(false);
@@ -1896,7 +1907,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	//VRGetDamage(1);
+	VRGetDamage(10);
 	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
@@ -1913,7 +1924,7 @@ void ABaseCharacter::RightAEnd()
 		IsSwordCool = true;
 		SwordComp->SetCollisionProfileName(TEXT("NoCollision"));
 	}
-	if (IsSwordDamageCool) 
+	if (IsSwordDamageCool)
 	{
 		IsSwordDamageCool = false;
 		SwordDamageCoolTime = 0;
@@ -1939,19 +1950,18 @@ void ABaseCharacter::OnLeftHandOverlap(UPrimitiveComponent *OverlappedComponent,
 		ServerLeftHandActivate(false);
 		FTimerHandle SpawnGrabbableActorCoolTimer;
 		GetWorld()->GetTimerManager().SetTimer(SpawnGrabbableActorCoolTimer,
-			FTimerDelegate::CreateLambda([this]()->void
-				{
-					ServerLeftHandActivate(true);
-				}), 20, false);
+											   FTimerDelegate::CreateLambda([this]() -> void
+																			{ ServerLeftHandActivate(true); }),
+											   20, false);
 	}
 	if (OtherComp->GetCollisionObjectType() == ECC_Destructible)
 	{
 		ServerVRDoorBreak(FString("Left"), OtherComp);
-		//if (BridgeState->GetGameState() == EGameState::Wait)
+		// if (BridgeState->GetGameState() == EGameState::Wait)
 		//{
 		//	BridgeState->SetGameState(EGameState::Start);
-		//}
-		//GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
+		// }
+		// GetWorld()->SpawnActor<AActor>(BreakDoor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
 	}
 }
 void ABaseCharacter::ServerLeftHandActivate_Implementation(bool IsActivate)
@@ -1988,10 +1998,10 @@ void ABaseCharacter::OnRightHandOverlap(UPrimitiveComponent *OverlappedComponent
 	{
 		ServerVRDoorBreak(FString("Right"), OtherComp);
 
-		//if (BridgeState->GetGameState() == EGameState::Wait)
+		// if (BridgeState->GetGameState() == EGameState::Wait)
 		//{
 		//	BridgeState->SetGameState(EGameState::Start);
-		//}
+		// }
 	}
 }
 
@@ -2003,35 +2013,35 @@ void ABaseCharacter::OnRightHandEndOverlap(UPrimitiveComponent *OverlappedCompon
 	}
 }
 
-void ABaseCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseCharacter::OnSwordOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
-	class ABaseCharacter* Enemy = Cast<ABaseCharacter>(OtherActor);
+	class ABaseCharacter *Enemy = Cast<ABaseCharacter>(OtherActor);
 	if (Enemy && !IsSwordDamageCool)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("IsHit"));
+		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("IsHit"));
 		IsSwordDamageCool = true;
-		//Enemy->Server_TakeDamage(10);
+		// Enemy->Server_TakeDamage(10);
 		ServerVRAttack(FString("Sword"), Enemy);
 	}
 }
 
-void ABaseCharacter::OnWidgetLeftOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseCharacter::OnWidgetLeftOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
 	LeftWidgetInteractionComp->PressPointerKey(FKey(TEXT("LeftMouseButton")));
 	VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Left);
 }
 
-void ABaseCharacter::OnWidgetLeftEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void ABaseCharacter::OnWidgetLeftEndOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
 {
 	LeftWidgetInteractionComp->ReleasePointerKey(FKey(TEXT("LeftMouseButton")));
 }
-void ABaseCharacter::OnWidgetRightOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseCharacter::OnWidgetRightOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
 	RightWidgetInteractionComp->PressPointerKey(FKey(TEXT("LeftMouseButton")));
 	VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
 }
 
-void ABaseCharacter::OnWidgetRightEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void ABaseCharacter::OnWidgetRightEndOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
 {
 	RightWidgetInteractionComp->ReleasePointerKey(FKey(TEXT("LeftMouseButton")));
 }
@@ -2114,7 +2124,7 @@ FVector ABaseCharacter::BlackHoleTrace()
 {
 	LeftXTraces.RemoveAt(0, LeftXTraces.Num());
 
-	FVector CurPos = LeftHand->GetComponentLocation() + LeftHand->GetUpVector()* -10 + LeftHand->GetForwardVector() * 5;
+	FVector CurPos = LeftHand->GetComponentLocation() + LeftHand->GetUpVector() * -10 + LeftHand->GetForwardVector() * 5;
 	FVector Dir = (LeftHandMesh->GetRightVector() - LeftHandMesh->GetUpVector() + LeftHandMesh->GetForwardVector()).GetSafeNormal() * BlackHoleForwardPower;
 
 	LeftXTraces.Add(CurPos);
@@ -2197,8 +2207,8 @@ void ABaseCharacter::MulticastColorChange_Implementation(float Rate, const FStri
 	}
 	else if (Position == FString("SwordOpacity"))
 	{
-		//float OpacityRate = UKismetMathLibrary::Lerp(0.3, 1, Rate);
-		//InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), OpacityRate);
+		// float OpacityRate = UKismetMathLibrary::Lerp(0.3, 1, Rate);
+		// InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), OpacityRate);
 		InvisibleSwordMesh->SetVisibility(true);
 	}
 	else if (Position == FString("SwordDissolve"))
@@ -2250,20 +2260,19 @@ void ABaseCharacter::MulticastResetColorChange_Implementation(const FString &Pos
 	}
 	else if (Position == FString("SwordOpacity"))
 	{
-		//InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+		// InvisibleSwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
 		InvisibleSwordMesh->SetVisibility(false);
 	}
 	else if (Position == FString("SwordDissolve"))
 	{
 		if (SwordMat)
 		{
-		SwordMat->SetScalarParameterValue(FName("Dissolve"), 0);
-
+			SwordMat->SetScalarParameterValue(FName("Dissolve"), 0);
 		}
 		SwordMesh->SetVisibility(false);
 	}
 }
-void ABaseCharacter::ServerSpawnGrabbableActor_Implementation(AActor* OtherActor)
+void ABaseCharacter::ServerSpawnGrabbableActor_Implementation(AActor *OtherActor)
 {
 	ABaseGrabbableActor *GrabActor = GetWorld()->SpawnActor<ABaseGrabbableActor>(SpawnGrabbedActor, LeftHand->GetComponentLocation(), LeftHand->GetComponentRotation());
 	OtherActor->Destroy();
@@ -2273,6 +2282,9 @@ void ABaseCharacter::ServerVRSetting_Implementation()
 {
 	Blackhole = GetWorld()->SpawnActor<ABlackhole>(SpawnBlackhole, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	TrashSpawningPool = GetWorld()->SpawnActor<ATrashSpawningPool>(SpawnTrashSpawningPool, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	VRHeadActor = GetWorld()->SpawnActor<AVRComponent>(VRHeadSpawn, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	VRLeftHandActor = GetWorld()->SpawnActor<AVRComponent>(VRLeftHandSpawn, FVector(0, 0, -1000), FRotator(0, 0, 0));
+	VRRightHandActor = GetWorld()->SpawnActor<AVRComponent>(VRRightHandSpawn, FVector(0, 0, -1000), FRotator(0, 0, 0));
 	MulticastVRSetting();
 }
 
@@ -2304,7 +2316,6 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 
 	overHeadComp->SetVisibility(false);
 }
-
 
 void ABaseCharacter::ServerBlackholeSet_Implementation(float Rate, FVector Loc)
 {
@@ -2347,9 +2358,9 @@ void ABaseCharacter::ServerTrashSpawningPoolReset_Implementation()
 
 void ABaseCharacter::ServerVRTransform_Implementation(FTransform HeadTransform, FTransform LeftTransform, FTransform RightTransform)
 {
-	//VRCamera->SetRelativeTransform(HeadTransform);
-	//LeftHand->SetRelativeTransform(LeftTransform);
-	//RightHand->SetRelativeTransform(RightTransform);
+	// VRCamera->SetRelativeTransform(HeadTransform);
+	// LeftHand->SetRelativeTransform(LeftTransform);
+	// RightHand->SetRelativeTransform(RightTransform);
 	MulticastVRTransform(HeadTransform, LeftTransform, RightTransform);
 }
 
@@ -2358,7 +2369,7 @@ void ABaseCharacter::MulticastVRTransform_Implementation(FTransform HeadTransfor
 	VRCamera->SetRelativeTransform(HeadTransform);
 	RightHand->SetRelativeTransform(RightTransform);
 	LeftHand->SetRelativeTransform(LeftTransform);
-}	
+}
 void ABaseCharacter::ServerBlackholeActivate_Implementation(bool IsActive)
 {
 	IsBlackholeSet = IsActive;
@@ -2382,6 +2393,20 @@ void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, 
 	AThrowingWeapon *ThrowingWeaponActor = GetWorld()->SpawnActor<AThrowingWeapon>(SpawnThrowingWeapon, SpawnLoc, SpawnRot);
 }
 
+void ABaseCharacter::ServerHealEffectActivate_Implementation(bool IsActivate)
+{
+	if (IsActivate)
+	{
+		LeftVRHealEffect->SetVisibility(true);
+		RightVRHealEffect->SetVisibility(true);
+	}
+	else
+	{
+		LeftVRHealEffect->SetVisibility(false);
+		RightVRHealEffect->SetVisibility(false);
+	}
+}
+
 void ABaseCharacter::SetRedDot()
 {
 	FVector DotStart = RightAim->GetComponentLocation();
@@ -2397,7 +2422,6 @@ void ABaseCharacter::SetRedDot()
 		DotEnd = HitInfo.Location;
 		RedDot->SetActorLocation(DotEnd);
 		Distance = HitInfo.Distance;
-		
 	}
 	else
 	{
@@ -2409,9 +2433,8 @@ void ABaseCharacter::SetRedDot()
 	BulletTraces.Add(DotEnd);
 	BulletAimTraceComp->SetVisibility(true);
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(BulletAimTraceComp, FName(TEXT("User.PointArray")), BulletTraces);
-   	RedDot->SetActorScale3D(FVector(Distance / 500));
+	RedDot->SetActorScale3D(FVector(Distance / 500));
 	RedDot->SetActorRotation((-RedDot->GetActorLocation() + VRCamera->GetComponentLocation()).Rotation());
-	
 }
 
 void ABaseCharacter::VRGetDamage(float Damage)
@@ -2445,21 +2468,90 @@ void ABaseCharacter::MulticastVRGetDamage_Implementation(float Rate)
 	}
 }
 
-void ABaseCharacter::ServerVRAttack_Implementation(const FString& Position, class ABaseCharacter* Enemy)
+void ABaseCharacter::ServerVRAttack_Implementation(const FString &Position, class ABaseCharacter *Enemy)
 {
 	if (Position == FString("Sword"))
 	{
 		Enemy->OnTakeDamage(10);
-		//Enemy->Server_TakeDamage(10);
+		// Enemy->Server_TakeDamage(10);
 	}
 }
 
-void ABaseCharacter::VRRevive()
+void ABaseCharacter::ServerVRReviveSetting_Implementation()
 {
-	IsVRDead = false;
+	VRHeadActor->SetActorLocation(FVector(0, 0, -1000));
+	VRLeftHandActor->SetActorLocation(FVector(0, 0, -1000));
+	VRRightHandActor->SetActorLocation(FVector(0, 0, -1000));
+	VRHeadActor->MulticastHeadColorChange(0);
+}
+
+void ABaseCharacter::MulticastVRReviveSetting_Implementation()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("REVIVE!!"));
+	FTimerHandle VRReviveTimer;
+	GetWorld()->GetTimerManager().SetTimer(VRReviveTimer,
+										   FTimerDelegate::CreateLambda([this]() -> void
+																		{ IsVRDead = false; }),
+										   1, false);
+	IsVRRevive = false;
+	VRReviveTime = 0;
+	ServerVRDeath(false);
 	EnableInput(VRController);
 	VRGetDamage(-VRMaxHP);
 	VRCamera->PostProcessSettings.ColorSaturation = FVector4(1, 1, 1, 1);
+}
+
+void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
+{
+	if (IsVRAlive)
+	{
+		VRHeadActor->SetActorLocationAndRotation(VRHeadMesh->GetComponentLocation(), VRHeadMesh->GetComponentRotation());
+		VRLeftHandActor->SetActorLocationAndRotation(LeftHandMesh->GetComponentLocation(), LeftHandMesh->GetComponentRotation());
+		VRRightHandActor->SetActorLocationAndRotation(RightHandMesh->GetComponentLocation(), RightHandMesh->GetComponentRotation());
+		FTimerHandle VRDeathTimer1;
+		GetWorld()->GetTimerManager().SetTimer(VRDeathTimer1,
+											   FTimerDelegate::CreateLambda([this]() -> void
+																			{
+					VRHeadActor->MeshComp->SetSimulatePhysics(true);
+					VRLeftHandActor->MeshComp->SetSimulatePhysics(true);
+					VRRightHandActor->MeshComp->SetSimulatePhysics(true);
+					SetActorLocation(FVector(200, -100, 300)); }),
+											   0.5f, false);
+		FTimerHandle VRDeathTimer2;
+		GetWorld()->GetTimerManager().SetTimer(VRDeathTimer2,
+											   FTimerDelegate::CreateLambda([this]() -> void
+																			{
+					VRHeadActor->MeshComp->SetSimulatePhysics(false);
+					VRLeftHandActor->MeshComp->SetSimulatePhysics(false);
+					VRRightHandActor->MeshComp->SetSimulatePhysics(false); }),
+											   1.9f, false);
+		SetActorHiddenInGame(true);
+		SetActorEnableCollision(false);
+	}
+	else
+	{
+		SetActorHiddenInGame(false);
+		SetActorEnableCollision(true);
+		MulticastVRSetting();
+	}
+}
+
+void ABaseCharacter::ServerVRRevive_Implementation(float Rate, FVector HeadLoc, FVector LHandLoc, FVector RHandLoc, FRotator HeadRot, FRotator LHandRot, FRotator RHandRot)
+{
+	VRHeadActor->SetActorLocation(HeadLoc);
+	VRLeftHandActor->SetActorLocation(LHandLoc);
+	VRRightHandActor->SetActorLocation(RHandLoc);
+
+	VRHeadActor->SetActorRotation(HeadRot);
+	VRLeftHandActor->SetActorRotation(LHandRot);
+	VRRightHandActor->SetActorRotation(RHandRot);
+
+	MulticastVRRevive(Rate);
+}
+
+void ABaseCharacter::MulticastVRRevive_Implementation(float Rate)
+{
+	VRHeadActor->MulticastHeadColorChange(Rate);
 }
 
 bool ABaseCharacter::VRSkillCheck(FString Position)
@@ -2488,7 +2580,7 @@ bool ABaseCharacter::VRSkillCheck(FString Position)
 	}
 	else if (Position == FString("Hands"))
 	{
-		if (!IsLeftY && !IsLeftX && !IsLeftGrab && !IsRightA && !IsRightB && !IsRightGrab)
+		if (!IsLeftY && !IsLeftX && !IsLeftGrab && !IsRightA && !IsRightB && !IsRightGrab && !IsVRDead && !IsVRRevive)
 		{
 			return true;
 		}
@@ -2503,7 +2595,7 @@ bool ABaseCharacter::VRSkillCheck(FString Position)
 	}
 }
 
-void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString& Position, UPrimitiveComponent* OtherComp)
+void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString &Position, UPrimitiveComponent *OtherComp)
 {
 	if (Position == FString("Left"))
 	{
@@ -2515,14 +2607,13 @@ void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString& Position, U
 		BreakableDoor->SetActorEnableCollision(false);
 		FTimerHandle DoorDestroyTimer;
 		GetWorld()->GetTimerManager().SetTimer(DoorDestroyTimer,
-			FTimerDelegate::CreateLambda([this]()->void
-				{
+											   FTimerDelegate::CreateLambda([this]() -> void
+																			{
 					if (BreakableDoor)
 					{
 						BreakableDoor->Destroy();
-					}
-				}), 5, false);
-		
+					} }),
+											   5, false);
 	}
 	else if (Position == FString("Right"))
 	{
@@ -2534,15 +2625,15 @@ void ABaseCharacter::ServerVRDoorBreak_Implementation(const FString& Position, U
 		BreakableDoor->SetActorEnableCollision(false);
 		FTimerHandle DoorDestroyTimer;
 		GetWorld()->GetTimerManager().SetTimer(DoorDestroyTimer,
-			FTimerDelegate::CreateLambda([this]()->void
-				{
+											   FTimerDelegate::CreateLambda([this]() -> void
+																			{
 					if (BreakableDoor)
 					{
 						BreakableDoor->Destroy();
-					}
-				}), 5, false);
+					} }),
+											   5, false);
 	}
-	
+
 	MulticastVRDoorBreak();
 }
 

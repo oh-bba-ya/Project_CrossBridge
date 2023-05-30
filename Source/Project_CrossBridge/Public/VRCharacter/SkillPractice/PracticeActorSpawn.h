@@ -114,6 +114,8 @@ public:
 		bool IsHealTest;
 	UPROPERTY()
 		bool IsHit;
+	UPROPERTY()
+		bool IsCheck;
 	UFUNCTION()
 		void OnHealOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 

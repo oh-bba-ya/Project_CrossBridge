@@ -577,6 +577,10 @@ public:
 		class UNiagaraComponent* BlackholeTraceComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UNiagaraComponent* BulletAimTraceComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* LeftVRHealEffect;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* RightVRHealEffect;
 		
 
 	UPROPERTY()
@@ -648,6 +652,21 @@ public:
 	UPROPERTY()
 	FVector RightThrowDir;
 	UPROPERTY()
+		FVector VRHeadLoc;
+	UPROPERTY()
+		FVector LeftHandLoc;
+	UPROPERTY()
+		FVector RightHandLoc;
+	FVector HeadReviveLoc;
+	FVector LeftHandReviveLoc;
+	FVector RightHandReviveLoc;
+	UPROPERTY()
+		FRotator VRHeadRot;
+	UPROPERTY()
+		FRotator LeftHandRot;
+	UPROPERTY()
+		FRotator RightHandRot;
+	UPROPERTY()
 	FQuat RightThrowRot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -708,14 +727,16 @@ public:
 		float SwordDamageCoolTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float SwordDamageCoolTimeLimit = 2;
-
+	UPROPERTY()
+		float VRReviveTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float VRReviveLimitTime = 3;
+		float VRReviveLimitTime = 7;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsVR = false;
 	
 	bool IsVRDead;
+	bool IsVRRevive;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
@@ -773,6 +794,12 @@ public:
 		TSubclassOf<class ATrashSpawningPool> SpawnTrashSpawningPool;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AActor> BreakDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AVRComponent> VRHeadSpawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AVRComponent> VRLeftHandSpawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class AVRComponent> VRRightHandSpawn;
 	UPROPERTY()
 		class APlayerController* VRController;
 	UPROPERTY()
@@ -857,6 +884,8 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 		void ServerSpawnThrowingWeapon(FVector SpawnLoc, FRotator SpawnRot);
+	UFUNCTION(Server, Unreliable)
+		void ServerHealEffectActivate(bool IsActivate);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -875,9 +904,16 @@ public:
 	UFUNCTION(Server, Unreliable)
 		void ServerVRAttack(const FString& Position, class ABaseCharacter* Enemy);
 
-
-	UFUNCTION()
-		void VRRevive();
+	UFUNCTION(Server, Unreliable)
+		void ServerVRReviveSetting();
+	UFUNCTION(NetMulticast,Unreliable)
+		void MulticastVRReviveSetting();
+	UFUNCTION(Server, Unreliable)
+		void ServerVRDeath(bool IsVRAlive);
+	UFUNCTION(Server, Unreliable)
+		void ServerVRRevive(float Rate, FVector HeadLoc, FVector LHandLoc, FVector RHandLoc, FRotator HeadRot, FRotator LHandRot, FRotator RHandRot);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastVRRevive(float Rate);
 	UFUNCTION()
 		bool VRSkillCheck(FString Position);
 	UFUNCTION(Server, Unreliable)
@@ -887,6 +923,12 @@ public:
 
 	UPROPERTY()
 		class AActor* BreakableDoor;
+	UPROPERTY(Replicated)
+		class AVRComponent* VRHeadActor;
+	UPROPERTY(Replicated)
+		class AVRComponent* VRLeftHandActor;
+	UPROPERTY(Replicated)
+		class AVRComponent* VRRightHandActor;
 
 	public:
 	
