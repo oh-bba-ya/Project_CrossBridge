@@ -2,6 +2,7 @@
 
 #include "Objects/Trash.h"
 #include "Character/BaseCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATrash::ATrash()
@@ -60,6 +61,14 @@ void ATrash::ServerDeactivate_Implementation()
 void ATrash::ServerPhysicsSet_Implementation()
 {
 	MeshComp->SetSimulatePhysics(true);
+	FTimerHandle TrashSoundTimer;
+	GetWorldTimerManager().SetTimer(TrashSoundTimer, this, &ATrash::MulticastTrashSoundPlay, 1, false);
+}
+
+
+void ATrash::MulticastTrashSoundPlay_Implementation()
+{
+		UGameplayStatics::PlaySoundAtLocation(this, VRTrashCanSound, GetActorLocation());
 }
 
 void ATrash::OnOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
