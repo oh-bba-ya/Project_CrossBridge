@@ -934,4 +934,13 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsDummy;
+
+
+	public:
+	
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+			class USoundBase* VRFireSound;
+
+		UFUNCTION(NetMulticast, Unreliable)
+			void MulticastVRSoundPlay();
 };

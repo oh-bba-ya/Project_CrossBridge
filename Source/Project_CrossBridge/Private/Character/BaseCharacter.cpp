@@ -2391,6 +2391,7 @@ void ABaseCharacter::ServerTrashSpawningPoolActivate_Implementation()
 void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, FRotator SpawnRot)
 {
 	AThrowingWeapon *ThrowingWeaponActor = GetWorld()->SpawnActor<AThrowingWeapon>(SpawnThrowingWeapon, SpawnLoc, SpawnRot);
+	MulticastVRSoundPlay();
 }
 
 void ABaseCharacter::ServerHealEffectActivate_Implementation(bool IsActivate)
@@ -2643,4 +2644,9 @@ void ABaseCharacter::MulticastVRDoorBreak_Implementation()
 	{
 		BridgeState->SetGameState(EGameState::Start);
 	}
+}
+
+void ABaseCharacter::MulticastVRSoundPlay_Implementation()
+{
+	UGameplayStatics::PlaySoundAtLocation(this, VRFireSound, RightAim->GetComponentLocation());
 }
