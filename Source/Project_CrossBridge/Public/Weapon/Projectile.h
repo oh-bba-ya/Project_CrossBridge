@@ -19,6 +19,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void Destroyed() override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -53,6 +55,14 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	float LifeSpan = 3.0f;
 
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class UNiagaraSystem* DestroyEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class USoundBase* HitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class USoundAttenuation* HitAttenu;
 public:
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

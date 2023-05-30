@@ -35,6 +35,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|FreezeProperties")
 	class UNiagaraSystem* breakEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundBase* DestroySound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundAttenuation* DestroyAttenuation;
 	
 
 };

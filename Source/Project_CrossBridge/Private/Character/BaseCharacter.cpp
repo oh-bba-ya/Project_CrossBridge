@@ -1082,10 +1082,13 @@ void ABaseCharacter::SetCurrentHealth(float value)
 
 void ABaseCharacter::OnTakeDamage(float d)
 {
-	float hp = CurrentHP - d;
-	SetCurrentHealth(hp);
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), CurrentHP));
-	Multicast_Hit();
+	if(freeze == nullptr)
+	{
+		float hp = CurrentHP - d;
+		SetCurrentHealth(hp);
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), CurrentHP));
+		Multicast_Hit();
+	}
 }
 
 void ABaseCharacter::OnRep_CurrentHealth()
@@ -1313,13 +1316,21 @@ void ABaseCharacter::FreezeSpawn()
 
 void ABaseCharacter::Server_FreezeSpawn_Implementation()
 {
-	freeze = GetWorld()->SpawnActor<AFreeze>(FreezeFactory, GetActorLocation(), GetActorRotation());
-	if (freeze != nullptr)
+	if(bCanFreeze)
 	{
-		freeze->SetOwner(this);
+		if(FreezeFactory != nullptr)
+		{
+			freeze = GetWorld()->SpawnActor<AFreeze>(FreezeFactory, GetActorLocation(), GetActorRotation());
+			if (freeze != nullptr)
+			{
+				freeze->SetOwner(this);
+				bCanFreeze = false;
+			}
+
+			GetCharacterMovement()->DisableMovement();
+		}
 	}
 
-	GetCharacterMovement()->DisableMovement();
 }
 
 void ABaseCharacter::RemoveFreeze()
@@ -1329,13 +1340,22 @@ void ABaseCharacter::RemoveFreeze()
 
 void ABaseCharacter::Server_RemoveFreeze_Implementation()
 {
-	freeze->Destroy();
-	if (freeze != nullptr)
+	if(freeze != nullptr)
 	{
-		freeze = nullptr;
+		freeze->Destroy();
+		if (freeze != nullptr)
+		{
+			freeze = nullptr;
+		}
+
+		FTimerHandle freezeHandle;
+		GetWorldTimerManager().SetTimer(freezeHandle,FTimerDelegate::CreateLambda([&]()->void
+		{
+			bCanFreeze = true;
+		}),FreezeCoolTime,false);
+		DeActivateJetPack();
 	}
 
-	DeActivateJetPack();
 }
 #pragma endregion
 
@@ -1679,6 +1699,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, bisEquip);
 	DOREPLIFETIME(ABaseCharacter, linearColor);
 	DOREPLIFETIME(ABaseCharacter, bIsDead);
+	DOREPLIFETIME(ABaseCharacter, bCanFreeze);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

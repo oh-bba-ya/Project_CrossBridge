@@ -66,6 +66,13 @@ private:
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
 	bool bFireDelay = true;
 
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Sounds")
+	class USoundBase* FireSound;
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Sounds")
+	class USoundAttenuation* FireAttenucation;
+
 public:
 	UFUNCTION()
 	void Fire(class ABaseCharacter* player,const FVector hitTarget);
@@ -73,7 +80,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Projectile")
 	TSubclassOf<class ATrashCanProjectile> projectileFactory;
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void Server_Fire(class ABaseCharacter* player, const FVector hitTarget);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_Fire();
 
 };

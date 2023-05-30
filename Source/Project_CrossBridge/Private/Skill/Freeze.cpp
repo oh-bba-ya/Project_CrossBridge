@@ -41,6 +41,11 @@ void AFreeze::Destroyed()
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),breakEffect,GetActorLocation());
 	}
+
+	if(DestroySound && DestroyAttenuation)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),DestroySound,GetActorLocation(),1,1,0,DestroyAttenuation);
+	}
 }
 
 // Called every frame

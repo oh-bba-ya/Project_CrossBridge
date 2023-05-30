@@ -32,10 +32,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UArrowComponent* Arrow;
 
-	/*
+	
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
-	class UNiagaraComponent* muzzleEffect;
-	*/
+	class UNiagaraSystem* muzzleEffect;
+
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class USoundBase* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class USoundAttenuation* FireAttenu;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Projectile")
@@ -56,19 +62,29 @@ private:
 
 	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
 	float fireDelayTime = 2.0f;
-	
+
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
+	class USphereComponent* targetComp;
+
+	UPROPERTY(EditDefaultsOnly,Replicated, Category="Settings|Properties")
+	class AHomingProjectile* tempHoming;
 public:
 	FORCEINLINE bool GetFireDelay() {return bFireDelay;}
 	
 	UFUNCTION()
 	void HomingFire(class ABaseCharacter* p);
 
-	UFUNCTION(Server,Unreliable)
+	UFUNCTION(Server,Reliable)
 	void Server_HomingFire(class ABaseCharacter* p);
 
-	UFUNCTION(NetMulticast,Unreliable)
+	UFUNCTION(NetMulticast,UnReliable)
 	void Multicast_HomingFire(class ABaseCharacter* p, class AHomingProjectile* h);
 
+	UFUNCTION(NetMulticast,Unreliable)
+	void testMulticast(class AHomingProjectile* h);
+
+	
 	UFUNCTION()
 	void Entrance(class ABaseCharacter* p);
 
@@ -110,10 +126,10 @@ public:
 /** Homing Item Reload */
 public:
 	UFUNCTION()
-	void Reload(class AHomingItem* homing);
+	void Reload(AHomingItem* homingPro);
 
 	UFUNCTION(Server, Unreliable)
-	void Server_Reload(class AHomingItem* homing);
+	void Server_Reload(AHomingItem* homingPro);
 
 
 };

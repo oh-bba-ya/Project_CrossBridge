@@ -60,6 +60,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UParticleSystem* ExplosionEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundBase* HitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundAttenuation* HitAttenuation;
 	
 
 };

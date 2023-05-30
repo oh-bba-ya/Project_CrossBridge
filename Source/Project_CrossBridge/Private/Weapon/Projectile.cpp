@@ -2,9 +2,12 @@
 
 
 #include "Weapon/Projectile.h"
+
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Character/BaseCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -45,6 +48,18 @@ void AProjectile::BeginPlay()
 		Destroy();
 	}),LifeSpan,false);
 	
+}
+
+void AProjectile::Destroyed()
+{
+	if(DestroyEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),DestroyEffect,GetActorLocation());
+		if(HitSound && HitAttenu)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(),HitSound,GetActorLocation(),1,1,0,HitAttenu);
+		}
+	}
 }
 
 // Called every frame

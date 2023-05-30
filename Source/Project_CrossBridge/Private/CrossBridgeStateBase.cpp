@@ -3,6 +3,7 @@
 
 #include "CrossBridgeStateBase.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 ACrossBridgeStateBase::ACrossBridgeStateBase()
@@ -64,6 +65,10 @@ void ACrossBridgeStateBase::StartStateCallBack()
 		return;
 	}
 	UE_LOG(LogTemp,Warning,TEXT("Start Callback"));
+	if(StartSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(),StartSound);
+	}
 	startStateDelegate.Broadcast((AActor*)nullptr);
 	bStateCall = true;
 }

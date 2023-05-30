@@ -87,6 +87,9 @@ private:
 	EGameState state;
 
 	EWinner eWinner;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundBase* StartSound;
 	
 	
 };
