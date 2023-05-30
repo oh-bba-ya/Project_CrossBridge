@@ -2,6 +2,7 @@
 
 
 #include "VRCharacter/VRComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AVRComponent::AVRComponent()
@@ -23,6 +24,16 @@ AVRComponent::AVRComponent()
 void AVRComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (IsVRHead)
+	{
+		UMaterialInterface* HeadBase = MeshComp->GetMaterial(0);
+		if (HeadBase)
+		{
+			HeadMat = MeshComp->CreateDynamicMaterialInstance(0, HeadBase);
+			HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)FVector(0.8, 0, 0));
+		}
+	}
 	
 }
 
@@ -33,3 +44,16 @@ void AVRComponent::Tick(float DeltaTime)
 
 }
 
+void AVRComponent::MulticastHeadColorChange_Implementation(float Rate)
+{
+	if (Rate <= 0.5)
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0.8, 0, 0), FVector(0.8, 0.8, 0), Rate * 2);
+		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)ColorVector);
+	}
+	else if (Rate <= 1)
+	{
+		FVector ColorVector = UKismetMathLibrary::VLerp(FVector(0.8, 0.8, 0), FVector(0, 0.8, 0), (Rate - 0.5) * 2);
+		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)ColorVector);
+	}
+}

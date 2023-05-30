@@ -537,13 +537,52 @@ void ABaseCharacter::Tick(float DeltaTime)
 		{
 			IsVRDead = true;
 			ServerVRDeath(true);
+			// 2초
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Dead!!"));
 			VRCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 			DisableInput(VRController);
-			FTimerHandle VRReviveTimer;
-			GetWorld()->GetTimerManager().SetTimer(VRReviveTimer, this, &ABaseCharacter::VRRevive, VRReviveLimitTime, false);
 			if (IsRightA)
 			{
 				RightAEnd();
+			}
+			//FTimerHandle VRReviveTimer;
+			//GetWorld()->GetTimerManager().SetTimer(VRReviveTimer, this, &ABaseCharacter::VRRevive, VRReviveLimitTime, false);
+		}
+		else if (VRCurHP <= 0 && IsVRDead)
+		{
+			VRReviveTime += DeltaTime;
+			if (VRReviveTime > 2 && VRReviveLimitTime > VRReviveTime)
+			{
+				if (!IsVRRevive)
+				{
+					IsVRRevive = true;
+					VRHeadLoc = VRHeadActor->GetActorLocation();
+					LeftHandLoc = VRLeftHandActor->GetActorLocation();
+					RightHandLoc = VRRightHandActor->GetActorLocation();	
+
+					VRHeadRot = VRHeadActor->GetActorRotation();
+					LeftHandRot = VRLeftHandActor->GetActorRotation();
+					RightHandRot = VRRightHandActor->GetActorRotation();
+				}
+				float Rate = (VRReviveTime - 2) / (VRReviveLimitTime - 2);
+				float VRate = 1.3f;
+				
+
+				if (Rate * VRate <= 1)
+				{
+					HeadReviveLoc = UKismetMathLibrary::VLerp(VRHeadLoc,  VRHeadMesh->GetComponentLocation(), Rate * VRate);
+					LeftHandReviveLoc = UKismetMathLibrary::VLerp(LeftHandLoc,  LeftHandMesh->GetComponentLocation(), Rate * VRate);
+					RightHandReviveLoc = UKismetMathLibrary::VLerp(RightHandLoc, RightHandMesh->GetComponentLocation(), Rate * VRate);
+				}
+				FRotator HeadReviveRot = UKismetMathLibrary::RLerp(VRHeadRot, VRHeadMesh->GetComponentRotation(), Rate, true);
+				FRotator LeftHandReviveRot = UKismetMathLibrary::RLerp(LeftHandRot, LeftHandMesh->GetComponentRotation(), Rate, true);
+				FRotator RightHandReviveRot = UKismetMathLibrary::RLerp(RightHandRot, RightHandMesh->GetComponentRotation(), Rate, true);
+				ServerVRRevive(Rate, HeadReviveLoc, LeftHandReviveLoc, RightHandReviveLoc, HeadReviveRot, LeftHandReviveRot, RightHandReviveRot);
+			}
+			else if (VRReviveLimitTime <= VRReviveTime)
+			{
+				ServerVRReviveSetting();
+				MulticastVRReviveSetting();
 			}
 		}
 
@@ -2360,13 +2399,30 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString& Position, clas
 	}
 }
 
-void ABaseCharacter::VRRevive()
+void ABaseCharacter::ServerVRReviveSetting_Implementation()
 {
-	IsVRDead = false;
+	VRHeadActor->SetActorLocation(FVector(0, 0, -1000));
+	VRLeftHandActor->SetActorLocation(FVector(0, 0, -1000));
+	VRRightHandActor->SetActorLocation(FVector(0, 0, -1000));
+	VRHeadActor->MulticastHeadColorChange(0);
+}
+
+void ABaseCharacter::MulticastVRReviveSetting_Implementation()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("REVIVE!!"));
+	FTimerHandle VRReviveTimer;
+	GetWorld()->GetTimerManager().SetTimer(VRReviveTimer,
+		FTimerDelegate::CreateLambda([this]()->void
+			{
+				IsVRDead = false;
+			}), 1, false);
+	IsVRRevive = false;
+	VRReviveTime = 0;
 	ServerVRDeath(false);
 	EnableInput(VRController);
 	VRGetDamage(-VRMaxHP);
 	VRCamera->PostProcessSettings.ColorSaturation = FVector4(1, 1, 1, 1);
+	
 }
 
 void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
@@ -2398,10 +2454,28 @@ void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
 	}
 	else
 	{
-		
 		SetActorHiddenInGame(false);
 		SetActorEnableCollision(true);
+		MulticastVRSetting();
 	}
+}
+
+void ABaseCharacter::ServerVRRevive_Implementation(float Rate, FVector HeadLoc, FVector LHandLoc, FVector RHandLoc, FRotator HeadRot, FRotator LHandRot, FRotator RHandRot)
+{
+	VRHeadActor->SetActorLocation(HeadLoc);
+	VRLeftHandActor->SetActorLocation(LHandLoc);
+	VRRightHandActor->SetActorLocation(RHandLoc);
+
+	VRHeadActor->SetActorRotation(HeadRot);
+	VRLeftHandActor->SetActorRotation(LHandRot);
+	VRRightHandActor->SetActorRotation(RHandRot);
+
+	MulticastVRRevive(Rate);
+}
+
+void ABaseCharacter::MulticastVRRevive_Implementation(float Rate)
+{
+	VRHeadActor->MulticastHeadColorChange(Rate);
 }
 
 bool ABaseCharacter::VRSkillCheck(FString Position)
@@ -2430,7 +2504,7 @@ bool ABaseCharacter::VRSkillCheck(FString Position)
 	}
 	else if (Position == FString("Hands"))
 	{
-		if (!IsLeftY && !IsLeftX && !IsLeftGrab && !IsRightA && !IsRightB && !IsRightGrab)
+		if (!IsLeftY && !IsLeftX && !IsLeftGrab && !IsRightA && !IsRightB && !IsRightGrab && !IsVRDead && !IsVRRevive)
 		{
 			return true;
 		}

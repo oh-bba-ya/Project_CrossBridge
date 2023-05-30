@@ -27,4 +27,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UStaticMeshComponent* MeshComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsVRHead;
+	UPROPERTY()
+		class UMaterialInstanceDynamic* HeadMat;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHeadColorChange(float Rate);
 };

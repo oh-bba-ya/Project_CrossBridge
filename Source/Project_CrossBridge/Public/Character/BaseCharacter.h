@@ -609,6 +609,21 @@ public:
 	UPROPERTY()
 	FVector RightThrowDir;
 	UPROPERTY()
+		FVector VRHeadLoc;
+	UPROPERTY()
+		FVector LeftHandLoc;
+	UPROPERTY()
+		FVector RightHandLoc;
+	FVector HeadReviveLoc;
+	FVector LeftHandReviveLoc;
+	FVector RightHandReviveLoc;
+	UPROPERTY()
+		FRotator VRHeadRot;
+	UPROPERTY()
+		FRotator LeftHandRot;
+	UPROPERTY()
+		FRotator RightHandRot;
+	UPROPERTY()
 	FQuat RightThrowRot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -669,7 +684,8 @@ public:
 		float SwordDamageCoolTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float SwordDamageCoolTimeLimit = 2;
-
+	UPROPERTY()
+		float VRReviveTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float VRReviveLimitTime = 7;
 
@@ -677,6 +693,7 @@ public:
 	bool IsVR = false;
 	
 	bool IsVRDead;
+	bool IsVRRevive;
 
 	bool IsLeftIndexCurl;
 	bool IsLeftGrasp;
@@ -844,11 +861,16 @@ public:
 	UFUNCTION(Server, Unreliable)
 		void ServerVRAttack(const FString& Position, class ABaseCharacter* Enemy);
 
-
-	UFUNCTION()
-		void VRRevive();
+	UFUNCTION(Server, Unreliable)
+		void ServerVRReviveSetting();
+	UFUNCTION(NetMulticast,Unreliable)
+		void MulticastVRReviveSetting();
 	UFUNCTION(Server, Unreliable)
 		void ServerVRDeath(bool IsVRAlive);
+	UFUNCTION(Server, Unreliable)
+		void ServerVRRevive(float Rate, FVector HeadLoc, FVector LHandLoc, FVector RHandLoc, FRotator HeadRot, FRotator LHandRot, FRotator RHandRot);
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastVRRevive(float Rate);
 	UFUNCTION()
 		bool VRSkillCheck(FString Position);
 	UFUNCTION(Server, Unreliable)
