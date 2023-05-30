@@ -149,7 +149,6 @@ void ABaseCharacterController::SetHUDTime()
 				// 만약 대기시간이 종료되었다면.. 게임 시작..
 				if(gameTime < 0)
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("STARTSTART"));
 					BridgeState->SetGameState(EGameState::Start);
 				}
 			}
