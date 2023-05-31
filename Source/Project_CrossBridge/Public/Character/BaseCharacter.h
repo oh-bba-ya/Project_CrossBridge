@@ -475,6 +475,9 @@ private:
 	UPROPERTY(VisibleAnywhere,Replicated,Category="Settings|Weapon")
 	class AMaterialConverter* myConverter;
 
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
+	UAnimMontage* FillupMontage;
+
 public:
 	FORCEINLINE void SetConverter(AMaterialConverter* w) { myConverter = w;}
 	FORCEINLINE AMaterialConverter* GetConverter() {return myConverter;}
@@ -482,6 +485,12 @@ public:
 protected:
 	UFUNCTION()
 	void UsingConverter();
+
+	UFUNCTION(Server, Reliable)
+	void Server_Fillup();
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiCast_Fillup();
 
 #pragma endregion
 

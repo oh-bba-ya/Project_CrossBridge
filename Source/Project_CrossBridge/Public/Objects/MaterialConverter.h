@@ -43,11 +43,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
 	class UNiagaraComponent* MakingEffectComp;
 
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
 	class USoundBase* UsingSound;
 
-	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
 	class USoundAttenuation* UsingSoundAttenuation;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundBase* FillupSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundAttenuation* FillupSoundAttenuation;
+	
 	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -99,7 +106,6 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void Server_SaveGarbage(float v);
 
-	
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Property")
@@ -132,6 +138,7 @@ protected:
 	class UTimelineComponent* ConverterTimeLineComp;
 
 
+
 public:
 	// 커브 에셋을 보관하는 변수
 	UPROPERTY(EditAnywhere)
@@ -154,6 +161,14 @@ private:
 
 	UFUNCTION()
 	void UnMakeingEffect();
+
+
+	UFUNCTION(Server,Reliable)
+	void Server_FillupSound();
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_FillupSound();
+	
 	
 
 };

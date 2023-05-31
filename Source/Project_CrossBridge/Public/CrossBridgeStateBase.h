@@ -90,6 +90,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
 	class USoundBase* StartSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundBase* GameBackGroundMusic;
 	
 	
 };

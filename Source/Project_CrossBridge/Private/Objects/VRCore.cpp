@@ -32,6 +32,10 @@ AVRCore::AVRCore()
 	VRCoreDestroyComp->SetAutoActivate(false);
 	VRCoreDestroyComp->SetRelativeRotation(FRotator(0.f,0.f,90.f));
 
+	ChargeComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("VRCoreChargeComponent"));
+	ChargeComponent->SetupAttachment(RootComponent);
+	ChargeComponent->SetAutoActivate(true);
+
 }
 
 // Called when the game starts or when spawned
@@ -140,6 +144,7 @@ void AVRCore::LaserFire()
 		return ;
 	}
 
+	ChargeComponent->SetActive(false);
 	laserComponent->SetActive(true);
 	bIsFire = true;
 
@@ -190,8 +195,6 @@ void AVRCore::FallingVRCore()
 	GetWorld()->GetTimerManager().SetTimer(moveHandle,this,&AVRCore::FallingVRCore,FallingCallTime,false);
 	
 }
-
-
 
 
 

@@ -69,6 +69,11 @@ void ACrossBridgeStateBase::StartStateCallBack()
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(),StartSound);
 	}
+
+	if(GameBackGroundMusic)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(),GameBackGroundMusic);
+	}
 	startStateDelegate.Broadcast((AActor*)nullptr);
 	bStateCall = true;
 }
