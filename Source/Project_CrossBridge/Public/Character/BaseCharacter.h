@@ -529,6 +529,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputMappingContext* IMC_VRHand;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
+		class UInputAction* IA_HeightSet;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_Move;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_Turn;
@@ -548,7 +550,8 @@ public:
 		class UInputAction* IA_RightB;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_RightA;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class USceneComponent* VRCameraRoot;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
 		class UCameraComponent* VRCamera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
@@ -615,8 +618,8 @@ public:
 		class UWidgetInteractionComponent* LeftWidgetInteractionComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetInteractionComponent* RightWidgetInteractionComp;
-
-
+	UFUNCTION(Server, Unreliable)
+	void VRHeightSet();
 	void VRMove(const FInputActionValue& Values);
 	void Turn(const FInputActionValue& Values);
 	void LeftIndexCurl();

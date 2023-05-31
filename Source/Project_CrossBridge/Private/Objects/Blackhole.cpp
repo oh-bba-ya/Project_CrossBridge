@@ -7,6 +7,7 @@
 #include "Character/BaseCharacter.h"
 #include "NiagaraComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABlackhole::ABlackhole()
@@ -198,7 +199,7 @@ void ABlackhole::MulticastBlackholeActiveSetting_Implementation()
 	FloorMeshComp->SetMaterial(0, FloorMeshComp->GetMaterial(1));
 	CenterNiagaraComp->SetVisibility(true);
 	ExternalNiagaraComp->SetVisibility(true);
-
+	UGameplayStatics::PlaySoundAtLocation(this, VRBlackholeSound, GetActorLocation());
 }
 
 void ABlackhole::BlackholeDeactivate()

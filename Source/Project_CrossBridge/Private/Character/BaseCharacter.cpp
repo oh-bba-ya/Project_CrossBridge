@@ -101,9 +101,13 @@ ABaseCharacter::ABaseCharacter()
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	VRCameraRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VRCameraRoot"));
+	VRCameraRoot->SetupAttachment(RootComponent);
+	VRCameraRoot->SetIsReplicated(true);
+
 	VRCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("VRCamera"));
-	VRCamera->SetupAttachment(RootComponent);
-	VRCamera->bUsePawnControlRotation = true;
+	VRCamera->SetupAttachment(VRCameraRoot);
+	//VRCamera->bUsePawnControlRotation = true;
 	VRCamera->SetActive(false);
 	VRCamera->SetIsReplicated(true);
 
@@ -118,12 +122,12 @@ ABaseCharacter::ABaseCharacter()
 	HeadComp->SetIsReplicated(true);
 
 	LeftHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftHand"));
-	LeftHand->SetupAttachment(RootComponent);
+	LeftHand->SetupAttachment(VRCameraRoot);
 	LeftHand->SetTrackingMotionSource(FName("Left"));
 	LeftHand->SetIsReplicated(true);
 
 	RightHand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightHand"));
-	RightHand->SetupAttachment(RootComponent);
+	RightHand->SetupAttachment(VRCameraRoot);
 	RightHand->SetTrackingMotionSource(FName("Right"));
 	RightHand->SetIsReplicated(true);
 
@@ -398,6 +402,7 @@ void ABaseCharacter::BeginPlay()
 		RedDot->SetActorEnableCollision(false);
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
 		VRTimerController = Cast<ABaseCharacterController>(VRController);
+
 	}
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
@@ -469,6 +474,8 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsVR)
 	{
+
+	
 		ServerVRTransform(VRCamera->GetRelativeTransform(), LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
 
 		float AimDotProduct = FVector::DotProduct(RightAim->GetForwardVector(), LeftAim->GetForwardVector());
@@ -476,7 +483,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 		float HandDist = FVector::Distance(LeftHand->GetComponentLocation(), RightHand->GetComponentLocation());
 
-		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), HandDist));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), VRHeadMesh->GetComponentLocation().Z));
 		if (AimDotProduct >= 0.9 && GripDotProduct >= 0.9 && VRSkillCheck(FString("Hands")) && HandDist >= 13 && HandDist <= 25)
 		{
 			VRHealTime += DeltaTime;
@@ -866,6 +873,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputInterAction, ETriggerEvent::Started, this, &ABaseCharacter::UsingConverter);
 		EnhancedInputComponent->BindAction(InputTrashCanFireAction, ETriggerEvent::Started, this, &ABaseCharacter::TrashCanFire);
 
+		EnhancedInputComponent->BindAction(IA_HeightSet, ETriggerEvent::Triggered, this, &ABaseCharacter::VRHeightSet);
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABaseCharacter::VRMove);
 		EnhancedInputComponent->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &ABaseCharacter::Turn);
 		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftIndexCurl);
@@ -1720,6 +1728,13 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void ABaseCharacter::VRHeightSet_Implementation()
+{
+	VRCameraRoot->SetRelativeLocation(FVector(0, 0, 0));
+	float ZLoc = 40 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z;
+	VRCameraRoot->SetRelativeLocation(FVector(0, 0, ZLoc));
+}
+
 void ABaseCharacter::VRMove(const FInputActionValue &Values)
 {
 	FVector2D Axis = Values.Get<FVector2D>();
@@ -1741,6 +1756,16 @@ void ABaseCharacter::Turn(const FInputActionValue &Values)
 		{
 			AddControllerYawInput(-20);
 		}
+		//if (Axis.Y > 0.5f)
+		//{
+			//VRCameraRoot->SetRelativeLocation(VRCameraRoot->GetRelativeLocation() + FVector(0, 0, 10));
+			//LeftHand->SetRelativeLocation(LeftHand->GetRelativeLocation() + FVector(0, 0, 10));
+			//float ZLoc = 88 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z > 88 ? 88 : 88 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z;	
+		//}
+		//else if (Axis.Y < -0.5f)
+		//{
+		//	VRCameraRoot->SetRelativeLocation(VRCameraRoot->GetRelativeLocation() + FVector(0, 0, -10));
+		//}
 	}
 
 	// AddControllerYawInput(Axis.X);
@@ -1913,6 +1938,26 @@ void ABaseCharacter::RightBEnd()
 			FRotator Rot = RightAim->GetComponentRotation();
 			ServerSpawnThrowingWeapon(EndVec, Rot);
 			VRController->PlayHapticEffect(BulletFireHaptic, EControllerHand::Right);
+			FTimerHandle SpawnBulletTimer1;
+			GetWorld()->GetTimerManager().SetTimer(SpawnBulletTimer1,
+				FTimerDelegate::CreateLambda([this]() -> void
+					{
+						FVector StartVec = RightAim->GetComponentLocation();
+						FVector EndVec = StartVec + RightAim->GetForwardVector() * 1;
+						FRotator Rot = RightAim->GetComponentRotation();
+						ServerSpawnThrowingWeapon(EndVec, Rot);
+						VRController->PlayHapticEffect(BulletFireHaptic, EControllerHand::Right);
+					}), 0.25f, false);	
+			FTimerHandle SpawnBulletTimer2;
+			GetWorld()->GetTimerManager().SetTimer(SpawnBulletTimer2,
+				FTimerDelegate::CreateLambda([this]() -> void
+					{
+						FVector StartVec = RightAim->GetComponentLocation();
+						FVector EndVec = StartVec + RightAim->GetForwardVector() * 1;
+						FRotator Rot = RightAim->GetComponentRotation();
+						ServerSpawnThrowingWeapon(EndVec, Rot);
+						VRController->PlayHapticEffect(BulletFireHaptic, EControllerHand::Right);
+					}), 0.5f, false);
 		}
 		else
 		{
