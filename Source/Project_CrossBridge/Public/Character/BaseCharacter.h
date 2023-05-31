@@ -608,7 +608,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetInteractionComponent* RightWidgetInteractionComp;
 	UFUNCTION(Server, Unreliable)
-	void VRHeightSet();
+	void ServerVRHeightSet();
 	void VRMove(const FInputActionValue& Values);
 	void Turn(const FInputActionValue& Values);
 	void LeftIndexCurl();

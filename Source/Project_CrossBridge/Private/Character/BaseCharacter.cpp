@@ -144,8 +144,9 @@ ABaseCharacter::ABaseCharacter()
 	LeftAim->SetTrackingMotionSource(FName("LeftAim"));
 
 	RightAim = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightAim"));
-	RightAim->SetupAttachment(RootComponent);
+	RightAim->SetupAttachment(VRCameraRoot);
 	RightAim->SetTrackingMotionSource(FName("RightAim"));
+	RightAim->SetIsReplicated(true);
 
 	LeftHandBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftHandBox"));
 	LeftHandBox->SetupAttachment(LeftHand);
@@ -873,7 +874,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputInterAction, ETriggerEvent::Started, this, &ABaseCharacter::UsingConverter);
 		EnhancedInputComponent->BindAction(InputTrashCanFireAction, ETriggerEvent::Started, this, &ABaseCharacter::TrashCanFire);
 
-		EnhancedInputComponent->BindAction(IA_HeightSet, ETriggerEvent::Triggered, this, &ABaseCharacter::VRHeightSet);
+		EnhancedInputComponent->BindAction(IA_HeightSet, ETriggerEvent::Triggered, this, &ABaseCharacter::ServerVRHeightSet);
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABaseCharacter::VRMove);
 		EnhancedInputComponent->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &ABaseCharacter::Turn);
 		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftIndexCurl);
@@ -1707,9 +1708,10 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ABaseCharacter::VRHeightSet_Implementation()
+void ABaseCharacter::ServerVRHeightSet_Implementation()
 {
 	VRCameraRoot->SetRelativeLocation(FVector(0, 0, 0));
+	//RightAim->SetRelativeLocation(FVector(0, 0, ZLoc));
 	float ZLoc = 40 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z;
 	VRCameraRoot->SetRelativeLocation(FVector(0, 0, ZLoc));
 }
@@ -1718,8 +1720,9 @@ void ABaseCharacter::VRMove(const FInputActionValue &Values)
 {
 	FVector2D Axis = Values.Get<FVector2D>();
 
-	AddMovementInput(GetActorForwardVector(), Axis.X);
-	AddMovementInput(GetActorRightVector(), Axis.Y);
+	AddMovementInput(VRCamera->GetForwardVector(), Axis.X);
+	AddMovementInput(VRCamera->GetRightVector(), Axis.Y);
+
 }
 
 void ABaseCharacter::Turn(const FInputActionValue &Values)
