@@ -74,5 +74,6 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastBlackholeDeactivate();
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class USoundBase* VRBlackholeSound;
 };

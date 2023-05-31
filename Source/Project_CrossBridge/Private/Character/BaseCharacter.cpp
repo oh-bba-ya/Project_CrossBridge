@@ -1892,6 +1892,26 @@ void ABaseCharacter::RightBEnd()
 			FRotator Rot = RightAim->GetComponentRotation();
 			ServerSpawnThrowingWeapon(EndVec, Rot);
 			VRController->PlayHapticEffect(BulletFireHaptic, EControllerHand::Right);
+			FTimerHandle SpawnBulletTimer1;
+			GetWorld()->GetTimerManager().SetTimer(SpawnBulletTimer1,
+				FTimerDelegate::CreateLambda([this]() -> void
+					{
+						FVector StartVec = RightAim->GetComponentLocation();
+						FVector EndVec = StartVec + RightAim->GetForwardVector() * 1;
+						FRotator Rot = RightAim->GetComponentRotation();
+						ServerSpawnThrowingWeapon(EndVec, Rot);
+						VRController->PlayHapticEffect(BulletFireHaptic, EControllerHand::Right);
+					}), 0.25f, false);	
+			FTimerHandle SpawnBulletTimer2;
+			GetWorld()->GetTimerManager().SetTimer(SpawnBulletTimer2,
+				FTimerDelegate::CreateLambda([this]() -> void
+					{
+						FVector StartVec = RightAim->GetComponentLocation();
+						FVector EndVec = StartVec + RightAim->GetForwardVector() * 1;
+						FRotator Rot = RightAim->GetComponentRotation();
+						ServerSpawnThrowingWeapon(EndVec, Rot);
+						VRController->PlayHapticEffect(BulletFireHaptic, EControllerHand::Right);
+					}), 0.5f, false);
 		}
 		else
 		{
