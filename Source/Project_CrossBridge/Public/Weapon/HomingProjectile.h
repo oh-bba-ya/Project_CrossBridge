@@ -40,6 +40,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UProjectileMovementComponent* MovementComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundBase* hitSounds;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundAttenuation* hitAttenuation;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")

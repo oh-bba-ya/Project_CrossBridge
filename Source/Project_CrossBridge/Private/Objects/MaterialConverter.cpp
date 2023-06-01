@@ -9,6 +9,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "PickupItem/HomingItem.h"
@@ -52,6 +53,11 @@ AMaterialConverter::AMaterialConverter()
 	
 	ConverterTimeLineComp = CreateDefaultSubobject<UTimelineComponent>(TEXT("ConverterTimeLineComp"));
 	//ConverterTimeLineComp->SetLooping(true);
+
+
+	interactionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("interactionWidget"));
+	interactionWidget->SetupAttachment(RootComponent);
+	interactionWidget->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -146,6 +152,11 @@ void AMaterialConverter::SaveGarbage(float v)
 	Server_SaveGarbage(v);
 }
 
+void AMaterialConverter::SetVisibilityWidget(bool b)
+{
+	interactionWidget->SetVisibility(b);
+}
+
 
 void AMaterialConverter::Server_SaveGarbage_Implementation(float v)
 {
@@ -191,6 +202,10 @@ void AMaterialConverter::Entrance(ABaseCharacter* p)
 	if(p != nullptr)
 	{
 		Server_Entrance(p);
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(true);
+		}
 	}
 }
 
@@ -198,6 +213,7 @@ void AMaterialConverter::Server_Entrance_Implementation(ABaseCharacter* p)
 {
 	SetOwner(p);
 	MultiCast_Entrance(p);
+	
 }
 
 void AMaterialConverter::MultiCast_Entrance_Implementation(ABaseCharacter* p)
@@ -205,6 +221,11 @@ void AMaterialConverter::MultiCast_Entrance_Implementation(ABaseCharacter* p)
 	if(p != nullptr)
 	{
 		p->SetConverter(this);
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(true);
+		}
+		
 	}
 }
 
@@ -213,6 +234,11 @@ void AMaterialConverter::Exit(ABaseCharacter* p)
 	if(p != nullptr)
 	{
 		Server_Exit(p);
+
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(false);
+		}
 	}	
 }
 
@@ -221,11 +247,21 @@ void AMaterialConverter::Server_Exit_Implementation(ABaseCharacter* p)
 {
 	SetOwner(nullptr);
 	MultiCast_Exit(p);
+
 }
 
 void AMaterialConverter::MultiCast_Exit_Implementation(ABaseCharacter* p)
 {
-	p->SetConverter(nullptr);
+	if(p!= nullptr)
+	{
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(false);
+		}
+		p->SetConverter(nullptr);
+	}
+
+
 }
 
 

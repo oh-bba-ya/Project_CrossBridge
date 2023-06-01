@@ -9,6 +9,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -26,14 +27,21 @@ ACannon::ACannon()
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	SetRootComponent(BoxComponent);
 	BoxComponent->SetCollisionProfileName(FName("WeaponPreset"));
+	BoxComponent->SetBoxExtent(FVector(75.f,75.f,70.f));
 
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetupAttachment(RootComponent);
-
+	SkeltalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
+	SkeltalMeshComponent->SetupAttachment(RootComponent);
+	SkeltalMeshComponent->SetRelativeLocationAndRotation(FVector(0,0,-30.f),FRotator(0.f,-90.f,0.f));
+	SkeltalMeshComponent->SetRelativeScale3D(FVector(10.f));
+	
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	Arrow->SetupAttachment(RootComponent);
 	Arrow->SetRelativeLocationAndRotation(FVector(30.f,0.f,37.f), FRotator(50.f,0.f,0.f));
 
+
+	interactionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("interactionWidget"));
+	interactionWidget->SetupAttachment(RootComponent);
+	interactionWidget->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -75,6 +83,10 @@ void ACannon::MultiCast_Entrance_Implementation(class ABaseCharacter* p)
 	if(p!=nullptr)
 	{
 		p->mycanon = this;
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(true);
+		}
 	}
 }
 
@@ -95,6 +107,10 @@ void ACannon::Exit(class ABaseCharacter* p)
 
 void ACannon::MultiCast_Exit_Implementation(class ABaseCharacter* p)
 {
+	if(p->IsLocallyControlled() && !(p->IsVR))
+	{
+		interactionWidget->SetVisibility(false);
+	}
 	p->mycanon = nullptr;
 }
 

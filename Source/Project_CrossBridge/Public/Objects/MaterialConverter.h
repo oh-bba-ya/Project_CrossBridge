@@ -54,7 +54,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
 	class USoundAttenuation* FillupSoundAttenuation;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class UWidgetComponent* interactionWidget;
 	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -75,6 +77,9 @@ public:
 
 	UFUNCTION()
 	void SaveGarbage(float v);
+
+	UFUNCTION()
+	void SetVisibilityWidget(bool b);
 
 
 protected:
