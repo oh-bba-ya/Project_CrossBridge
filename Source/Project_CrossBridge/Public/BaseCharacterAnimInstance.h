@@ -49,9 +49,20 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_ChangeSpectator();
+
+	UFUNCTION()
+	void AnimNotify_WalkSound();
 	
 private:
 	class ABaseCharacter* baseCharacter;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Sounds",meta=(AllowPrivateAccess))
+	class USoundBase* WalkSounds;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Settings|Sounds",meta=(AllowPrivateAccess))
+	class USoundAttenuation* WalkAttenuation;
+	
 
 	
 	

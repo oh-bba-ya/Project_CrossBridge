@@ -56,6 +56,11 @@ void AHomingProjectile::Destroyed()
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ExplosionEffect,SapwnLoc,FRotator::ZeroRotator);
 	}
+
+	if(hitSounds && hitAttenuation)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),hitSounds,SapwnLoc,1,1,0,hitAttenuation);
+	}
 }
 
 // Called every frame

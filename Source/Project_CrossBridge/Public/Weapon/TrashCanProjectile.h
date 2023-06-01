@@ -59,7 +59,7 @@ private:
 
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
-	class UParticleSystem* ExplosionEffect;
+	class UNiagaraSystem* ExplosionEffect;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
 	class USoundBase* HitSound;

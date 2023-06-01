@@ -3,6 +3,7 @@
 
 #include "Weapon/TrashCanProjectile.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Character/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -56,7 +57,7 @@ void ATrashCanProjectile::BeginPlay()
 void ATrashCanProjectile::Destroyed()
 {
 	FVector SpawnLoc = GetActorLocation();
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, SpawnLoc,FRotator::ZeroRotator, true, EPSCPoolMethod::AutoRelease);
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ExplosionEffect,GetActorLocation());
 
 	if(HitSound && HitAttenuation)
 	{
@@ -69,7 +70,11 @@ void ATrashCanProjectile::OnProjectileImpact(UPrimitiveComponent* HitComponent, 
 {
 	if(OtherActor)
 	{
-		UGameplayStatics::ApplyPointDamage(OtherActor, damagePower, NormalImpulse, Hit, GetInstigator()->Controller, this, DamageType);
+		AVRCore* core = Cast<AVRCore>(OtherActor);
+		if(core != nullptr)
+		{
+			UGameplayStatics::ApplyPointDamage(OtherActor, damagePower, NormalImpulse, Hit, GetInstigator()->Controller, this, DamageType);
+		}
 	}
 	Destroyed();
 }
@@ -115,11 +120,12 @@ void ATrashCanProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponen
 			}
 		}
 
-		AVRCore* core = Cast<AVRCore>(OtherActor);
+		// 쓰레기 봉투에 코어가 피해를 받는게 이상해서 제거
+		/*AVRCore* core = Cast<AVRCore>(OtherActor);
 		if(core != nullptr)
 		{
 			core->OnTakeDamage(damagePower);
-		}
+		}*/
 
 		Destroy();
 	}

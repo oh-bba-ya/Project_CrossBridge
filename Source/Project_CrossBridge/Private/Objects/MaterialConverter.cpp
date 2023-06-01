@@ -9,6 +9,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "PickupItem/HomingItem.h"
@@ -52,6 +53,11 @@ AMaterialConverter::AMaterialConverter()
 	
 	ConverterTimeLineComp = CreateDefaultSubobject<UTimelineComponent>(TEXT("ConverterTimeLineComp"));
 	//ConverterTimeLineComp->SetLooping(true);
+
+
+	interactionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("interactionWidget"));
+	interactionWidget->SetupAttachment(RootComponent);
+	interactionWidget->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -146,11 +152,18 @@ void AMaterialConverter::SaveGarbage(float v)
 	Server_SaveGarbage(v);
 }
 
+void AMaterialConverter::SetVisibilityWidget(bool b)
+{
+	interactionWidget->SetVisibility(b);
+}
+
 
 void AMaterialConverter::Server_SaveGarbage_Implementation(float v)
 {
 	float garbage = GarbageCount + v;
 	SetGarbageCount(garbage);
+	Multicast_FillupSound();
+	
 }
 
 
@@ -189,6 +202,10 @@ void AMaterialConverter::Entrance(ABaseCharacter* p)
 	if(p != nullptr)
 	{
 		Server_Entrance(p);
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(true);
+		}
 	}
 }
 
@@ -196,6 +213,7 @@ void AMaterialConverter::Server_Entrance_Implementation(ABaseCharacter* p)
 {
 	SetOwner(p);
 	MultiCast_Entrance(p);
+	
 }
 
 void AMaterialConverter::MultiCast_Entrance_Implementation(ABaseCharacter* p)
@@ -203,6 +221,11 @@ void AMaterialConverter::MultiCast_Entrance_Implementation(ABaseCharacter* p)
 	if(p != nullptr)
 	{
 		p->SetConverter(this);
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(true);
+		}
+		
 	}
 }
 
@@ -211,6 +234,11 @@ void AMaterialConverter::Exit(ABaseCharacter* p)
 	if(p != nullptr)
 	{
 		Server_Exit(p);
+
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(false);
+		}
 	}	
 }
 
@@ -219,17 +247,29 @@ void AMaterialConverter::Server_Exit_Implementation(ABaseCharacter* p)
 {
 	SetOwner(nullptr);
 	MultiCast_Exit(p);
+
 }
 
 void AMaterialConverter::MultiCast_Exit_Implementation(ABaseCharacter* p)
 {
-	p->SetConverter(nullptr);
+	if(p!= nullptr)
+	{
+		if(p->IsLocallyControlled() && !(p->IsVR))
+		{
+			interactionWidget->SetVisibility(false);
+		}
+		p->SetConverter(nullptr);
+	}
+
+
 }
 
 
 /** 타임 라인을 이용한 움직임 */
 void AMaterialConverter::UpdateTimelineComp(float Output)
 {
+	
+
 	// 타임라인 커브 (timeline Curve)의 출력을 바탕으로 문의 새 상대적 위치 설정 및 구성
 	FRotator ConverterNewRotation = FRotator(Output,0.f,0.f);
 	StaticMeshComponent->SetRelativeRotation(ConverterNewRotation);
@@ -250,6 +290,19 @@ void AMaterialConverter::UnMakeingEffect()
 {
 	MakingEffectComp->Deactivate();
 	ConverterTimeLineComp->SetNewTime(0.f);
+}
+
+void AMaterialConverter::Multicast_FillupSound_Implementation()
+{
+	if(FillupSound && FillupSoundAttenuation)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),FillupSound,GetActorLocation(),1,1,0,FillupSoundAttenuation);
+	}
+}
+
+void AMaterialConverter::Server_FillupSound_Implementation()
+{
+	Multicast_FillupSound();
 }
 
 

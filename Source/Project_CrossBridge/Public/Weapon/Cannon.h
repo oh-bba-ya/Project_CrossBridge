@@ -27,7 +27,7 @@ public:
 	class UBoxComponent* BoxComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
-	class UStaticMeshComponent* MeshComponent;
+	class USkeletalMeshComponent* SkeltalMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UArrowComponent* Arrow;
@@ -42,6 +42,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class USoundAttenuation* FireAttenu;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class UWidgetComponent* interactionWidget;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Projectile")

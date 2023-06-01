@@ -5,6 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "KismetAnimationLibrary.h"
 #include "Character/BaseCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 void UBaseCharacterAnimInstance::NativeBeginPlay()
 {
@@ -54,4 +55,18 @@ void UBaseCharacterAnimInstance::AnimNotify_SlidingActionRelease()
 void UBaseCharacterAnimInstance::AnimNotify_ChangeSpectator()
 {
 	baseCharacter->ChangeSpectator();
+}
+
+void UBaseCharacterAnimInstance::AnimNotify_WalkSound()
+{
+	if(baseCharacter != nullptr)
+	{
+		if(!(baseCharacter->IsVR))
+		{
+			if(WalkSounds && WalkAttenuation)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(),WalkSounds,baseCharacter->GetActorLocation(),1,1,0,WalkAttenuation);
+			}
+		}
+	}
 }

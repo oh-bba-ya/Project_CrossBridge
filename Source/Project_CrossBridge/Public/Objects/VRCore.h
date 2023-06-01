@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/Actor.h"
 #include "VRCore.generated.h"
 
@@ -73,12 +74,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Settings|Status Health")
 	void OnTakeDamage(float d);
-
 	
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	class UNiagaraComponent* laserComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
+	class UNiagaraComponent* ChargeComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	bool bIsFire = false;
@@ -102,3 +105,5 @@ private:
 	UPROPERTY(EditDefaultsOnly,Category="Settings|Falling")
 	class UNiagaraComponent* VRCoreDestroyComp;
 };
+
+

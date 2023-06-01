@@ -1595,6 +1595,8 @@ void ABaseCharacter::UsingConverter()
 				//  변환기에 쓰레기통에 존재하는 모든 쓰레기부터 저장한다..
 				myConverter->SaveGarbage(myTrashCan->GetCount());
 
+				Server_Fillup();
+				
 				// 쓰레기통에 존재하던 쓰레기 개수를 0으로 초기화한다.
 				myTrashCan->SetCount(-1 * myTrashCan->GetCount());
 			}
@@ -1609,6 +1611,19 @@ void ABaseCharacter::UsingConverter()
 			// 바로 HomingItem을 소환한다.
 			myConverter->MakingHoming();
 		}
+	}
+}
+
+void ABaseCharacter::Server_Fillup_Implementation()
+{
+	MultiCast_Fillup();
+}
+
+void ABaseCharacter::MultiCast_Fillup_Implementation()
+{
+	if(FillupMontage != nullptr)
+	{
+		PlayAnimMontage(FillupMontage);
 	}
 }
 
