@@ -53,14 +53,14 @@ public:
 		FVector TrashSpawningPoolSize = FVector(200, 200, 20);
 
 	UPROPERTY()
-		int32 ArrSize = 20;
+		int32 ArrSize = 40;
 	UPROPERTY()
 		int32 ArrIndex = 0;
 
 	UPROPERTY()
 		float SpawningTimer;
 	UPROPERTY()
-		float SpawningDelayTime = 0.3;
+		float SpawningDelayTime = 0.1f;
 
 	UPROPERTY()
 		bool IsActivate;
