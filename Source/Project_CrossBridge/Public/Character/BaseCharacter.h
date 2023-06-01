@@ -518,8 +518,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputMappingContext* IMC_VRHand;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-		class UInputAction* IA_HeightSet;
-	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_Move;
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 		class UInputAction* IA_Turn;
@@ -608,7 +606,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetInteractionComponent* RightWidgetInteractionComp;
 	UFUNCTION(Server, Unreliable)
-	void ServerVRHeightSet();
+	void ServerVRHeightSet(bool IsUP);
 	void VRMove(const FInputActionValue& Values);
 	void Turn(const FInputActionValue& Values);
 	void LeftIndexCurl();
@@ -687,7 +685,7 @@ public:
 	UPROPERTY()
 		float LeftYTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float LeftYCastTime = 5;
+		float LeftYCastTime = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float TrashSpawningPoolTime;
 	UPROPERTY()
@@ -737,7 +735,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsVR = false;
-	
+
 	bool IsVRDead;
 	bool IsVRRevive;
 
@@ -943,7 +941,15 @@ public:
 	
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 			class USoundBase* VRFireSound;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+			class USoundBase* VRSwordCastSound;
+		UPROPERTY()
+			class UAudioComponent* SwordCastSound;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+			class USoundBase* VRSwordSlashSound;
 
+		UFUNCTION(Server, Unreliable)
+			void ServerVRSoundPlay(const FString& Position);
 		UFUNCTION(NetMulticast, Unreliable)
-			void MulticastVRSoundPlay();
+			void MulticastVRSoundPlay(const FString& Position);
 };

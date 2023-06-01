@@ -45,6 +45,7 @@
 #include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
 #include "Spectator/PCSpectatorPawn.h"
 #include "VRCharacter/VRComponent.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -747,6 +748,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		{
 			if (SwordSetTime == 0)
 			{
+				ServerVRSoundPlay(FString("SwordCast"));
 				VRController->PlayHapticEffect(SwordCastHaptic, EControllerHand::Right, 1, true);
 				VRController->PlayHapticEffect(SwordCastHaptic, EControllerHand::Left, 1, true);
 			}
@@ -771,6 +773,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		{
 			if (!IsSwordSet && SwordSetTime != 0)
 			{
+				MulticastVRSoundPlay(FString("SwordCastStop"));
 				VRController->StopHapticEffect(EControllerHand::Right);
 				VRController->StopHapticEffect(EControllerHand::Left);
 				SwordSetTime = 0;
@@ -874,7 +877,6 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompo
 		EnhancedInputComponent->BindAction(InputInterAction, ETriggerEvent::Started, this, &ABaseCharacter::UsingConverter);
 		EnhancedInputComponent->BindAction(InputTrashCanFireAction, ETriggerEvent::Started, this, &ABaseCharacter::TrashCanFire);
 
-		EnhancedInputComponent->BindAction(IA_HeightSet, ETriggerEvent::Triggered, this, &ABaseCharacter::ServerVRHeightSet);
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABaseCharacter::VRMove);
 		EnhancedInputComponent->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &ABaseCharacter::Turn);
 		EnhancedInputComponent->BindAction(IA_LeftIndexCurl, ETriggerEvent::Triggered, this, &ABaseCharacter::LeftIndexCurl);
@@ -1708,12 +1710,21 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ABaseCharacter::ServerVRHeightSet_Implementation()
+void ABaseCharacter::ServerVRHeightSet_Implementation(bool IsUP)
 {
-	VRCameraRoot->SetRelativeLocation(FVector(0, 0, 0));
-	//RightAim->SetRelativeLocation(FVector(0, 0, ZLoc));
-	float ZLoc = 40 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z;
-	VRCameraRoot->SetRelativeLocation(FVector(0, 0, ZLoc));
+	if (IsUP)
+	{	
+		VRCameraRoot->SetRelativeLocation(FVector(0, 0, 0));
+		//RightAim->SetRelativeLocation(FVector(0, 0, ZLoc));
+		float ZLoc = 40 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z;
+		VRCameraRoot->SetRelativeLocation(FVector(0, 0, ZLoc));
+	}
+	else
+	{
+		VRCameraRoot->SetRelativeLocation(FVector(0, 0, 0));
+		float ZLoc = -20 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z;
+		VRCameraRoot->SetRelativeLocation(FVector(0, 0, ZLoc));
+	}
 }
 
 void ABaseCharacter::VRMove(const FInputActionValue &Values)
@@ -1738,16 +1749,18 @@ void ABaseCharacter::Turn(const FInputActionValue &Values)
 		{
 			AddControllerYawInput(-20);
 		}
-		//if (Axis.Y > 0.5f)
-		//{
+		if (Axis.Y > 0.5f)
+		{
 			//VRCameraRoot->SetRelativeLocation(VRCameraRoot->GetRelativeLocation() + FVector(0, 0, 10));
 			//LeftHand->SetRelativeLocation(LeftHand->GetRelativeLocation() + FVector(0, 0, 10));
 			//float ZLoc = 88 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z > 88 ? 88 : 88 + GetCapsuleComponent()->GetComponentLocation().Z - VRHeadMesh->GetComponentLocation().Z;	
-		//}
-		//else if (Axis.Y < -0.5f)
-		//{
-		//	VRCameraRoot->SetRelativeLocation(VRCameraRoot->GetRelativeLocation() + FVector(0, 0, -10));
-		//}
+			ServerVRHeightSet(true);
+		}
+		else if (Axis.Y < -0.5f)
+		{
+			ServerVRHeightSet(false);
+			//VRCameraRoot->SetRelativeLocation(VRCameraRoot->GetRelativeLocation() + FVector(0, 0, -10));
+		}
 	}
 
 	// AddControllerYawInput(Axis.X);
@@ -1981,6 +1994,9 @@ void ABaseCharacter::RightAEnd()
 	IsRightA = false;
 	SwordSetTime = 0;
 	SwordActivateTime = 0;
+	MulticastVRSoundPlay(FString("SwordCastStop"));
+	VRController->StopHapticEffect(EControllerHand::Right);
+	VRController->StopHapticEffect(EControllerHand::Left);
 	ServerResetColorChange(FString("SwordOpacity"));
 	ServerResetColorChange(FString("SwordDissolve"));
 	ServerResetColorChange(FString("Left"));
@@ -2439,7 +2455,7 @@ void ABaseCharacter::ServerTrashSpawningPoolActivate_Implementation()
 void ABaseCharacter::ServerSpawnThrowingWeapon_Implementation(FVector SpawnLoc, FRotator SpawnRot)
 {
 	AThrowingWeapon *ThrowingWeaponActor = GetWorld()->SpawnActor<AThrowingWeapon>(SpawnThrowingWeapon, SpawnLoc, SpawnRot);
-	MulticastVRSoundPlay();
+	MulticastVRSoundPlay(FString("Bullet"));
 }
 
 void ABaseCharacter::ServerHealEffectActivate_Implementation(bool IsActivate)
@@ -2522,6 +2538,7 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString &Position, clas
 	if (Position == FString("Sword"))
 	{
 		Enemy->OnTakeDamage(10);
+		MulticastVRSoundPlay(FString("SwordSlash"));
 		// Enemy->Server_TakeDamage(10);
 	}
 }
@@ -2694,7 +2711,33 @@ void ABaseCharacter::MulticastVRDoorBreak_Implementation()
 	}
 }
 
-void ABaseCharacter::MulticastVRSoundPlay_Implementation()
+void ABaseCharacter::ServerVRSoundPlay_Implementation(const FString& Position)
 {
-	UGameplayStatics::PlaySoundAtLocation(this, VRFireSound, RightAim->GetComponentLocation());
+	if (Position == FString("SwordCast"))
+	{
+		MulticastVRSoundPlay(FString("SwordCast"));
+	}
+}
+
+void ABaseCharacter::MulticastVRSoundPlay_Implementation(const FString& Position)
+{
+	if (Position == FString("Bullet"))
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, VRFireSound, RightAim->GetComponentLocation());
+	}
+	else if (Position == FString("SwordCast"))
+	{
+		SwordCastSound = UGameplayStatics::SpawnSoundAtLocation(this, VRSwordCastSound, SwordMesh->GetComponentLocation());
+	}
+	else if (Position == FString("SwordCastStop"))
+	{
+		if (SwordCastSound)
+		{
+			SwordCastSound->Stop();
+		}
+	}
+	else if (Position == FString("SwordSlash"))
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, VRSwordSlashSound, SwordMesh->GetComponentLocation());
+	}
 }
