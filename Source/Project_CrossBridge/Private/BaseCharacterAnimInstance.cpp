@@ -61,11 +61,14 @@ void UBaseCharacterAnimInstance::AnimNotify_WalkSound()
 {
 	if(baseCharacter != nullptr)
 	{
-		if(!(baseCharacter->IsVR))
+		if(baseCharacter->IsLocallyControlled())
 		{
-			if(WalkSounds && WalkAttenuation)
+			if(!(baseCharacter->IsVR))
 			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(),WalkSounds,baseCharacter->GetActorLocation(),1,1,0,WalkAttenuation);
+				if(WalkSounds && WalkAttenuation)
+				{
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(),WalkSounds,baseCharacter->GetActorLocation(),1,1,0,WalkAttenuation);
+				}
 			}
 		}
 	}

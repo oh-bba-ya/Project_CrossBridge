@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Objects/VRCore.h"
 
 ACrossBridgeStateBase::ACrossBridgeStateBase()
 {
@@ -16,6 +17,17 @@ void ACrossBridgeStateBase::BeginPlay()
 	Super::BeginPlay();
 	state = EGameState::Wait;
 	eWinner = EWinner::NONE;
+
+	core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
+
+	if(core != nullptr)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("State Core not Null"));
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("State Core Null"));
+	}
 }
 
 void ACrossBridgeStateBase::Tick(float DeltaTime)

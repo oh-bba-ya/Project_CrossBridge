@@ -276,5 +276,18 @@ void ABaseCharacterController::SetJetpackStatus(float curFuel, float maxFuel)
 	}
 }
 
+void ABaseCharacterController::SetFreezeStatus(float cur, float max)
+{
+	PCHUD = PCHUD == nullptr ? Cast<AWeaponHUD>(GetHUD()) : PCHUD;
+
+	bool bPCHUDValid = PCHUD && PCHUD->CharacterOverlay;
+
+	if(bPCHUDValid)
+	{
+		PCHUD->CharacterOverlay->SetFreezeBar(cur,max);
+	}
+	
+}
+
 
 

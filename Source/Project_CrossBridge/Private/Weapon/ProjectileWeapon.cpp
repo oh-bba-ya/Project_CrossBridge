@@ -4,6 +4,7 @@
 #include "Weapon/ProjectileWeapon.h"
 
 #include "BaseCharacterController.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/BaseCharacter.h"
 #include "Net/UnrealNetwork.h"
@@ -77,6 +78,8 @@ void AProjectileWeapon::Fire(ABaseCharacter* player, const FVector hitTarget)
 }
 
 
+
+
 void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player, const FVector hitTarget)
 {
 	
@@ -95,8 +98,19 @@ void AProjectileWeapon::Server_Fire_Implementation(ABaseCharacter* player, const
 			if(Projectile != nullptr)
 			{
 				Projectile->SetOwner(player);
+				Multicast_Fire();
+
 			}
 		}
+	}
+}
+
+
+void AProjectileWeapon::Multicast_Fire_Implementation()
+{
+	if(muzzleFlash)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAttached(muzzleFlash,MeshComponent,FName("MuzzleFlash"),MeshComponent->GetSocketLocation(FName("MuzzleFlash")),MeshComponent->GetSocketRotation(FName("MuzzleFlash")),EAttachLocation::KeepWorldPosition,true);
 	}
 }
 

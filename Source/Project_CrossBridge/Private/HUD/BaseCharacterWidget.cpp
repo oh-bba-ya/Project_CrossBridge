@@ -6,6 +6,7 @@
 #include "Components/ProgressBar.h"
 
 
+
 void UBaseCharacterWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -30,3 +31,10 @@ void UBaseCharacterWidget::SetHealthBar(float curHP, float MaxHP)
 {
 	HealthBar->SetPercent(curHP/MaxHP);
 }
+
+
+void UBaseCharacterWidget::SetFreezeBar(float cur, float max)
+{
+	freezeBar->SetPercent(cur/max);
+}
+

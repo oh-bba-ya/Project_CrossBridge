@@ -114,6 +114,7 @@ private:
 public:
 	void SetHealthStatus(float curHP, float maxHP);
 	void SetJetpackStatus(float curFuel, float maxFuel);
+	void SetFreezeStatus(float cur, float max);
 
 	UPROPERTY()
 	FString VRTimer;

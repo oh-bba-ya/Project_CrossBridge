@@ -28,6 +28,11 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CountdownText;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Fuel", meta = (BindWidget))
+	class UProgressBar* freezeBar;
+
+	void SetFreezeBar(float cur,float max);
 
 
 	

@@ -105,7 +105,10 @@ void AHomingItem::MultiCast_DropItem_Implementation(ABaseCharacter* player)
 {
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	BoxComponent->SetSimulatePhysics(true);
-	player->SetHomingItem(nullptr);
+	if(player->GetHomingItem() != nullptr)
+	{
+		player->SetHomingItem(nullptr);
+	}
 	Ownerplayer = nullptr;
 	player->SetEquip(false);
 }
@@ -128,7 +131,10 @@ void AHomingItem::UsingItem(ABaseCharacter* player)
 void AHomingItem::Multicast_UsingItem_Implementation(ABaseCharacter* player)
 {
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	player->SetHomingItem(nullptr);
+	if(player->GetHomingItem() != nullptr)
+	{
+		player->SetHomingItem(nullptr);
+	}
 	Ownerplayer = nullptr;
 	player->SetEquip(false);
 	Destroy();

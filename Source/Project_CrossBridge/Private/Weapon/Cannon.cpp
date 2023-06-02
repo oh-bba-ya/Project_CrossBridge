@@ -3,6 +3,7 @@
 
 #include "Weapon/Cannon.h"
 
+#include "CrossBridgeStateBase.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Character/BaseCharacter.h"
@@ -53,7 +54,20 @@ void ACannon::BeginPlay()
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this,&ACannon::OnEndOverlap);
 
 
-	core = Cast<AVRCore>(UGameplayStatics::GetActorOfClass(GetWorld(),AVRCore::StaticClass()));
+	BridgeState = Cast<ACrossBridgeStateBase>(GetWorld()->GetGameState());
+
+	if(BridgeState != nullptr)
+	{
+		core = BridgeState->GetVRCore();
+		if(core != nullptr)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("Core not Null"));
+		}
+		else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("Core Null"));
+		}
+	}
 	
 	
 }
@@ -177,6 +191,7 @@ void ACannon::Multicast_HomingFire_Implementation(ABaseCharacter* p, class AHomi
 {
 	if(h!=nullptr)
 	{
+		core = core == nullptr ? BridgeState->GetVRCore() : core;
 		if(core != nullptr)
 		{
 			if(muzzleEffect)
