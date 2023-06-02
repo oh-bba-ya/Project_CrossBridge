@@ -404,7 +404,7 @@ void ABaseCharacter::BeginPlay()
 		RedDot->SetActorEnableCollision(false);
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
 		VRTimerController = Cast<ABaseCharacterController>(VRController);
-
+		VRCamera->PostProcessSettings.WeightedBlendables.Array[1].Weight = 0;
 	}
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
@@ -430,6 +430,13 @@ void ABaseCharacter::BeginPlay()
 	{
 		SwordMat = SwordMesh->CreateDynamicMaterialInstance(1, SwordBase);
 		SwordMat->SetScalarParameterValue(FName("SwordOpacity"), 0);
+	}
+	if (DamageEffectBase)
+	{
+		DamageEffectMat = UMaterialInstanceDynamic::Create(DamageEffectBase, this);
+		DamageEffectMat->SetScalarParameterValue(FName("DamageRate"), 0);
+		VRCamera->PostProcessSettings.WeightedBlendables.Array[0].Object = DamageEffectMat;
+		VRCamera->PostProcessSettings.WeightedBlendables.Array[0].Weight = 1;
 	}
 	// UMaterialInterface *InvisibleSwordBase = InvisibleSwordMesh->GetMaterial(3);
 	// if (InvisibleSwordBase)
@@ -517,6 +524,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 					VRHealTime = 0;
 					ServerHealEffectActivate(false);
 					ServerResetColorChange("Right");
+					VRCamera->PostProcessSettings.WeightedBlendables.Array[1].Weight = 0;
 				}
 			}
 		}
@@ -530,6 +538,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 				VRController->StopHapticEffect(EControllerHand::Left);
 				ServerHealEffectActivate(false);
 				ServerResetColorChange("Right");
+				VRCamera->PostProcessSettings.WeightedBlendables.Array[1].Weight = 0;
 			}
 		}
 
@@ -848,6 +857,15 @@ void ABaseCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	if (VRDamageEffectRate > 0)
+	{
+		VRDamageEffectRate -= 0.66f * DeltaTime;
+		if (VRDamageEffectRate < 0)
+		{
+			VRDamageEffectRate = 0;
+		}
+		DamageEffectMat->SetScalarParameterValue(FName("DamageRate"), VRDamageEffectRate);
+	}
 	// FVector StartPos = LeftGrip->GetComponentLocation() + LeftAim->GetForwardVector() * 10;
 	// FVector EndPos = StartPos + LeftGrip->GetRightVector() * 1000;
 	// FVector StartPos = LeftHand->GetComponentLocation();
@@ -1737,6 +1755,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, VRLeftHandActor);
 	DOREPLIFETIME(ABaseCharacter, VRRightHandActor);
 	DOREPLIFETIME(ABaseCharacter, bCanFreeze);
+	DOREPLIFETIME(ABaseCharacter, VRDamageEffectRate);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1914,7 +1933,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 
 void ABaseCharacter::LeftGraspEnd()
 {
-	// VRGetDamage(1);
+	VRGetDamage(1);
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{
@@ -2541,6 +2560,10 @@ void ABaseCharacter::SetRedDot()
 void ABaseCharacter::VRGetDamage(float Damage)
 {
 	ServerVRGetDamage(Damage);
+	if (Damage < 0)
+	{
+		VRCamera->PostProcessSettings.WeightedBlendables.Array[1].Weight = 1;
+	}
 }
 
 void ABaseCharacter::ServerVRGetDamage_Implementation(float Damage)
@@ -2550,6 +2573,15 @@ void ABaseCharacter::ServerVRGetDamage_Implementation(float Damage)
 	VRCurHP = VRCurHP > VRMaxHP ? VRMaxHP : VRCurHP;
 	float Rate = 1 - (VRCurHP / VRMaxHP);
 	MulticastVRGetDamage(Rate);
+	if (Damage > 0)
+	{
+		VRDamageEffectRate += 1;
+		if (VRDamageEffectRate > 2)
+		{
+			VRDamageEffectRate = 2;
+		}
+	}
+	
 }
 
 void ABaseCharacter::MulticastVRGetDamage_Implementation(float Rate)

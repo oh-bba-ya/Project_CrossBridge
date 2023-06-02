@@ -614,6 +614,10 @@ public:
 		class UMaterialInstanceDynamic* SwordMat;
 	UPROPERTY()
 		class UMaterialInstanceDynamic* InvisibleSwordMat;
+	UPROPERTY()
+		class UMaterialInstanceDynamic* DamageEffectMat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UMaterialInterface* DamageEffectBase;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetComponent* VRStatusWidget;
@@ -913,6 +917,8 @@ public:
 		float VRMaxHP = 100;
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite)
 		float VRCurHP = VRMaxHP;
+	UPROPERTY(Replicated)
+		float VRDamageEffectRate;
 
 	UFUNCTION(BlueprintCallable)
 		void VRGetDamage(float Damage);
