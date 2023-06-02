@@ -6,6 +6,7 @@
 #include "Character/BaseCharacter.h"
 #include "Components/WidgetComponent.h"
 #include "VRCharacter/SkillPractice/Widget/SkillTestCompleteWidget.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 APortal::APortal()
@@ -13,12 +14,13 @@ APortal::APortal()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	StartPortalBox = CreateDefaultSubobject<UBoxComponent>(TEXT("StartPortalBox"));
-	StartPortalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StartPortalMesh"));
-	StartPortalMesh->SetupAttachment(StartPortalBox);
+	StartPortalEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("StartPortalEffect"));
+	StartPortalEffect->SetupAttachment(StartPortalBox);
+
 
 	EndPortalBox = CreateDefaultSubobject<UBoxComponent>(TEXT("EndPortalBox"));
-	EndPortalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EndPortalMesh"));
-	EndPortalMesh->SetupAttachment(EndPortalBox);
+	EndPortalEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EndPortalEffect"));
+	EndPortalEffect->SetupAttachment(EndPortalBox);
 
 	SuccessWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("SuccessWidget"));
 	SuccessWidget->SetupAttachment(EndPortalBox);
