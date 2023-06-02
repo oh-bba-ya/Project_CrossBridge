@@ -65,6 +65,9 @@ public:
 	FStateBaseDelegate endStateDelegate;
 	FStateBaseDelegate quitStateDelegate;
 
+	FORCEINLINE void SetVRCore(class AVRCore* c) { core = c;}
+	FORCEINLINE AVRCore* GetVRCore() const {return core;}
+	
 private:
 
 	UFUNCTION()
@@ -93,6 +96,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
 	class USoundBase* GameBackGroundMusic;
+
+	UPROPERTY()
+	class AVRCore* core;
 	
 	
 };

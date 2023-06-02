@@ -35,6 +35,7 @@
 #include "NiagaraComponent.h"
 #include "Objects/Thunder.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Objects/MaterialConverter.h"
 #include "PickupItem/HomingItem.h"
 #include "Objects/TrashSpawningPool.h"
@@ -46,6 +47,7 @@
 #include "Spectator/PCSpectatorPawn.h"
 #include "VRCharacter/VRComponent.h"
 #include "Components/AudioComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -452,11 +454,7 @@ void ABaseCharacter::BeginPlay()
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (CurrentHP <= 0)
-	{
-		// UE_LOG(LogTemp,Warning,TEXT("Die"));
-	}
+	
 
 	if (bJetPackActive)
 	{
@@ -468,6 +466,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		PCController->SetHealthStatus(CurrentHP, MaxHP);
 		PCController->SetJetpackStatus(Fuel, MaxFuel);
+		FreezeCoolDown(DeltaTime);
 	}
 
 	if (freeze != nullptr)
@@ -1236,6 +1235,11 @@ void ABaseCharacter::Multicast_Hit_Implementation()
 	if (HitMontage != nullptr)
 	{
 		PlayAnimMontage(HitMontage);
+		if(BloodEffect)
+		{
+			const USkeletalMeshSocket* bloodSocket = GetMesh()->GetSocketByName(FName("BloodSocket"));
+			UNiagaraFunctionLibrary::SpawnSystemAttached(BloodEffect,GetMesh(),FName("BloodSocket"),GetMesh()->GetSocketLocation(FName("BloodSocket")),GetMesh()->GetSocketRotation(FName("BloodSocket")),EAttachLocation::KeepWorldPosition,true);
+		}
 	}
 }
 
@@ -1396,6 +1400,8 @@ void ABaseCharacter::RemoveFreeze()
 	Server_RemoveFreeze();
 }
 
+
+
 void ABaseCharacter::Server_RemoveFreeze_Implementation()
 {
 	if(freeze != nullptr)
@@ -1403,6 +1409,8 @@ void ABaseCharacter::Server_RemoveFreeze_Implementation()
 		freeze->Destroy();
 		if (freeze != nullptr)
 		{
+			//coolTime = FreezeCoolTime;
+			Multicast_RemoveFreeze();
 			freeze = nullptr;
 		}
 
@@ -1415,6 +1423,26 @@ void ABaseCharacter::Server_RemoveFreeze_Implementation()
 	}
 
 }
+
+void ABaseCharacter::Multicast_RemoveFreeze_Implementation()
+{
+	coolTime = FreezeCoolTime;
+}
+
+void ABaseCharacter::FreezeCoolDown(float time)
+{
+	if(freeze == nullptr && coolTime >=0 )
+	{
+		coolTime -= time;
+		if(PCController)
+		{
+			PCController->SetFreezeStatus(coolTime,FreezeCoolTime);
+		}
+	}
+	
+}
+
+
 #pragma endregion
 
 #pragma region Canon

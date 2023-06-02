@@ -82,12 +82,19 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Projectile")
 	TSubclassOf<class AProjectile> projectileFactory;
 
+
+	
+
 private:
 	UFUNCTION(Server, Unreliable)
 	void Server_Fire(class ABaseCharacter* player, const FVector hitTarget);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Fire();
 	
 
-	
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Effect")
+	class UNiagaraSystem* muzzleFlash;
 	
 
 };

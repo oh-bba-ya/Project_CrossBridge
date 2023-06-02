@@ -224,7 +224,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable,Server, Unreliable)
 	void Server_RecoveryHP(float value);
-	
+
 
 protected:
 	/** 현재 체력 세터. 값을 0과 MaxHealth 사이로 범위제한하고 OnHealthUpdate를 호출합니다. 서버에서만 호출되어야 합니다.*/
@@ -241,6 +241,8 @@ private:
 	UPROPERTY(EditDefaultsOnly,ReplicatedUsing = OnRep_CurrentHealth, Category="Settings|Status Health")
 	float CurrentHP;
 
+	UPROPERTY(EditDefaultsOnly,ReplicatedUsing = OnRep_CurrentHealth, Category="Settings|Status Health")
+	class UNiagaraSystem* BloodEffect;
 
 #pragma endregion
 
@@ -356,6 +358,11 @@ private:
 
 	UPROPERTY(Replicated)
 	class AFreeze* freeze;
+
+	UPROPERTY(VisibleAnywhere, Category="Settings|Skill Freeze")
+	float coolTime = 0.f;
+
+	bool bCanCool = false;
 protected:
 
 	void FreezeSpawn();
@@ -367,6 +374,12 @@ protected:
 
 	UFUNCTION(Server,Unreliable)
 	void Server_RemoveFreeze();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_RemoveFreeze();
+
+	UFUNCTION()
+	void FreezeCoolDown(float time);
 public:
 	FORCEINLINE AFreeze* GetFreeze() {return freeze;}
 

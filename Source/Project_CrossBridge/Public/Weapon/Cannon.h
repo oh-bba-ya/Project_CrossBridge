@@ -47,6 +47,9 @@ public:
 	class UWidgetComponent* interactionWidget;
 	
 private:
+
+	class ACrossBridgeStateBase* BridgeState;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Projectile")
 	TSubclassOf<class AHomingProjectile> HomingFactory;
 
