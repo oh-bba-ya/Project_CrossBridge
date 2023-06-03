@@ -2051,7 +2051,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	VRGetDamage(10);
+	//VRGetDamage(10);
 	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);

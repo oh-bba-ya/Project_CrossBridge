@@ -75,7 +75,7 @@ void APracticeActorSpawn::BeginPlay()
 		BlackholeCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnBlackholeOverlap);
 		for (TActorIterator<ABaseCharacter> It(GetWorld()); It; ++It)
 		{
-			if (It->IsDummy)
+			if (It->IsDummy && !It->IsSwordTestDummy)
 			{
 				if (!TestActor1)
 				{

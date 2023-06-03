@@ -974,6 +974,8 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsDummy;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsSwordTestDummy;
 
 
 	public:
