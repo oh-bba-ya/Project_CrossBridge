@@ -482,7 +482,6 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 	if (IsVR)
 	{
-
 	
 		ServerVRTransform(VRCamera->GetRelativeTransform(), LeftHand->GetRelativeTransform(), RightHand->GetRelativeTransform());
 
@@ -2439,6 +2438,9 @@ void ABaseCharacter::MulticastVRSetting_Implementation()
 {
 	GetMesh()->SetVisibility(false);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// PC 애니메이션 제거
+	GetMesh()->SetAnimClass(nullptr);
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("VRPlayerPreset"));
 	GetCapsuleComponent()->SetRelativeScale3D(FVector(1.3f));
