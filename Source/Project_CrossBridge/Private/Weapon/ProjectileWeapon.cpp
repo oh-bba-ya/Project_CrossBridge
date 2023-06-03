@@ -112,6 +112,11 @@ void AProjectileWeapon::Multicast_Fire_Implementation()
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAttached(muzzleFlash,MeshComponent,FName("MuzzleFlash"),MeshComponent->GetSocketLocation(FName("MuzzleFlash")),MeshComponent->GetSocketRotation(FName("MuzzleFlash")),EAttachLocation::KeepWorldPosition,true);
 	}
+
+	if(fireSound && fireAttenuation)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),fireSound,GetActorLocation(),GetActorRotation(),1,1,0,fireAttenuation);
+	}
 }
 
 /** Drop Weapon */

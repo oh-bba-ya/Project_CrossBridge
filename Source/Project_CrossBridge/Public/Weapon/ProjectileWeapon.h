@@ -95,6 +95,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Effect")
 	class UNiagaraSystem* muzzleFlash;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundBase* fireSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Settings|Sounds")
+	class USoundAttenuation* fireAttenuation;
 	
 
 };
