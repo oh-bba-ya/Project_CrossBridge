@@ -6,6 +6,7 @@
 #include "Character/BaseCharacter.h"
 #include "Components/WidgetComponent.h"
 #include "VRCharacter/SkillPractice/Widget/SkillTestCompleteWidget.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 APortal::APortal()
@@ -13,12 +14,17 @@ APortal::APortal()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	StartPortalBox = CreateDefaultSubobject<UBoxComponent>(TEXT("StartPortalBox"));
-	StartPortalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StartPortalMesh"));
-	StartPortalMesh->SetupAttachment(StartPortalBox);
+	StartPortalEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("StartPortalEffect"));
+	StartPortalEffect->SetupAttachment(StartPortalBox);
+
 
 	EndPortalBox = CreateDefaultSubobject<UBoxComponent>(TEXT("EndPortalBox"));
-	EndPortalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EndPortalMesh"));
-	EndPortalMesh->SetupAttachment(EndPortalBox);
+	EndPortalEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EndPortalEffect"));
+	EndPortalEffect->SetupAttachment(EndPortalBox);
+
+	TestEndWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("TestEndWidget"));
+	TestEndWidget->SetupAttachment(StartPortalBox);
+	TestEndWidget->SetVisibility(false);
 
 	SuccessWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("SuccessWidget"));
 	SuccessWidget->SetupAttachment(EndPortalBox);
@@ -48,6 +54,7 @@ void APortal::OnStartPortalOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	if (VRUser)
 	{
 		VRUser->SetActorLocation(EndPortalBox->GetComponentLocation());
+		StartPortalEffect->SetVisibility(false);
 	}
 
 }
@@ -60,6 +67,16 @@ void APortal::OnEndPortalOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		{
 			StartPortalBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			VRUser->SetActorLocation(StartPortalBox->GetComponentLocation());
+			TestEndWidget->SetVisibility(true);
+		}
+		else
+		{
+			EndPortalEffect->SetVisibility(false);
 		}
 	}
+}
+
+void APortal::EndPortalVisible()
+{
+	EndPortalEffect->SetVisibility(true);
 }

@@ -29,18 +29,24 @@ public:
 		class UBoxComponent* StartPortalBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UStaticMeshComponent* StartPortalMesh;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setting)
+		class UNiagaraComponent* StartPortalEffect;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UBoxComponent* EndPortalBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UStaticMeshComponent* EndPortalMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetComponent* SuccessWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UNiagaraComponent* EndPortalEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UWidgetComponent* TestEndWidget;
 
 	UFUNCTION()
 		void OnStartPortalOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnEndPortalOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	UFUNCTION()
+		void EndPortalVisible();
 
 };

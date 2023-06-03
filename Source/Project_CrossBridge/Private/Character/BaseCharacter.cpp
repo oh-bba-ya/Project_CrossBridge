@@ -1961,7 +1961,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 
 void ABaseCharacter::LeftGraspEnd()
 {
-	VRGetDamage(1);
+	//VRGetDamage(1);
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{
@@ -2051,7 +2051,7 @@ void ABaseCharacter::RightBEnd()
 
 void ABaseCharacter::RightA()
 {
-	//VRGetDamage(10);
+	VRGetDamage(10);
 	if (!IsRightA && !IsSwordCool && VRSkillCheck(FString("Right")))
 	{
 		VRController->PlayHapticEffect(ClickedHaptic, EControllerHand::Right);
@@ -2661,6 +2661,7 @@ void ABaseCharacter::MulticastVRReviveSetting_Implementation()
 	EnableInput(VRController);
 	VRGetDamage(-VRMaxHP);
 	VRCamera->PostProcessSettings.ColorSaturation = FVector4(1, 1, 1, 1);
+	VRCamera->PostProcessSettings.WeightedBlendables.Array[1].Weight = 0;
 }
 
 void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
@@ -2672,12 +2673,14 @@ void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
 		VRRightHandActor->SetActorLocationAndRotation(RightHandMesh->GetComponentLocation(), RightHandMesh->GetComponentRotation());
 		FTimerHandle VRDeathTimer1;
 		GetWorld()->GetTimerManager().SetTimer(VRDeathTimer1,
-											   FTimerDelegate::CreateLambda([this]() -> void
-																			{
+			FTimerDelegate::CreateLambda([this]() -> void
+				{
 					VRHeadActor->MeshComp->SetSimulatePhysics(true);
 					VRLeftHandActor->MeshComp->SetSimulatePhysics(true);
 					VRRightHandActor->MeshComp->SetSimulatePhysics(true);
-					SetActorLocation(FVector(200, -100, 300)); }),
+					SetActorLocation(FVector(200, -100, 300));
+					SetActorRotation(FRotator(0, 90, 0)); 
+				}),
 											   0.5f, false);
 		FTimerHandle VRDeathTimer2;
 		GetWorld()->GetTimerManager().SetTimer(VRDeathTimer2,
