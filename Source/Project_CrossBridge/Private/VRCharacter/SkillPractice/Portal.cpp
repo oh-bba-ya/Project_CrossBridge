@@ -22,6 +22,10 @@ APortal::APortal()
 	EndPortalEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EndPortalEffect"));
 	EndPortalEffect->SetupAttachment(EndPortalBox);
 
+	TestEndWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("TestEndWidget"));
+	TestEndWidget->SetupAttachment(StartPortalBox);
+	TestEndWidget->SetVisibility(false);
+
 	SuccessWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("SuccessWidget"));
 	SuccessWidget->SetupAttachment(EndPortalBox);
 
@@ -50,6 +54,7 @@ void APortal::OnStartPortalOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	if (VRUser)
 	{
 		VRUser->SetActorLocation(EndPortalBox->GetComponentLocation());
+		StartPortalEffect->SetVisibility(false);
 	}
 
 }
@@ -62,6 +67,16 @@ void APortal::OnEndPortalOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		{
 			StartPortalBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			VRUser->SetActorLocation(StartPortalBox->GetComponentLocation());
+			TestEndWidget->SetVisibility(true);
+		}
+		else
+		{
+			EndPortalEffect->SetVisibility(false);
 		}
 	}
+}
+
+void APortal::EndPortalVisible()
+{
+	EndPortalEffect->SetVisibility(true);
 }

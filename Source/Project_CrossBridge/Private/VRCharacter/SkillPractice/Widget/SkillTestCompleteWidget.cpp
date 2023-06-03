@@ -3,6 +3,8 @@
 
 #include "VRCharacter/SkillPractice/Widget/SkillTestCompleteWidget.h"
 #include "Components/Image.h"
+#include "VRCharacter/SkillPractice/Portal.h"
+#include "Kismet/GameplayStatics.h"
 
 void USkillTestCompleteWidget::SetImageVisibility(int32 Num)
 {
@@ -38,6 +40,8 @@ void USkillTestCompleteWidget::SetImageVisibility(int32 Num)
 
 	case 8:
 		Clear8->SetVisibility(ESlateVisibility::Visible);
+		class APortal* Portal = Cast<APortal>(UGameplayStatics::GetActorOfClass(GetWorld(), APortal::StaticClass()));
+		Portal->EndPortalVisible();
 		break;
 	}
 }
