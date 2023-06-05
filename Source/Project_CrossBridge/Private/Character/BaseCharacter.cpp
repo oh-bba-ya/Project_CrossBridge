@@ -1154,7 +1154,7 @@ void ABaseCharacter::OnTakeDamage(float d)
 	{
 		float hp = CurrentHP - d;
 		SetCurrentHealth(hp);
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), CurrentHP));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("%f"), CurrentHP));
 		Multicast_Hit();
 	}
 }
