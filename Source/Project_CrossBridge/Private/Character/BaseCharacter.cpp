@@ -2633,7 +2633,7 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString &Position, clas
 {
 	if (Position == FString("Sword"))
 	{
-		Enemy->OnTakeDamage(10);
+		Enemy->OnTakeDamage(30);
 		MulticastVRSoundPlay(FString("SwordSlash"));
 		// Enemy->Server_TakeDamage(10);
 	}
@@ -2679,7 +2679,7 @@ void ABaseCharacter::ServerVRDeath_Implementation(bool IsVRAlive)
 					VRLeftHandActor->MeshComp->SetSimulatePhysics(true);
 					VRRightHandActor->MeshComp->SetSimulatePhysics(true);
 					SetActorLocation(FVector(200, -100, 300));
-					SetActorRotation(FRotator(0, 90, 0)); 
+					//AddControllerYawInput(90 - GetActorRotation().Yaw);
 				}),
 											   0.5f, false);
 		FTimerHandle VRDeathTimer2;
