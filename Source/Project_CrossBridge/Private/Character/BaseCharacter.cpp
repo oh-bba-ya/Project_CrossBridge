@@ -48,6 +48,7 @@
 #include "VRCharacter/VRComponent.h"
 #include "Components/AudioComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "VRCharacter/Widget/VRGameOverWidget.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -251,6 +252,16 @@ ABaseCharacter::ABaseCharacter()
 	RightWidgetInteractionComp->PointerIndex = 1;
 	RightWidgetInteractionComp->InteractionDistance = 15;
 
+	GameResultWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("GameResultWidget"));
+	GameResultWidget->SetupAttachment(VRCamera);
+	GameResultWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GameResultWidget->SetVisibility(false);
+	GameResultWidget->SetRelativeLocation(FVector(50, 0, 0));
+	GameResultWidget->SetRelativeRotation(FRotator(0, -180, 0));
+	GameResultWidget->SetRelativeScale3D(FVector(0.1f));
+	
+	
+
 	ConstructorHelpers::FObjectFinder<UStaticMesh> VRHeadAsset(TEXT("//Script/Engine.StaticMesh'/Game/HYY/Download/Helmet/source/casco/cscf.cscf'"));
 	if (VRHeadAsset.Succeeded())
 	{
@@ -352,6 +363,7 @@ void ABaseCharacter::BeginPlay()
 	if (BridgeState != nullptr)
 	{
 		BridgeState->endStateDelegate.AddDynamic(this, &ABaseCharacter::ShowGameOverWidget);
+		BridgeState->endStateDelegate.AddDynamic(this, &ABaseCharacter::VRShowGameOverWidget);
 	}
 
 	// UE_LOG(LogTemp,Warning,TEXT("Current HP : %.1f"),CurrentHP);
@@ -407,6 +419,7 @@ void ABaseCharacter::BeginPlay()
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
 		VRTimerController = Cast<ABaseCharacterController>(VRController);
 		VRCamera->PostProcessSettings.WeightedBlendables.Array[1].Weight = 0;
+		VRGameOverWidget = Cast<UVRGameOverWidget>(GameResultWidget->GetWidget());
 	}
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
@@ -1712,6 +1725,43 @@ void ABaseCharacter::ShowGameOverWidget()
 				bGameOverMenuOpen = true;
 			}
 		}
+	}
+}
+
+void ABaseCharacter::VRShowGameOverWidget()
+{
+	if (BridgeState->GetGameState() != EGameState::End)
+	{
+		return;
+	}
+
+	if (VRGameOverWidget == nullptr)
+	{
+		return;
+	}
+
+	if (!IsVR)
+	{
+		return;
+	}
+
+	if (!GameResultWidget->IsVisible())
+	{
+		if (!IsVRGameOver)
+		{
+			if (BridgeState->GetWinner() == EWinner::VR)
+			{
+				VRGameOverWidget->SetResult(FString("WIN"));
+			}
+			else if (BridgeState->GetWinner() == EWinner::PC)
+			{
+				VRGameOverWidget->SetResult(FString("LOSE"));
+			}
+
+			IsVRGameOver = true;
+		}
+		
+		GameResultWidget->SetVisibility(true);
 	}
 }
 

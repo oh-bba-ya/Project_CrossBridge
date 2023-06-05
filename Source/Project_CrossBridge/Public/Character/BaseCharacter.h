@@ -993,4 +993,15 @@ public:
 			void ServerVRSoundPlay(const FString& Position);
 		UFUNCTION(NetMulticast, Unreliable)
 			void MulticastVRSoundPlay(const FString& Position);
+
+	public:
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+			class UWidgetComponent* GameResultWidget;
+		UPROPERTY()
+			class UVRGameOverWidget* VRGameOverWidget;
+
+		UFUNCTION()
+			void VRShowGameOverWidget();
+		UPROPERTY()
+			bool IsVRGameOver;
 };
