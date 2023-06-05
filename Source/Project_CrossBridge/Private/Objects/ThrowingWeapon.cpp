@@ -62,7 +62,7 @@ void AThrowingWeapon::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	{
 		if(!(Enemy->IsVR))
 		{
-			Enemy->OnTakeDamage(5);
+			Enemy->OnTakeDamage(20);
 		}
 	}
 
