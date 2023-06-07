@@ -74,7 +74,7 @@ void AProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	FString s = OtherActor->GetName();
-	UE_LOG(LogTemp,Warning,TEXT("Name : %s"),*s);
+	//UE_LOG(LogTemp,Warning,TEXT("Name : %s"),*s);
 	if (OtherComp->GetCollisionObjectType() == ECC_GameTraceChannel8)
 	{
 		class ABaseCharacter* VRPlayer = Cast<ABaseCharacter>(OtherActor);

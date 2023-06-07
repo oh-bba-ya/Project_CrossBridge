@@ -94,7 +94,7 @@ void AVRPlayer::BeginPlay()
 		auto SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer);
 		if (SubSystem)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AS"));
+			//UE_LOG(LogTemp, Warning, TEXT("AS"));
 			SubSystem->AddMappingContext(IMC_VRInput, 0);
 			SubSystem->AddMappingContext(IMC_VRHand, 0);
 		}

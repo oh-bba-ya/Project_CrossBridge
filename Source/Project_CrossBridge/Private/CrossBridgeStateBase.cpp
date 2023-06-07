@@ -22,11 +22,11 @@ void ACrossBridgeStateBase::BeginPlay()
 
 	if(core != nullptr)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("State Core not Null"));
+		//UE_LOG(LogTemp,Warning,TEXT("State Core not Null"));
 	}
 	else
 	{
-		UE_LOG(LogTemp,Warning,TEXT("State Core Null"));
+		//UE_LOG(LogTemp,Warning,TEXT("State Core Null"));
 	}
 }
 
@@ -76,7 +76,7 @@ void ACrossBridgeStateBase::StartStateCallBack()
 	{
 		return;
 	}
-	UE_LOG(LogTemp,Warning,TEXT("Start Callback"));
+	//UE_LOG(LogTemp,Warning,TEXT("Start Callback"));
 	if(StartSound)
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(),StartSound);
@@ -97,7 +97,7 @@ void ACrossBridgeStateBase::EndStateCallBack()
 		return;
 	}
 
-	UE_LOG(LogTemp,Warning,TEXT("End Callback"));
+	//UE_LOG(LogTemp,Warning,TEXT("End Callback"));
 	endStateDelegate.Broadcast();
 	bStateCall = true;
 }

@@ -239,7 +239,7 @@ void ABaseCharacterController::Respawn(ABaseCharacter* player)
 			
 			if(player != nullptr)
 			{
-				UE_LOG(LogTemp,Warning,TEXT(" Restart Player "));
+				//UE_LOG(LogTemp,Warning,TEXT(" Restart Player "));
 				GM->RestartPlayer(this);
 			}
 		}

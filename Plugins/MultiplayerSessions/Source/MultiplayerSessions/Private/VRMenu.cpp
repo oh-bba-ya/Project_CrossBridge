@@ -30,7 +30,7 @@ void UVRMenu::VRMenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, 
 		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
 		MultiplayerSessionsSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);
 
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("VRMenuSetup")));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("VRMenuSetup")));
 	}
 }
 
@@ -149,7 +149,7 @@ void UVRMenu::JoinButtonClicked()
 	JoinButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem) {
 		MultiplayerSessionsSubsystem->FindSessions(10000);
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("ClickJoinButtonFindSession")));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString(TEXT("ClickJoinButtonFindSession")));
 	}
 }
 

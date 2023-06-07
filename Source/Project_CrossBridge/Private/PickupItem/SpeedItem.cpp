@@ -16,7 +16,7 @@ void ASpeedItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		if(!(PCPlayer->IsVR))
 		{
 			PCPlayer->SpeedUp();
-			UE_LOG(LogTemp,Warning,TEXT("Speed Up"));
+			//UE_LOG(LogTemp,Warning,TEXT("Speed Up"));
 			Destroy();
 		}
 	}
@@ -25,7 +25,7 @@ void ASpeedItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 void ASpeedItem::Destroyed()
 {
 	Super::Destroyed();
-	UE_LOG(LogTemp,Warning,TEXT("Destyroy"));
+	//UE_LOG(LogTemp,Warning,TEXT("Destyroy"));
 	if(NiagaraSystem)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),NiagaraSystem,GetActorLocation());

@@ -99,12 +99,12 @@ void AVRCore::OnHealthUpdate()
 	if (!HasAuthority())
 	{
 		FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHP);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 
 		if (CurrentHP <= 0)
 		{
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
 	}
 
@@ -112,7 +112,7 @@ void AVRCore::OnHealthUpdate()
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHP);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 	}
 
 	//모든 머신에서 실행되는 함수 
@@ -177,7 +177,7 @@ void AVRCore::FallingVRCore()
 		{
 			return;
 		}
-		UE_LOG(LogTemp,Warning,TEXT("Move"));
+		//UE_LOG(LogTemp,Warning,TEXT("Move"));
 		FVector curLoc = GetActorLocation();
 
 		FVector Direction = Target->GetActorLocation() - curLoc;

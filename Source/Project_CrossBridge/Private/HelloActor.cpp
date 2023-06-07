@@ -15,7 +15,7 @@ AHelloActor::AHelloActor()
 void AHelloActor::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("Hello"));
+	//UE_LOG(LogTemp, Warning, TEXT("Hello"));
 }
 
 // Called every frame

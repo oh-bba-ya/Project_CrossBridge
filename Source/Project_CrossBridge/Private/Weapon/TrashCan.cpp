@@ -65,7 +65,7 @@ void ATrashCan::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 			 // 쓰레기통은 쓰레기통을 소지하지 못한 타플레이어가 뺏을 수 없음
 			if(OwnerPlayer == nullptr && !(player->GetPCPlayerDead()))
 			{
-				UE_LOG(LogTemp,Warning,TEXT("PickUPTrashCan"));
+				//UE_LOG(LogTemp,Warning,TEXT("PickUPTrashCan"));
 				PickUpTrashCan(player);
 			}
 		}

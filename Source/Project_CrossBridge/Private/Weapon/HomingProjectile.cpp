@@ -77,7 +77,7 @@ void AHomingProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 	if(core != nullptr)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("Homing Destroy"));
+		//UE_LOG(LogTemp,Warning,TEXT("Homing Destroy"));
 		Destroy();
 	}
 

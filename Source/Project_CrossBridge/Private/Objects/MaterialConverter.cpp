@@ -138,7 +138,7 @@ void AMaterialConverter::MakingHoming()
 
 void AMaterialConverter::SetGarbageCount(float v)
 {
-	UE_LOG(LogTemp,Warning,TEXT("set Count : %.1f"),v);
+	//UE_LOG(LogTemp,Warning,TEXT("set Count : %.1f"),v);
 	GarbageCount = v < 0 ? 0:v;
 }
 
@@ -174,7 +174,7 @@ void AMaterialConverter::Server_MakingHoming_Implementation()
 		Multicast_MakingHoming();
 		bIsMaking = false;
 		GarbageCount -= RequireCount;
-		UE_LOG(LogTemp,Warning,TEXT("Garbage Count : %.1f"),GarbageCount);
+		//UE_LOG(LogTemp,Warning,TEXT("Garbage Count : %.1f"),GarbageCount);
 		FTimerHandle makeDelayHandle;
 		GetWorldTimerManager().SetTimer(makeDelayHandle, FTimerDelegate::CreateLambda([&]()
 		{

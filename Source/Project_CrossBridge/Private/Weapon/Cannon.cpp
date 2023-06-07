@@ -61,11 +61,11 @@ void ACannon::BeginPlay()
 		core = BridgeState->GetVRCore();
 		if(core != nullptr)
 		{
-			UE_LOG(LogTemp,Warning,TEXT("Core not Null"));
+			//UE_LOG(LogTemp,Warning,TEXT("Core not Null"));
 		}
 		else
 		{
-			UE_LOG(LogTemp,Warning,TEXT("Core Null"));
+			//UE_LOG(LogTemp,Warning,TEXT("Core Null"));
 		}
 	}
 	
@@ -139,7 +139,7 @@ void ACannon::Server_Exit_Implementation(class ABaseCharacter* p)
 
 void ACannon::HomingFire(class ABaseCharacter* p)
 {
-	UE_LOG(LogTemp,Warning,TEXT("HOming Fire start"));
+	//UE_LOG(LogTemp,Warning,TEXT("HOming Fire start"));
 
 	if(HommingAmmo > 0)
 	{
@@ -170,14 +170,14 @@ void ACannon::Server_HomingFire_Implementation(class ABaseCharacter* p)
 
 		if(homing != nullptr)
 		{
-			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("homingSpawn")));
+			//GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("homingSpawn")));
 			Multicast_HomingFire(p,homing);
 			//testMulticast(homing);
 			SubtractHominAmmo(1);
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Not HOming")));
+			//GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Not HOming")));
 		}
 
 		
@@ -211,12 +211,12 @@ void ACannon::Multicast_HomingFire_Implementation(ABaseCharacter* p, class AHomi
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Client")));
+			//GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Client")));
 		}
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("not multicast homing")));
+		//GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("not multicast homing")));
 	}
 }
 
@@ -244,12 +244,12 @@ void ACannon::testMulticast_Implementation(AHomingProjectile* h)
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Client")));
+			//GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("Client")));
 		}
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("not Test multicast homing")));
+		//GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Red, FString::Printf(TEXT("not Test multicast homing")));
 	}
 }
 

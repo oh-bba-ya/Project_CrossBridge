@@ -56,7 +56,7 @@ void ACityEnergyShield::DissolveShield()
 	FHashedMaterialParameterInfo param = FHashedMaterialParameterInfo(TEXT("Dissolve"));
 
 	IMat->GetScalarParameterValue(param,Value);
-	UE_LOG(LogTemp, Warning, TEXT("Value : %f"), Value);   // 현재 Dissolve의 값..
+	//UE_LOG(LogTemp, Warning, TEXT("Value : %f"), Value);   // 현재 Dissolve의 값..
 
 
 
@@ -72,7 +72,7 @@ void ACityEnergyShield::DissolveShield()
 	
 	CurDissolve += AddDissolve;
 
-	UE_LOG(LogTemp, Warning, TEXT("TestFloat : %f"), CurDissolve);
+	//UE_LOG(LogTemp, Warning, TEXT("TestFloat : %f"), CurDissolve);
 	FTimerHandle dissolveHandle;
 	
 	GetWorld()->GetTimerManager().SetTimer(dissolveHandle,this,&ACityEnergyShield::DissolveShield,DissolveHadnleTime,false);

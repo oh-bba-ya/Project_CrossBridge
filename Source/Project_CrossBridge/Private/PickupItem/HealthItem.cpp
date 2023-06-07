@@ -16,7 +16,7 @@ void AHealthItem::BeginPlay()
 void AHealthItem::Destroyed()
 {
 	Super::Destroyed();
-	UE_LOG(LogTemp,Warning,TEXT("Destyroy"));
+	//UE_LOG(LogTemp,Warning,TEXT("Destyroy"));
 	if(NiagaraSystem)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),NiagaraSystem,GetActorLocation());
@@ -27,13 +27,13 @@ void AHealthItem::Destroyed()
 void AHealthItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp,Warning,TEXT("Item Collision"));
+	//UE_LOG(LogTemp,Warning,TEXT("Item Collision"));
 	ABaseCharacter* PCPlayer = Cast<ABaseCharacter>(OtherActor);
 	if(PCPlayer)
 	{
 		if(!(PCPlayer->IsVR))
 		{
-			UE_LOG(LogTemp,Warning,TEXT("PC Collision"));
+			//UE_LOG(LogTemp,Warning,TEXT("PC Collision"));
 			PCPlayer->Server_RecoveryHP(HealingValue);
 			Destroy();
 		}

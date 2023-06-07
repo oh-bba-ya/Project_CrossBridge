@@ -34,11 +34,11 @@ void ACBelica::BeginPlay()
 
 	if(GetLocalRole() == ENetRole::ROLE_Authority)
 	{
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Authority!"), true, FVector2d(1.2f));
+		//GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Authority!"), true, FVector2d(1.2f));
 
 	}
 	else if(GetLocalRole() == ENetRole::ROLE_AutonomousProxy){
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Client!"), true, FVector2d(1.2f));
+		//GEngine->AddOnScreenDebugMessage(-1,3,FColor::Green, FString("Client!"), true, FVector2d(1.2f));
 	}
 	
 }

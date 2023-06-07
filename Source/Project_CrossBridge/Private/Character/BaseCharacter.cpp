@@ -373,7 +373,7 @@ void ABaseCharacter::BeginPlay()
 	// 내가 조종하는 캐릭터
 	if (GetController() != nullptr && GetController()->IsLocalController())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("my Controller"));
+		//UE_LOG(LogTemp, Warning, TEXT("my Controller"));
 
 		// Player Name
 		GameInstance = GetGameInstance();
@@ -567,7 +567,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 			IsVRDead = true;
 			ServerVRDeath(true);
 			// 2초
-			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Dead!!"));
+			//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("Dead!!"));
 			VRCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 			DisableInput(VRController);
 			if (IsRightA)
@@ -1183,7 +1183,7 @@ void ABaseCharacter::OnHealthUpdate()
 			bIsDead = true;
 			// PCPlayerDead();
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
 	}
 
@@ -1263,7 +1263,7 @@ void ABaseCharacter::Server_PCPlayerDead_Implementation()
 void ABaseCharacter::MultiCast_PCPlayerDead_Implementation()
 {
 	FString DeadMessage = FString::Printf(TEXT("Dead"));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, DeadMessage);
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, DeadMessage);
 	GetCharacterMovement()->DisableMovement();
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -2003,7 +2003,7 @@ void ABaseCharacter::LeftIndexCurlEnd()
 
 void ABaseCharacter::LeftGraspEnd()
 {
-	//VRGetDamage(1);
+	//VRGetDamage(10);
 	IsLeftGrasp = false;
 	if (IsLeftGrab)
 	{
@@ -2694,7 +2694,7 @@ void ABaseCharacter::ServerVRReviveSetting_Implementation()
 
 void ABaseCharacter::MulticastVRReviveSetting_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("REVIVE!!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString("REVIVE!!"));
 	FTimerHandle VRReviveTimer;
 	GetWorld()->GetTimerManager().SetTimer(VRReviveTimer,
 										   FTimerDelegate::CreateLambda([this]() -> void
