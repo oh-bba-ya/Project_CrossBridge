@@ -36,7 +36,7 @@ private:
 	class UProjectileMovementComponent* MovementComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
-	float Damage =1.0f;
+	float Damage =10.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Properties")
 	bool Ready = false;

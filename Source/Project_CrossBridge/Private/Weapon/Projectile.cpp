@@ -80,7 +80,7 @@ void AProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		class ABaseCharacter* VRPlayer = Cast<ABaseCharacter>(OtherActor);
 		if (VRPlayer && HasAuthority())
 		{
-			VRPlayer->VRGetDamage(5);
+			VRPlayer->VRGetDamage(Damage);
 		}
 	}
 	Destroy();
