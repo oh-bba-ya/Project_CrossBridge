@@ -996,8 +996,9 @@ void ABaseCharacter::OnRep_SetOverheadCompColor()
 
 void ABaseCharacter::RollingActionPressed()
 {
-	if (freeze == nullptr)
+	if (freeze == nullptr && !bIsAction)
 	{
+		bIsAction = true;
 		Server_RollingActionPressed();
 	}
 }
@@ -1030,14 +1031,16 @@ void ABaseCharacter::Multicast_RollingActionPressed_Implementation()
 
 void ABaseCharacter::Multicast_RollingActionReleased_Implementation()
 {
+	bIsAction = false;
 	GetCapsuleComponent()->SetCapsuleHalfHeight(88.f);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void ABaseCharacter::SlidingActionPressed()
 {
-	if (freeze == nullptr)
+	if (freeze == nullptr && !bIsAction)
 	{
+		bIsAction = true;
 		Server_SlidingActionPressed();
 	}
 }
@@ -1071,6 +1074,7 @@ void ABaseCharacter::Multicast_SlidingActionPressed_Implementation()
 void ABaseCharacter::Multicast_SlidingActionReleased_Implementation()
 {
 	UnCrouch();
+	bIsAction = false;
 	GetCapsuleComponent()->SetCapsuleHalfHeight(88.f);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
@@ -1826,6 +1830,7 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLi
 	DOREPLIFETIME(ABaseCharacter, VRRightHandActor);
 	DOREPLIFETIME(ABaseCharacter, bCanFreeze);
 	DOREPLIFETIME(ABaseCharacter, VRDamageEffectRate);
+	DOREPLIFETIME(ABaseCharacter, bIsAction);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

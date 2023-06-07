@@ -109,6 +109,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Settings|Animation")
 	UAnimMontage* SlidingMontage;
+	
+	UPROPERTY(EditDefaultsOnly,Replicated,Category="Settings|Animation")
+	bool bIsAction = false;
 public:
 
 	void RollingActionPressed();
