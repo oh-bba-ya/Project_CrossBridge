@@ -252,14 +252,6 @@ ABaseCharacter::ABaseCharacter()
 	RightWidgetInteractionComp->PointerIndex = 1;
 	RightWidgetInteractionComp->InteractionDistance = 15;
 
-	GameResultWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("GameResultWidget"));
-	GameResultWidget->SetupAttachment(VRCamera);
-	GameResultWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GameResultWidget->SetVisibility(false);
-	GameResultWidget->SetRelativeLocation(FVector(50, 0, 0));
-	GameResultWidget->SetRelativeRotation(FRotator(0, -180, 0));
-	GameResultWidget->SetRelativeScale3D(FVector(0.1f));
-	
 	
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> VRHeadAsset(TEXT("//Script/Engine.StaticMesh'/Game/HYY/Download/Helmet/source/casco/cscf.cscf'"));
@@ -419,7 +411,7 @@ void ABaseCharacter::BeginPlay()
 		VRController = UGameplayStatics::GetPlayerController(this, 0);
 		VRTimerController = Cast<ABaseCharacterController>(VRController);
 		VRCamera->PostProcessSettings.WeightedBlendables.Array[1].Weight = 0;
-		VRGameOverWidget = Cast<UVRGameOverWidget>(GameResultWidget->GetWidget());
+	
 	}
 
 	VRStatus = Cast<UVRStatusWidget>(VRStatusWidget->GetWidget());
@@ -428,6 +420,7 @@ void ABaseCharacter::BeginPlay()
 	if (HeadBase)
 	{
 		HeadMat = VRHeadMesh->CreateDynamicMaterialInstance(0, HeadBase);
+		HeadMat->SetVectorParameterValue(FName("HeadColor"), (FLinearColor)FVector(0, 0.8, 0));
 	}
 	UMaterialInterface *LeftHandBase = LeftHandMesh->GetMaterial(0);
 	if (LeftHandBase)
@@ -1735,34 +1728,34 @@ void ABaseCharacter::VRShowGameOverWidget()
 		return;
 	}
 
-	if (VRGameOverWidget == nullptr)
-	{
-		return;
-	}
-
 	if (!IsVR)
 	{
 		return;
 	}
 
-	if (!GameResultWidget->IsVisible())
+	if (!IsVRGameOver)
 	{
-		if (!IsVRGameOver)
+		if (BridgeState->GetWinner() == EWinner::VR)
 		{
-			if (BridgeState->GetWinner() == EWinner::VR)
-			{
-				VRGameOverWidget->SetResult(FString("WIN"));
-			}
-			else if (BridgeState->GetWinner() == EWinner::PC)
-			{
-				VRGameOverWidget->SetResult(FString("LOSE"));
-			}
-
-			IsVRGameOver = true;
+			GetWorld()->SpawnActor<AActor>(VRWinActor, FVector(200, -100, 300), FRotator(0, 90, 0));
 		}
-		
-		GameResultWidget->SetVisibility(true);
+		else if (BridgeState->GetWinner() == EWinner::PC)
+		{
+			GetWorld()->SpawnActor<AActor>(VRLoseActor, FVector(200, -100, 300), FRotator(0, 90, 0));
+		}
+
+		IsVRGameOver = true;
+		ServerVRSetLocation(FVector(220, 405, 200));
+		VRController->SetControlRotation(FRotator(0, 270, 0));
+		DisableInput(VRController);
 	}
+
+
+}
+
+void ABaseCharacter::ServerVRSetLocation_Implementation(FVector Loc)
+{
+	SetActorLocation(Loc);
 }
 
 void ABaseCharacter::Clinet_ShowGameOverWidget_Implementation()

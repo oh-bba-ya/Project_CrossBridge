@@ -35,4 +35,5 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastHeadColorChange(float Rate);
+	
 };

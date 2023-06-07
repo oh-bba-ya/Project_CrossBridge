@@ -996,12 +996,14 @@ public:
 
 	public:
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-			class UWidgetComponent* GameResultWidget;
-		UPROPERTY()
-			class UVRGameOverWidget* VRGameOverWidget;
+			TSubclassOf<class AActor> VRWinActor;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+			TSubclassOf<class AActor> VRLoseActor;
 
 		UFUNCTION()
 			void VRShowGameOverWidget();
+		UFUNCTION(Server, Unreliable)
+			void ServerVRSetLocation(FVector Loc);
 		UPROPERTY()
 			bool IsVRGameOver;
 };
