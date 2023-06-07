@@ -239,7 +239,7 @@ void APracticeActorSpawn::OnHealOverlap(UPrimitiveComponent* OverlappedComponent
 				Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(1);
 				SuccessCheck->Index++;
 				SuccessCheck->SetImageVisibility(SuccessCheck->Index);
-				VRUser->VRGetDamage(80);
+				VRUser->VRGetDamage(30);
 				IsHit = true;
 			}
 			else if (IsHit && VRUser->VRCurHP == VRUser->VRMaxHP)
