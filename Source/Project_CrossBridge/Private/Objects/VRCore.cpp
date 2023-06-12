@@ -126,6 +126,7 @@ void AVRCore::OnHealthUpdate()
 		{
 			BridgeState->GameWinner(EWinner::PC);
 			BridgeState->GameMatchState(EGameState::End);
+			ChargeComponent->SetActive(false);
 		}
 	}
 }

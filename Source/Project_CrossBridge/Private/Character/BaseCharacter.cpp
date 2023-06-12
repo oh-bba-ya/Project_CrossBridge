@@ -1243,7 +1243,11 @@ void ABaseCharacter::Multicast_Hit_Implementation()
 {
 	if (HitMontage != nullptr)
 	{
-		PlayAnimMontage(HitMontage);
+		if(!bIsAction)
+		{
+			PlayAnimMontage(HitMontage);
+		}
+		
 		if(BloodEffect)
 		{
 			const USkeletalMeshSocket* bloodSocket = GetMesh()->GetSocketByName(FName("BloodSocket"));
