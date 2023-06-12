@@ -7,6 +7,7 @@
 #include "Components/WidgetComponent.h"
 #include "VRCharacter/SkillPractice/Widget/SkillTestCompleteWidget.h"
 #include "NiagaraComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 APortal::APortal()
@@ -53,6 +54,7 @@ void APortal::OnStartPortalOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	class ABaseCharacter* VRUser = Cast<ABaseCharacter>(OtherActor);
 	if (VRUser)
 	{
+		UGameplayStatics::PlaySoundAtLocation(this, PortalSound, GetActorLocation());
 		VRUser->SetActorLocation(EndPortalBox->GetComponentLocation());
 		StartPortalEffect->SetVisibility(false);
 	}
@@ -65,6 +67,7 @@ void APortal::OnEndPortalOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		if (Cast<USkillTestCompleteWidget>(SuccessWidget->GetWidget())->Index >= 8)
 		{
+			UGameplayStatics::PlaySoundAtLocation(this, PortalSound, GetActorLocation());
 			StartPortalBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			VRUser->SetActorLocation(StartPortalBox->GetComponentLocation());
 			TestEndWidget->SetVisibility(true);

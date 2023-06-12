@@ -49,4 +49,9 @@ public:
 	UFUNCTION()
 		void EndPortalVisible();
 
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class USoundBase* PortalSound;
+
 };

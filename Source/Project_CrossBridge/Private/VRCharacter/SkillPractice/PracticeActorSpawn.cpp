@@ -133,6 +133,7 @@ void APracticeActorSpawn::SpawnObject()
 		}
 		else if (BulletPattern == 1)
 		{
+			UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 			BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget2, GetActorLocation(), GetActorRotation());
 			BulletPattern++;
 			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(1);
@@ -141,6 +142,7 @@ void APracticeActorSpawn::SpawnObject()
 		}
 		else if (BulletPattern == 2)
 		{
+			UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 			BulletTarget = GetWorld()->SpawnActor<ABulletTarget>(SpawnBulletTarget3, GetActorLocation(), GetActorRotation());
 			BulletPattern++;
 			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(2);
@@ -150,11 +152,13 @@ void APracticeActorSpawn::SpawnObject()
 		else if (BulletPattern == 3)
 		{
 			BulletPattern++;
+			UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 			Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(3);
 			FTimerHandle SuccessImageTimer;
 			GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
 				FTimerDelegate::CreateLambda([this]()->void {
 					Cast<UBulletTestWidget>(BulletTestWidget->GetWidget())->SetImageVisibility(4);
+				UGameplayStatics::PlaySoundAtLocation(this, CompleteSound, GetActorLocation());
 					}), 1, false);
 			SuccessCheck->Index++;
 			SuccessCheck->SetImageVisibility(SuccessCheck->Index);
@@ -164,11 +168,13 @@ void APracticeActorSpawn::SpawnObject()
 	else if (IsSwordTest && (!SwordTarget || SwordTarget->IsPendingKill()))
 	{
 		IsSwordTest = false;
+		UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 		Cast<USwordTestWidget>(SwordTestWidget->GetWidget())->SetImageVisibility(1);
 		FTimerHandle SuccessImageTimer;
 		GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
 			FTimerDelegate::CreateLambda([this]()->void {
 				Cast<USwordTestWidget>(SwordTestWidget->GetWidget())->SetImageVisibility(2);
+				UGameplayStatics::PlaySoundAtLocation(this, CompleteSound, GetActorLocation());
 				}), 1, false);
 		SuccessCheck->Index++;
 		SuccessCheck->SetImageVisibility(SuccessCheck->Index);
@@ -192,11 +198,13 @@ void APracticeActorSpawn::OnBlackholeOverlap(UPrimitiveComponent* OverlappedComp
 		//TestActor2->SetActorLocation(TestActorLoc2);
 		IsTestActor1 = false;
 		IsTestActor2 = false;
+		UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 		Cast<UBlackholeTestWidget>(BlackholeTestWidget->GetWidget())->SetImageVisibility(1);
 		FTimerHandle SuccessImageTimer;
 		GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
 			FTimerDelegate::CreateLambda([this]()->void {
 				Cast<UBlackholeTestWidget>(BlackholeTestWidget->GetWidget())->SetImageVisibility(2);
+				UGameplayStatics::PlaySoundAtLocation(this, CompleteSound, GetActorLocation());
 				}), 1, false);
 		SuccessCheck->Index++;
 		SuccessCheck->SetImageVisibility(SuccessCheck->Index);
@@ -214,11 +222,13 @@ void APracticeActorSpawn::OnTrashOverlap(UPrimitiveComponent* OverlappedComponen
 			Cast<UTrashTestWidget>(TrashTestWidget->GetWidget())->SetTrashCountText(TrashCount);
 			if (TrashCount == 20)
 			{
+				UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 				Cast<UTrashTestWidget>(TrashTestWidget->GetWidget())->SetImageVisibility(1);
 				FTimerHandle SuccessImageTimer;
 				GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
 					FTimerDelegate::CreateLambda([this]()->void {
 						Cast<UTrashTestWidget>(TrashTestWidget->GetWidget())->SetImageVisibility(2);
+						UGameplayStatics::PlaySoundAtLocation(this, CompleteSound, GetActorLocation());
 						}), 1, false);
 				SuccessCheck->Index++;
 				SuccessCheck->SetImageVisibility(SuccessCheck->Index);
@@ -236,6 +246,7 @@ void APracticeActorSpawn::OnHealOverlap(UPrimitiveComponent* OverlappedComponent
 		{
 			if (!IsHit)
 			{
+				UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 				Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(1);
 				SuccessCheck->Index++;
 				SuccessCheck->SetImageVisibility(SuccessCheck->Index);
@@ -244,11 +255,13 @@ void APracticeActorSpawn::OnHealOverlap(UPrimitiveComponent* OverlappedComponent
 			}
 			else if (IsHit && VRUser->VRCurHP == VRUser->VRMaxHP)
 			{
+				UGameplayStatics::PlaySoundAtLocation(this, ClearSound, GetActorLocation());
 				Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(2);
 				FTimerHandle SuccessImageTimer;
 				GetWorld()->GetTimerManager().SetTimer(SuccessImageTimer,
 					FTimerDelegate::CreateLambda([this]()->void {
 						Cast<UHealTestWidget>(HealTestWidget->GetWidget())->SetImageVisibility(3);
+						UGameplayStatics::PlaySoundAtLocation(this, CompleteSound, GetActorLocation());
 						}), 1, false);
 				SuccessCheck->Index++;
 				SuccessCheck->SetImageVisibility(SuccessCheck->Index);
