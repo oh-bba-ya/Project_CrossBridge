@@ -56,6 +56,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UBoxComponent* BlackholeCheckComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UBoxComponent* DummyFallCheckComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UWidgetComponent* BlackholeTestWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -70,6 +72,8 @@ public:
 		FVector TestActorLoc2;
 	UFUNCTION()
 		void OnBlackholeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnDummyFallOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY()
 		class ABaseCharacter* TestActor1;

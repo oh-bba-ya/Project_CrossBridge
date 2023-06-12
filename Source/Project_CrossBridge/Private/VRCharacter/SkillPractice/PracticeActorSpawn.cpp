@@ -29,6 +29,8 @@ APracticeActorSpawn::APracticeActorSpawn()
 	BulletTestWidget->SetVisibility(false);
 	BlackholeCheckComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BlackholeCheckComp"));
 	BlackholeCheckComp->SetupAttachment(RootComponent);
+	DummyFallCheckComp = CreateDefaultSubobject<UBoxComponent>(TEXT("DummyFallCheckComp"));
+	DummyFallCheckComp->SetupAttachment(BlackholeCheckComp);
 	BlackholeTestWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("BlackholeTestWidget"));
 	BlackholeTestWidget->SetVisibility(false);
 
@@ -73,6 +75,7 @@ void APracticeActorSpawn::BeginPlay()
 	{
 		BlackholeTestWidget->SetVisibility(true);
 		BlackholeCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnBlackholeOverlap);
+		DummyFallCheckComp->OnComponentBeginOverlap.AddDynamic(this, &APracticeActorSpawn::OnDummyFallOverlap);
 		for (TActorIterator<ABaseCharacter> It(GetWorld()); It; ++It)
 		{
 			if (It->IsDummy && !It->IsSwordTestDummy)
@@ -211,6 +214,19 @@ void APracticeActorSpawn::OnBlackholeOverlap(UPrimitiveComponent* OverlappedComp
 	}
 
 }
+
+void APracticeActorSpawn::OnDummyFallOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (TestActor1 == Cast<ABaseCharacter>(OtherActor))
+	{
+		TestActor1->SetActorLocation(TestActorLoc1);
+	}
+	else if (TestActor2 == Cast<ABaseCharacter>(OtherActor))
+	{
+		TestActor2->SetActorLocation(TestActorLoc2);
+	}
+}
+
 
 void APracticeActorSpawn::OnTrashOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
