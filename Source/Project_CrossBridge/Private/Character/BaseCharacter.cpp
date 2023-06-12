@@ -1751,7 +1751,7 @@ void ABaseCharacter::VRShowGameOverWidget()
 		IsVRGameOver = true;
 		ServerVRSetLocation(FVector(220, 405, 200));
 		VRController->SetControlRotation(FRotator(0, 270, 0));
-		DisableInput(VRController);
+		//DisableInput(VRController);
 	}
 
 
@@ -1873,11 +1873,11 @@ void ABaseCharacter::Turn(const FInputActionValue &Values)
 	{
 		if (Axis.X > 0.5f)
 		{
-			AddControllerYawInput(20);
+			AddControllerYawInput(10);
 		}
 		else if (Axis.X < -0.5f)
 		{
-			AddControllerYawInput(-20);
+			AddControllerYawInput(-10);
 		}
 		if (Axis.Y > 0.5f)
 		{
