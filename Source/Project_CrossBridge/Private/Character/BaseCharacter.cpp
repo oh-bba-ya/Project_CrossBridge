@@ -2687,7 +2687,7 @@ void ABaseCharacter::ServerVRAttack_Implementation(const FString &Position, clas
 {
 	if (Position == FString("Sword"))
 	{
-		Enemy->OnTakeDamage(30);
+		Enemy->OnTakeDamage(35);
 		MulticastVRSoundPlay(FString("SwordSlash"));
 		// Enemy->Server_TakeDamage(10);
 	}
