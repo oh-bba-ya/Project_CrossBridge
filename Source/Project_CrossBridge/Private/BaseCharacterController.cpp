@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
 
 void ABaseCharacterController::BeginPlay()
 {
@@ -204,7 +205,7 @@ void ABaseCharacterController::ClientReportServerTime_Implementation(float TimeO
 void ABaseCharacterController::ShowReturnToMainMenu()
 {
 	// 게임이 끝났다면 menu 위젯 띄우지 않기..
-	if(BridgeState->GetGameState() == EGameState::End) return;
+	if(BridgeState->GetGameState() == EGameState::End && !UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled()) return;
 	
 	if(ReturnToMainMenuWidget == nullptr) return;
 
