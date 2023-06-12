@@ -9,6 +9,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Project_CrossBridge/Project_CrossBridgeGameModeBase.h"
 
+
 void UGameOver::MenuSetup()
 {
 	AddToViewport();

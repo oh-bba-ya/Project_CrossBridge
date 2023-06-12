@@ -1751,7 +1751,7 @@ void ABaseCharacter::VRShowGameOverWidget()
 		IsVRGameOver = true;
 		ServerVRSetLocation(FVector(220, 405, 200));
 		VRController->SetControlRotation(FRotator(0, 270, 0));
-		//DisableInput(VRController);
+		DisableInput(VRController);
 	}
 
 
