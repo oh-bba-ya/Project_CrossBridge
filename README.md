@@ -34,8 +34,18 @@ VR, PC 플랫폼에서 함께 즐길 수 있는 Cross Play 게임을 개발했�
 
 
 
-## Play
+## 게임 Play 방법
 ### PC 플레이어
+- W,A,S,D : 이동
+- Q : 구르기
+- L-Shift : 슬라이딩
+- Space Bar : Fly
+- E : 상호작용
+- R : 쓰레기 봉투 발사
+- G : 아이템 버리기
+- Mouse Left-Click : Fire
+
+  
 ### VR 플레이어
 
 
