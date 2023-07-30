@@ -40,6 +40,8 @@ VR, PC 플랫폼에서 함께 즐길 수 있는 Cross Play 게임을 개발했�
 - R : 쓰레기 봉투 발사
 - G : 아이템 버리기
 - Mouse Left-Click : Fire
+- Mouse Right-Click : Freeze
+
 
   
 ### VR 플레이어
