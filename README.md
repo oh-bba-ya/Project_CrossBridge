@@ -1,12 +1,16 @@
 # 프로젝트 소개  
 VR, PC 플랫폼에서 함께 즐길 수 있는 Cross Play 게임을 개발했습니다.
-- 프로젝트 인트로 영상 링크
+- 프로젝트 인트로 영상 링크  
+ ![메인사진](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/671c686a-2f12-4dc9-a8bc-e8ae841655e0)
+
 https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=sharing  
 
 ## 환경
 * 기간 : 2023.04 ~ 2023.06
 * 사용도구 : Unreal Engine5 , Github , C++
 * 개발인원 : PC 및 인터랙션 개발 1명, VR 개발 1명, 이펙트 개발 1명 총 3명
+
+## 팀 소개
 
 
 
