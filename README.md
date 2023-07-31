@@ -7,9 +7,9 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ## 환경
 * 기간 : 2023.04 ~ 2023.06
 * 사용도구 : Unreal Engine5 , Github , C++
-* 개발인원 : PC 및 인터랙션 개발 1명, VR 개발 1명, 이펙트 개발 1명 총 3명
 
 ## 팀 소개
+* 개발인원 : PC 및 인터랙션 개발 1명, VR 개발 1명, 이펙트 개발 1명 총 3명
 
 
 
