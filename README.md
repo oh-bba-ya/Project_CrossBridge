@@ -15,7 +15,9 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 
 ## 게임 Concept
 ### Design Concept
-* 지구온난화로 인해 해수면이 상승해 고지대의 산들이 섬이되는 디스토피아 상황.. 
+* 지구온난화로 인해 해수면이 상승해 고지대의 산들이 섬이되는 디스토피아 상황..
+* 해양에서 살아가는 사람들은 섬에서 나온 쓰레기를 주워 생활하거나 바다 깊이 가라앉은 자원을 채취해 살아가며 섬을 점령하기 위해 쓰레기를 재활용한 무기를 통해 섬을 침략하는 컨셉입니다.
+* 자원이 부족한 시대인 만큼 쓰레기를 재활용한 무기를 사용합니다.
 ![크로스브릿지 게임디자인](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/d7abe1d6-87a1-4484-93da-1abdf751e8ea)
 
 ### Play Concept
