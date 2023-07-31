@@ -52,7 +52,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - W,A,S,D : 이동
 - Q : 구르기
 - L-Shift : 슬라이딩
-https://user-images.githubusercontent.com/49023743/257248590-9fc7f682-fe70-4cf4-b2b4-5b88116d162a.gif
+https://user-images.githubusercontent.com/49023743/257248590-9fc7f682-fe70-4cf4-b2b4-5b88116d162a.gif  
 
 - Space Bar : Fly
 - E : 상호작용
