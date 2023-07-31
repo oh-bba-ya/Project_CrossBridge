@@ -63,7 +63,8 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - E : 상호작용  
 - R : 쓰레기 봉투 발사  
   ![PC플레이어 쓰레기봉투](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/150c2e06-865c-4344-9877-d306737005bc)
-- G : 장착 무기 버리기(PC 플레이어는 총 or 포탄 1개의 아이템만 장착할 수 있습니다.)
+- G : 장착 무기 버리기(PC 플레이어는 총 or 포탄 1개의 아이템만 장착할 수 있습니다.)  
+  ![PC플레이어 무기버리기및포탄장착](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/bab8c0c1-33a7-4346-be68-45504f889fb8)
 - Mouse Left-Click : Fire  
 ![총알발사](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a455a04f-0edd-4e38-b689-69d6b6885e4f)
 
