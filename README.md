@@ -52,7 +52,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - W,A,S,D : 이동
 - Q : 구르기
 - L-Shift : 슬라이딩 \n
-https://github.com/oh-bba-ya/Project_CrossBridge/issues/1#issue-1829294184
+![구르기_슬라이딩](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/9fc7f682-fe70-4cf4-b2b4-5b88116d162a)
 - Space Bar : Fly
 - E : 상호작용
 - R : 쓰레기 봉투 발사
