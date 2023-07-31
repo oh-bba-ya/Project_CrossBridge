@@ -99,17 +99,17 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - Bullet : 원거리에서 PC 플레이어를 공격할 수 있습니다.  
   ![Bullet](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/51d7f3b4-51d1-4a26-8c76-dcad7407fbf0)
   
-- Sword : 검을 소환하여 근접해 있는 PC 플레이어를 공격할 수 있습니다. 
+- Sword : 검을 소환하여 근접해 있는 PC 플레이어를 공격할 수 있습니다.  
   ![Sword](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/7f8a91e0-38c5-4717-8e2a-a4e1f22adff0)
 
 - Trash : 하늘에서 쓰레기가 쏟아져 PC 플레이어들에게 피해와 이동을 방해합니다.
   
 
-- Healing : VR 캐릭터의 경우 자체적으로 기도하는 손동작을 통해 HP를 회복할 수 있습니다. 
+- Healing : VR 캐릭터의 경우 자체적으로 기도하는 손동작을 통해 HP를 회복할 수 있습니다.   
   ![Healing](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/10a524ff-2aa9-4a59-a920-a85a53121983)
 
-- Damage : 피해를 받으면 나타나는 시각 효과입니다. 
+- Damage : 피해를 받으면 나타나는 시각 효과입니다.  
   ![Damage](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/b15d1ec9-b3c6-4934-88fd-0728be3c2494)
 
-- Revive : VR 플레이어가 사망하면 부품들이 해제 된 후 지정된 위치로 부품들이 이동하여 다시 합체합니다. (선형보간을 사용하여 부품들의 이동을 구현헀습니다.) 
+- Revive : VR 플레이어가 사망하면 부품들이 해제 된 후 지정된 위치로 부품들이 이동하여 다시 합체합니다. (선형보간을 사용하여 부품들의 이동을 구현헀습니다.)  
    ![Revive](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/3d58aacc-a5a1-4e74-92d1-516fa8ad5aec)
