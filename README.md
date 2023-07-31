@@ -58,7 +58,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ![구르기_슬라이딩](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/9fc7f682-fe70-4cf4-b2b4-5b88116d162a)
 
 (VR 플레이어 시점에서 바라본 블랙홀)  
-
+![블랙홀탈출](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a2e705d7-3bcb-4815-934c-83d609ce2ab3)
 - Space Bar : Fly  
 - E : 상호작용  
 - R : 쓰레기 봉투 발사  
