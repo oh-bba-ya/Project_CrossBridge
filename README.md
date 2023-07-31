@@ -61,7 +61,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 (VR 플레이어 시점에서 바라본 블랙홀)  
 ![블랙홀탈출](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a2e705d7-3bcb-4815-934c-83d609ce2ab3)
 - E : 상호작용  
-- R : 쓰레기 봉투 발사
+- R : 쓰레기 봉투 발사  
   ![PC플레이어 쓰레기봉투](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/150c2e06-865c-4344-9877-d306737005bc)
 - G : 장착 무기 버리기(PC 플레이어는 총 or 포탄 1개의 아이템만 장착할 수 있습니다.)
 - Mouse Left-Click : Fire  
