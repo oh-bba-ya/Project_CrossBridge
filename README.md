@@ -44,11 +44,10 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - 리슨서버를 활용해 제작했습니다. (현재 Local 연결만 되도록 설정했습니다.)
 - 최대 4명까지 플레이가 가능합니다. (현재는 3명만 플레이가 가능합니다.)
 - PC 플레이어만 Host를 할 수 있습니다.
-#### PC 플레이어 Host
-
-#### PC 플레이어 Join
-
-
+#### PC 플레이어 Host 
+![PC플레이어 Host](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/8d98bc28-1bf9-4c5f-8f8b-3b487e67ea21)
+#### PC 플레이어 Join 
+![PC플레이어 Join](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a20d0477-f33a-4ad7-9d23-9008dbc7a61b)
 
 #### VR 플레이어 Join
 - VR 플레이어의 경우 방에 참가만 할 수 있습니다.
