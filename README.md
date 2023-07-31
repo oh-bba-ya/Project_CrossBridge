@@ -66,7 +66,10 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - Mouse Left-Click : Fire  
 ![총알발사](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a455a04f-0edd-4e38-b689-69d6b6885e4f)
 
-- Mouse Right-Click : Freeze  
+- Mouse Right-Click : Freeze
+
+- PC 플레이어는 사망시 15초 후에 다시 리스폰 됩니다.
+
 
 
   
