@@ -23,7 +23,9 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ##### 제한시간내에 VR코어를 파괴
 - 다음과 같은 쓰레기를 수집한다.  
   
-- Converter에 수집한 쓰레기를 넣어 포탄으로 변환을 한다.  
+- Converter에 수집한 쓰레기를 넣어 포탄으로 변환을 한다.
+![쓰레기변환](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/e3f9390c-93cb-412e-ae46-614994bda9b7)
+
   
 - 변환된 포탄을 습득 후 대포에 장전을 하여 VR Core를 공격한다.  
 ![대포발사(게임종료위젯생성)](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/f7d9e99e-16c6-4e6e-80ed-d3f0e9ecccbd)
