@@ -62,7 +62,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - Space Bar : Fly  
 - E : 상호작용  
 - R : 쓰레기 봉투 발사  
-- G : 아이템 버리기  
+- G : 장착 무기 버리기(PC 플레이어는 총 or 포탄 1개의 아이템만 장착할 수 있습니다.)
 - Mouse Left-Click : Fire  
 ![총알발사](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a455a04f-0edd-4e38-b689-69d6b6885e4f)
 
