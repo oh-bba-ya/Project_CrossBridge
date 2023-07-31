@@ -25,8 +25,8 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
   
 - Converter에 수집한 쓰레기를 넣어 포탄으로 변환을 한다.  
   
-- 변환된 포탄을 습득 후 대포에 장전을 하여 VR Core를 공격한다.
-
+- 변환된 포탄을 습득 후 대포에 장전을 하여 VR Core를 공격한다.  
+![대포발사(게임종료위젯생성)](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/f7d9e99e-16c6-4e6e-80ed-d3f0e9ecccbd)
 
 ### VR 승리 조건
 ##### 제한시간 동안 PC 플레이어들이 VR코어를 파괴하지 못하도록 방해하자.
