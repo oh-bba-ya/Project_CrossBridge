@@ -76,7 +76,9 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ![PC플레이어 Freeze2](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/320d2296-7bba-4050-8a3e-7a4b7ccc85ad)
 
 
-- PC 플레이어는 사망시 15초 후에 다시 리스폰 됩니다.
+- PC 플레이어는 사망시 15초 후에 다시 리스폰 됩니다.  
+  ![PC플레이어 리스폰](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/0816eef3-fca0-4ed3-9132-1835f4afaf2f)
+
 
 
 
