@@ -24,7 +24,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - 다음과 같은 쓰레기를 수집한다.  
   
 - Converter에 수집한 쓰레기를 넣어 포탄으로 변환을 한다.
-![쓰레기변환](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/e3f9390c-93cb-412e-ae46-614994bda9b7)
+  ![쓰레기변환](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/e3f9390c-93cb-412e-ae46-614994bda9b7)
 
   
 - 변환된 포탄을 습득 후 대포에 장전을 하여 VR Core를 공격한다.  
