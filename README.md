@@ -21,7 +21,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ## 게임 규칙
 ### PC 승리 조건
 ##### 제한시간내에 VR코어를 파괴
-- 다음과 같은 쓰레기를 수집한다.
+- 다음과 같은 쓰레기를 수집한다.  
 ![쓰레기수집](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/b19055df-726b-4f10-9ee8-27bb1021aac2)
   
 - Converter에 수집한 쓰레기를 넣어 포탄으로 변환을 한다.  
