@@ -54,6 +54,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 #### PC 플레이어
 - W,A,S,D : 이동
 - Space Bar : Fly  
+  ![PC플레이어 Movement](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/7f032a9a-9875-4c74-9d16-118b1392606b)
 - Q : 구르기
 - L-Shift : 슬라이딩  
 ![구르기_슬라이딩](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/9fc7f682-fe70-4cf4-b2b4-5b88116d162a)
