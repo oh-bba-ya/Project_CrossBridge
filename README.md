@@ -37,7 +37,11 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ![대포발사(게임종료위젯생성)](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/f7d9e99e-16c6-4e6e-80ed-d3f0e9ecccbd)
 
 ### VR 승리 조건
-##### 제한시간 동안 PC 플레이어들이 VR코어를 파괴하지 못하도록 방해하자.
+##### 제한시간 동안 PC 플레이어들이 VR코어를 파괴하지 못하도록 방해해야 합니다.
+
+
+##### VR 플레이어가 승리한다면 다음과 같이 VR Core에서 레이저가 발사되어 도시의 방어막이 파괴됩니다. 
+![VR플레이어 Win](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/84746e31-80c4-48b9-937b-bfd74222aa15)
 
 
 
