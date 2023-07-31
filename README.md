@@ -93,7 +93,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 * VR 플레이어는 다음과 같은 기능들이 존재합니다.
 * 컨트롤러의 방향에 따라 기술이 발생되는 스킬들이 존재합니다. (내적을 이용해 방향을 구했습니다.)
 
-- BlackHole : PC 플레이어들의 이동을 방해하는 스킬입니다. 
+- BlackHole : PC 플레이어들의 이동을 방해하는 스킬입니다.    
   ![BlackHole](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/bf41fb4e-99d5-4267-b55f-a798e9049699)
   
 - Bullet : 원거리에서 PC 플레이어를 공격할 수 있습니다. 
