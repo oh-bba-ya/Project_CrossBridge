@@ -1,8 +1,7 @@
 # 프로젝트 소개  
 VR, PC 플랫폼에서 함께 즐길 수 있는 Cross Play 게임을 개발했습니다.
+ ![메인사진](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/671c686a-2f12-4dc9-a8bc-e8ae841655e0) 
 - 프로젝트 인트로 영상 링크  
- ![메인사진](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/671c686a-2f12-4dc9-a8bc-e8ae841655e0)
-
 https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=sharing  
 
 ## 환경
