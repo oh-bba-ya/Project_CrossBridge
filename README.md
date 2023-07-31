@@ -63,7 +63,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - E : 상호작용  
 - R : 쓰레기 봉투 발사  
 - G : 아이템 버리기  
-- Mouse Left-Click : Fire  ![총알발사](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a455a04f-0edd-4e38-b689-69d6b6885e4f)
+- Mouse Left-Click : Fire    ![총알발사](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/a455a04f-0edd-4e38-b689-69d6b6885e4f)
 
 - Mouse Right-Click : Freeze  
 
