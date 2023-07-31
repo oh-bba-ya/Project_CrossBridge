@@ -9,8 +9,8 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 * 사용도구 : Unreal Engine5 , Github , C++
 
 ## 팀 소개
-* 개발인원 : PC 및 인터랙션 개발 1명, VR 개발 1명, 이펙트 개발 1명 총 3명
-
+* 개발인원 : PC 및 인터랙션 개발 1명, VR 개발 1명, 이펙트 개발 1명 총 3명 
+![02](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/c9370fbb-961d-406c-800f-39174fecf44e)
 
 
 ## 게임 Concept
