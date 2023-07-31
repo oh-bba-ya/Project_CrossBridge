@@ -96,7 +96,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - BlackHole : PC 플레이어들의 이동을 방해하는 스킬입니다.    
   ![BlackHole](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/bf41fb4e-99d5-4267-b55f-a798e9049699)
   
-- Bullet : 원거리에서 PC 플레이어를 공격할 수 있습니다. 
+- Bullet : 원거리에서 PC 플레이어를 공격할 수 있습니다.  
   ![Bullet](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/51d7f3b4-51d1-4a26-8c76-dcad7407fbf0)
   
 - Sword : 검을 소환하여 근접해 있는 PC 플레이어를 공격할 수 있습니다. 
