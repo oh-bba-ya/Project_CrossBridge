@@ -15,11 +15,13 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 
 ## 게임 Concept
 ### Design Concept
-지구온난화로 인해 해수면이 상승해 고지대의 산들이 섬이되는 디스토피아 상황.. 
+* 지구온난화로 인해 해수면이 상승해 고지대의 산들이 섬이되는 디스토피아 상황.. 
 ![크로스브릿지 게임디자인](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/d7abe1d6-87a1-4484-93da-1abdf751e8ea)
 
 ### Play Concept
-
+* VR 1명 vs PC 3명 최대 4명이서 즐길 수 있는 대전 게임
+* VR 과 PC 플랫폼의 플레이 방식의 차이가 존재해 차이를 하나의 게임의 플레이 콘셉트로 설정하기 위해 다윗과 골리앗 , 진격의 거인과 같은 자료를 참고하여 거인 vs 소인이라는 플레이 콘셉트가 설정되었습니다. 
+![플레이컨셉](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/f47fe69d-0379-4676-809b-9ea39453ff5a)
 
 ## 게임 규칙
 ### PC 승리 조건
