@@ -93,12 +93,17 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
   
 #### VR 플레이어
 * VR 플레이어는 다음과 같은 기능들이 존재합니다.
-* 컨트롤러의 방향에 따라 기술이 발생되는 스킬들이 존재합니다. (내적을 이용해 방향을 구했습니다.)
+* 특정 자세를 만족해야만 활성화되는 스킬들이 존재합니다.
+* VR 플레이어는 스킬을 사용할때마다 기본적으로 손의 색깔이 변화하며 컨트롤러에 진동이 있습니다.
+* 데미지, 회복, 부활과 같이 VR 플레이어의 체력이 변화하는 경우 그에 맞춰 VR 플레이어의 머리 색도 변화합니다.
+
+- Left Thumbstick : 이동
+- Right Thumbstick : 위아래 이동 및 좌우 회전
 
 - BlackHole : PC 플레이어들의 이동을 방해하는 스킬입니다.    
   ![BlackHole](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/bf41fb4e-99d5-4267-b55f-a798e9049699)
   
-- Bullet : 원거리에서 PC 플레이어를 공격할 수 있습니다.  
+- Bullet : 가장 기본적인 원거리 공격입니다.
   ![Bullet](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/51d7f3b4-51d1-4a26-8c76-dcad7407fbf0)
   
 - Sword : 검을 소환하여 근접해 있는 PC 플레이어를 공격할 수 있습니다.  
@@ -113,5 +118,5 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - Damage : 피해를 받으면 나타나는 시각 효과입니다.  
   ![Damage](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/b15d1ec9-b3c6-4934-88fd-0728be3c2494)
 
-- Revive : VR 플레이어가 사망하면 부품들이 해제 된 후 지정된 위치로 부품들이 이동하여 다시 합체합니다. (선형보간을 사용하여 부품들의 이동을 구현헀습니다.)  
+- Revive : VR 플레이어가 사망하면 부품들이 해제 된 후 지정된 위치로 부품들이 이동하여 다시 합체합니다.  
    ![Revive](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/3d58aacc-a5a1-4e74-92d1-516fa8ad5aec)
