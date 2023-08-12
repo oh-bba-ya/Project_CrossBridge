@@ -113,8 +113,10 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - Damage : 피해를 받으면 나타나는 시각 효과입니다.  
   ![Damage](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/b15d1ec9-b3c6-4934-88fd-0728be3c2494)
 
-- Revive : VR 플레이어가 사망하면 부품들이 해제 된 후 지정된 위치로 부품들이 이동하여 다시 합체합니다.  
+- Revive : VR 플레이어가 사망하면 부품들이 해제 된 후 지정된 위치로 부품들이 이동하여 다시 합체합니다.
    ![Revive](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/3d58aacc-a5a1-4e74-92d1-516fa8ad5aec)
- 
+
+- Status Widget : VR 플레이어의 체력, 스킬 쿨타임 및 남은 경기시간을 알수 있는 위젯입니다.
+
 - Left Thumbstick : 이동
 - Right Thumbstick : 위아래 이동 및 좌우 회전
