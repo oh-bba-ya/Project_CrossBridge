@@ -104,7 +104,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 - Bullet : 가장 기본적인 원거리 공격입니다.
   ![Bullet](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/51d7f3b4-51d1-4a26-8c76-dcad7407fbf0)
   
-- Sword : 두 손을 나란히 하여 광선검을 활성화합니다. 
+- Sword : 두 손을 나란히 하여 광선검을 활성화합니다.
   ![Sword](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/7f8a91e0-38c5-4717-8e2a-a4e1f22adff0)
 
 - Healing : 두 손을 모아 체력을 회복합니다.  
