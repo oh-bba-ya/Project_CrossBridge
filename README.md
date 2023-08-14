@@ -98,6 +98,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
   ![BlackHole](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/bf41fb4e-99d5-4267-b55f-a798e9049699)
 
 - Trash : 광역 공격 스킬입니다.
+- 
   ![VRTrash](https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/5ef0ed6e-f783-46a2-ac03-024c7bbf1439)
   
 - Bullet : 가장 기본적인 원거리 공격입니다.
