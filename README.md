@@ -95,16 +95,16 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 * 데미지, 회복, 부활과 같이 VR 플레이어의 체력이 변화하는 경우 그에 맞춰 VR 플레이어의 머리 색도 변화합니다.
   
 - BlackHole : PC 플레이어들의 이동을 방해하는 스킬입니다.    
-  ![BlackHole](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/bf41fb4e-99d5-4267-b55f-a798e9049699)
+##  ![BlackHole](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/bf41fb4e-99d5-4267-b55f-a798e9049699)
   
 - Bullet : 가장 기본적인 원거리 공격입니다.
-  ![Bullet](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/51d7f3b4-51d1-4a26-8c76-dcad7407fbf0)
+##  ![Bullet](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/51d7f3b4-51d1-4a26-8c76-dcad7407fbf0)
   
 - Sword : 두 손을 나란히 하여 광선검을 활성화합니다.
-  ![Sword](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/7f8a91e0-38c5-4717-8e2a-a4e1f22adff0)
+## ![Sword](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/7f8a91e0-38c5-4717-8e2a-a4e1f22adff0)
   
 - Trash : 광역 공격 스킬입니다.
-  <img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/5ef0ed6e-f783-46a2-ac03-024c7bbf1439" width="40%" height="40%"/>
+##  <img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/5ef0ed6e-f783-46a2-ac03-024c7bbf1439" width="40%" height="40%"/>
 
 - Healing : 두 손을 모아 체력을 회복합니다.  
   ![Healing](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/10a524ff-2aa9-4a59-a920-a85a53121983)
