@@ -115,7 +115,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
    ![Revive](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/3d58aacc-a5a1-4e74-92d1-516fa8ad5aec)
 
 - Status Widget : VR 플레이어의 체력, 스킬 쿨타임 및 남은 경기시간을 알수 있는 위젯입니다.
-  <img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/28f029de-e638-423f-8fc1-ede239d88748" width="40%" height="40%"/>
+  <img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/28f029de-e638-423f-8fc1-ede239d88748" width="40" height="40"/>
 
 
 - Left Thumbstick : 이동
