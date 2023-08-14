@@ -40,8 +40,8 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 
 ### VR 승리 조건
 ##### 제한시간 동안 PC 플레이어들이 VR코어를 파괴하지 못하도록 방해해야 합니다.
+- VR 플레이어는 스킬을 사용해 PC플레이어들을 방해합니다.
  <img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/ebb01f25-9f81-4213-b825-1cceb96c7977" width="50%" height="50%"/>
- 
 - VR 플레이어가 승리한다면 다음과 같이 VR Core에서 레이저가 발사되어 도시의 방어막이 파괴됩니다. 
 ![VR플레이어 Win](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/84746e31-80c4-48b9-937b-bfd74222aa15)
 
