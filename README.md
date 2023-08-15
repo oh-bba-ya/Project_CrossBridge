@@ -104,7 +104,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 #### ![Sword](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/7f8a91e0-38c5-4717-8e2a-a4e1f22adff0)
   
 - Trash : 광역 공격 스킬입니다.
-####  <img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/5ef0ed6e-f783-46a2-ac03-024c7bbf1439" width="40%" height="40%"/>
+![VRTrash](https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/1edebe4b-d027-49dc-b023-c99f2375a385)
 
 - Healing : 두 손을 모아 체력을 회복합니다.  
 ####  ![Healing](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/10a524ff-2aa9-4a59-a920-a85a53121983)
