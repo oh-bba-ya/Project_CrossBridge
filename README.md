@@ -60,7 +60,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 
 #### VR 플레이어 Join
 - VR 플레이어의 경우 방에 참가만 할 수 있습니다.
-![VRLogin](https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/fe9a21ba-f43f-415a-87cb-97fa96c8f147)
+<img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/fe9a21ba-f43f-415a-87cb-97fa96c8f147" width="50%" height="50%"/>
 
 ### 조작법
 #### PC 플레이어
@@ -105,7 +105,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ![Sword](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/7f8a91e0-38c5-4717-8e2a-a4e1f22adff0)
   
 - Trash : 광역 공격 스킬입니다.
-![VRTrash](https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/1edebe4b-d027-49dc-b023-c99f2375a385)
+<img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/1edebe4b-d027-49dc-b023-c99f2375a385" width="50%" height="50%"/>
 
 - Healing : 두 손을 모아 체력을 회복합니다.  
 ![Healing](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/10a524ff-2aa9-4a59-a920-a85a53121983)
@@ -117,7 +117,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 ![Revive](https://github.com/oh-bba-ya/Project_CrossBridge/assets/49023743/3d58aacc-a5a1-4e74-92d1-516fa8ad5aec)
 
 - Status Widget : VR 플레이어의 체력, 스킬 쿨타임 및 남은 경기시간을 알수 있는 위젯입니다.
-![VRStatusWidget](https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/63cd09ef-c25d-4c07-91fc-02624414118f)
+<img src="https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/63cd09ef-c25d-4c07-91fc-02624414118f" width="50%" height="50%" />
 
 - Left Thumbstick : 이동
 - Right Thumbstick : 위아래 이동 및 좌우 회전
