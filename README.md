@@ -60,6 +60,7 @@ https://drive.google.com/file/d/1JbYX3U96HZhw-0tanYEmCO697TrBZbtb/view?usp=shari
 
 #### VR 플레이어 Join
 - VR 플레이어의 경우 방에 참가만 할 수 있습니다.
+![VRLogin](https://github.com/oh-bba-ya/Project_CrossBridge/assets/121008852/fe9a21ba-f43f-415a-87cb-97fa96c8f147)
 
 ### 조작법
 #### PC 플레이어
